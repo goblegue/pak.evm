@@ -1,43 +1,11 @@
-# cmake_minimum_required(VERSION 3.19)
-# project(online_voting_app LANGUAGES CXX)
 
-# find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
-
-# qt_standard_project_setup()
-
-# qt_add_executable(online_voting_app
-#     WIN32 MACOSX_BUNDLE
-#     main.cpp
-#     mainwindow.cpp
-#     mainwindow.h
-#     mainwindow.ui
-# )
-
-# target_link_libraries(online_voting_app
-#     PRIVATE
-#         Qt::Core
-#         Qt::Widgets
-# )
-
-# install(TARGETS online_voting_app
-#     BUNDLE  DESTINATION .
-#     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-#     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-# )
-
-# qt_generate_deploy_app_script(
-#     TARGET online_voting_app
-#     OUTPUT_SCRIPT deploy_script
-#     NO_UNSUPPORTED_PLATFORM_ERROR
-# )
-# install(SCRIPT ${deploy_script})
 
 cmake_minimum_required(VERSION 3.19)
 project(online_voting_app LANGUAGES CXX)
 
 # 1. Added Sql and Network to the required Qt components
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network)
-
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Network)
+find_package(PkgConfig REQUIRED)
 # Automatically handles C++17/C++20, AUTOMOC, AUTORCC, and AUTOUIC
 qt_standard_project_setup()
 
@@ -50,6 +18,8 @@ qt_add_executable(online_voting_app
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    databasemanager.h
+    databasemanager.cpp
 
     # --- SMTP LIBRARY FILES ---
     smtp_lib/emailaddress.cpp
@@ -90,6 +60,7 @@ qt_add_executable(online_voting_app
     smtp_lib/mimecontentformatter.h
     smtp_lib/smtpmime_global.h
     smtp_lib/SmtpMime
+
 )
 
 # 3. Tell CMake where to look for the SMTP headers (Modern Target-based approach)
@@ -98,12 +69,22 @@ target_include_directories(online_voting_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 # 4. Define the macro to fix SMTP DLL export issues
 target_compile_definitions(online_voting_app PRIVATE SMTP_MIME_LIBRARY)
 
+pkg_check_modules(MONGOCXX REQUIRED libmongocxx)
+pkg_check_modules(BSONCXX REQUIRED libbsoncxx)
+
+target_include_directories(online_voting_app PRIVATE
+${MONGOCXX_INCLUDE_DIRS}
+${BSONCXX_INCLUDE_DIRS}
+)
+
 # 5. Link all necessary libraries (Qt Modules + libsodium)
 target_link_libraries(online_voting_app
     PRIVATE
         Qt::Core
         Qt::Widgets
         Qt::Network
+        ${MONGOCXX_LIBRARIES}
+        ${BSONCXX_LIBRARIES}
         sodium
 )
 
@@ -112,8 +93,9 @@ target_link_libraries(online_voting_app
 # Your Database dev will uncomment and use these when ready.
 # =====================================================================
 
+# Attempt to find the driver via pkg-config if the package isn't found
 # find_package(mongocxx REQUIRED)
-# target_link_libraries(online_voting_app PRIVATE mongo::mongocxx_shared)
+#target_link_libraries(online_voting_app PRIVATE mongo::mongocxx_shared)
 
 
 # =====================================================================
@@ -126,9 +108,15 @@ install(TARGETS online_voting_app
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-qt_generate_deploy_app_script(
-    TARGET online_voting_app
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
+#qt_generate_deploy_app_script(
+   # TARGET online_voting_app
+    #OUTPUT_SCRIPT deploy_script
+    #NO_UNSUPPORTED_PLATFORM_ERROR)
+#install(SCRIPT ${deploy_script})
+# Attempt to find the driver via pkg-config
+
+
+# We use 'QUIET' so it doesn't crash the whole project if the driver isn't installed yet
+
+
+
