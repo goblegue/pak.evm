@@ -91,6 +91,7 @@ qt_add_executable(online_voting_app
     smtp_lib/smtpmime_global.h
     smtp_lib/SmtpMime
     emailservice.h emailservice.cpp
+    cryptoengine.h cryptoengine.cpp
 )
 
 # 3. Tell CMake where to look for the SMTP headers (Modern Target-based approach)
