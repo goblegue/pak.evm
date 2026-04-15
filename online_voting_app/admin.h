@@ -1,7 +1,6 @@
 #ifndef ADMIN_H
 #define ADMIN_H
 
-#include <QList>
 #include "states.h"
 #include "user.h"
 #include <optional>
