@@ -5,26 +5,6 @@
 #include "sodium.h"
 #include <optional>
 
-/**
- * @struct HashResult
- * @brief Uses QByteArray to store raw binary hash and salt safely.
- */
-struct HashResult
-{
-    QByteArray hash;
-    int salt;
-};
-
-/**
- * @struct KeyPair
- * @brief Uses QByteArray for binary Ed25519 keys.
- */
-struct KeyPair
-{
-    QByteArray publicKey;
-    QByteArray privateKey;
-};
-
 class CryptoEngine
 {
 private:
@@ -33,6 +13,24 @@ private:
     ~CryptoEngine() = default;
 
 public:
+    /**
+     * @struct KeyPair
+     * @brief Uses QByteArray for binary Ed25519 keys.
+     */
+    struct KeyPair
+    {
+        QByteArray publicKey;
+        QByteArray privateKey;
+    };
+    /**
+     * @struct HashResult
+     * @brief Uses QByteArray to store raw binary hash and salt safely.
+     */
+    struct HashResult
+    {
+        QByteArray hash;
+        int salt;
+    };
     static CryptoEngine &getInstance();
     CryptoEngine(const CryptoEngine &) = delete;
     void operator=(const CryptoEngine &) = delete;
