@@ -1,7 +1,6 @@
 #ifndef USER_H
 #define USER_H
 
-#include "person.h"
 #include <optional>
 
 class User
@@ -12,7 +11,7 @@ protected:
     QString m_name;
     QString m_email;
     QByteArray m_passwordHash;
-    int m_salt;
+    long long m_salt;
     bool m_isEmailVerified;
 
 public:
@@ -75,7 +74,7 @@ public:
     virtual bool insertUser(const User &user) = 0;
     virtual std::optional<User> getUserByCnic(const QString &cnic) = 0;
     virtual std::optional<User> getUserByEmail(const QString &email) = 0;
-    virtual bool updateUserEmailVerification(const QString &cnic, bool status) = 0;
+    virtual bool updateUserEmailVerification(const QString &email, bool status) = 0;
 };
 
 #endif // USER_H

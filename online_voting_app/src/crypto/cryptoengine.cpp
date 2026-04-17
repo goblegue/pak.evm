@@ -1,8 +1,10 @@
-#include "cryptoengine.h"
+#include <optional>
+#include <limits>
 #include <QBuffer>     // Required for QBuffer
 #include <QDataStream> // Required for QDataStream
 #include <QDebug>
 #include <QIODevice> // Required for QIODevice::WriteOnly flags
+#include "cryptoengine.h"
 #include "sodium.h"
 
 using namespace std;
@@ -14,7 +16,8 @@ bool CryptoEngine::initSodium()
 
 CryptoEngine::CryptoEngine()
 {
-    if (!initSodium()) {
+    if (!initSodium())
+    {
         qFatal("CRITICAL SECURITY ERROR: Failed to initialize libsodium. "
                "The application cannot run without a valid cryptographic engine.");
     }
@@ -28,7 +31,8 @@ CryptoEngine &CryptoEngine::getInstance()
 
 int CryptoEngine::generateRandomInt(int min, int max)
 {
-    if (min > max) {
+    if (min > max)
+    {
         qWarning()
             << "CryptoEngine Warning: generateRandomInt called with min > max. Swapping values.";
         swap(min, max);
@@ -37,10 +41,11 @@ int CryptoEngine::generateRandomInt(int min, int max)
     return static_cast<int>(randombytes_uniform(range)) + min;
 }
 
-std::optional<HashResult> CryptoEngine::hashData(const QByteArray &data, int salt)
+std::optional<HashResult> CryptoEngine::hashData(const QByteArray &data, long long salt)
 {
-    if (salt < 0) {
-        salt = generateRandomInt(100000, 999999);
+    if (salt < 0)
+    {
+        salt = generateRandomInt(0, numeric_limits<long long>::max());
     }
     // converting the salt integer to a QByteArray of the correct size for crypto_pwhash
     QByteArray saltArray{};
@@ -52,7 +57,7 @@ std::optional<HashResult> CryptoEngine::hashData(const QByteArray &data, int sal
 
     QDataStream stream(&buffer);
     stream.setByteOrder(QDataStream::BigEndian);
-    stream << (qint32) salt;
+    stream << (qint32)salt;
 
     buffer.close();
 
@@ -91,7 +96,8 @@ std::optional<KeyPair> CryptoEngine::generateKeyPair()
 std::optional<QByteArray> CryptoEngine::signMessage(const QByteArray &message,
                                                     const QByteArray &privateKey)
 {
-    if (privateKey.size() != crypto_sign_SECRETKEYBYTES) {
+    if (privateKey.size() != crypto_sign_SECRETKEYBYTES)
+    {
         qWarning() << "CryptoEngine Warning: Invalid private key size for signing!";
         return nullopt;
     }
@@ -106,10 +112,13 @@ std::optional<QByteArray> CryptoEngine::signMessage(const QByteArray &message,
                                       static_cast<unsigned long long>(message.size()),
                                       reinterpret_cast<const unsigned char *>(
                                           privateKey.constData()));
-    if (result == 0) {
+    if (result == 0)
+    {
         signature.resize(sigLen);
         return signature;
-    } else {
+    }
+    else
+    {
         return nullopt;
     }
 }
@@ -118,12 +127,14 @@ int CryptoEngine::verifySignature(const QByteArray &message,
                                   const QByteArray &signature,
                                   const QByteArray &publicKey)
 {
-    if (publicKey.size() != crypto_sign_PUBLICKEYBYTES) {
+    if (publicKey.size() != crypto_sign_PUBLICKEYBYTES)
+    {
         qWarning() << "CryptoEngine Error: Invalid public key size for verification!";
         return -1;
     }
 
-    if (signature.size() != crypto_sign_BYTES) {
+    if (signature.size() != crypto_sign_BYTES)
+    {
         qWarning() << "CryptoEngine Error: Signature must be exactly" << crypto_sign_BYTES
                    << "bytes!";
         return -1;
@@ -137,8 +148,10 @@ int CryptoEngine::verifySignature(const QByteArray &message,
                                              reinterpret_cast<const unsigned char *>(
                                                  publicKey.constData()));
 
-    if (result == 0) {
+    if (result == 0)
+    {
         return 1;
-    } else
+    }
+    else
         return 0;
 }

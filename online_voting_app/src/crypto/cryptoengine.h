@@ -29,7 +29,7 @@ public:
     struct HashResult
     {
         QByteArray hash;
-        int salt;
+        long long salt;
     };
     static CryptoEngine &getInstance();
     CryptoEngine(const CryptoEngine &) = delete;

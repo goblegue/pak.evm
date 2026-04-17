@@ -14,10 +14,10 @@ using namespace std;
 class AuthManager
 {
 private:
-    IUserRepository *userRepo;
-    IAdminRepository *adminRepo;
-    IOtpRepository *otpRepo;
-    unique_ptr<User> currentUser;
+    IUserRepository *m_userRepo;
+    IAdminRepository *m_adminRepo;
+    IOtpRepository *m_otpRepo;
+    unique_ptr<User> m_currentUser;
 
     AuthManager();
     ~AuthManager();
@@ -25,24 +25,34 @@ private:
 public:
     enum class LoginResult
     {
-        Success,
+        SuccessUserLoggedIn,     // Logged in as regular user
+        SuccessAdminLoggedIn,    // Logged in as admin
         SuccessAdminPending, // Logged in, but admin status isn't approved yet
-        InvalidCredentials,  // Wrong CNIC/Email or Password
+        InvalidCnicOrEmail,  // No user found with given CNIC or Email
+        InvalidPassword,     // User found, but password is incorrect
         EmailNotVerified,    // Password correct, but needs OTP verification
         SystemError          // Database or Crypto failure
     };
-    
+
+    enum class SignUpResult
+    {
+        SuccessUserCreated,       // User created successfully
+        SuccessAdminCreated,      // User created and applied for admin successfully
+        UserAlreadyExists,
+        SystemError
+    };
+
     AuthManager(const AuthManager &) = delete;
     void operator=(const AuthManager &) = delete;
 
     static AuthManager &getInstance();
     void injectRepositories(IUserRepository *userRepo, IAdminRepository *adminRepo, IOtpRepository *otpRepo);
 
+    bool isLoggedIn() const { return m_currentUser != nullptr; };
+    User *getCurrentUser() const { return m_currentUser.get(); }
+    void logout() { m_currentUser.reset(); }
 
-    User *getCurrentUser() const { return currentUser.get(); }
-    void logout();
-
-    bool signUp(const User &user, const QString &password, bool applyForAdmin = false);
+    SignUpResult signUp(User &user, const QString &password, bool applyForAdmin = false);
     bool requestOtp(const QString &email, EmailService &emailService);
     bool verifyOtp(const QString &email, const QString &otpCode);
 
