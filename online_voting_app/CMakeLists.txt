@@ -90,17 +90,19 @@ qt_add_executable(online_voting_app
     smtp_lib/mimecontentformatter.h
     smtp_lib/smtpmime_global.h
     smtp_lib/SmtpMime
-    emailservice.h emailservice.cpp
-    cryptoengine.h cryptoengine.cpp
-    states.h
 
-    user.h
-    admin.h
-    election.h
-    candiate.h
-    voters.h
-    voting_station.h
-    otp.h
+    src/email/emailservice.h src/email/emailservice.cpp
+
+    src/crypto/cryptoengine.h src/crypto/cryptoengine.cpp
+
+    src/states.h
+    src/user.h
+    src/admin.h
+    src/election.h
+    src/candidate.h
+    src/voters.h
+    src/voting_station.h
+    src/otp.h
 
 )
 
