@@ -1,16 +1,18 @@
 #ifndef DATABASEMANAGER_H
 #define DATABASEMANAGER_H
 
-#include<mongocxx/client.hpp>
-#include<mongocxx/instance.hpp>
-#include<mongocxx/database.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/instance.hpp>
+#include <mongocxx/database.hpp>
 
 class DatabaseManager
 {
 public:
-    static DatabaseManager & getInstance();
-    //Collections Setup
+    static DatabaseManager &getInstance();
+    mongocxx::database &getDatabase() { return db; }
+    // Collections Setup
     void setupSchema();
+
 private:
     DatabaseManager();
     mongocxx::instance inst{};
