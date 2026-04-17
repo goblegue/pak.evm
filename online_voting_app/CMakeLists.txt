@@ -93,7 +93,7 @@ qt_add_executable(online_voting_app
     emailservice.h emailservice.cpp
     cryptoengine.h cryptoengine.cpp
     states.h
-    person.h
+
     user.h
     admin.h
     election.h
