@@ -1,6 +1,6 @@
 #ifndef ADMIN_H
 #define ADMIN_H
-#include <QString>
+
 #include "states.h"
 #include "user.h"
 #include <optional>
@@ -112,7 +112,6 @@ public:
     virtual ~IAdminRepository() = default;
     virtual bool insertAdmin(const Admin &admin) = 0;
     virtual std::optional<Admin> getAdminByCnic(const QString &cnic) = 0;
-    virtual std::optional<Admin> getAdminByEmail(const QString &email) = 0;
     virtual bool addStatusChangeRequest(const QString &targetAdminCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
