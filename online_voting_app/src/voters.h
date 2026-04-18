@@ -1,10 +1,12 @@
 #ifndef VOTERS_H
 #define VOTERS_H
+#include <optional>
 
 #include <QDateTime>
 #include <QString>
-#include <optional>
 #include "./crypto/cryptoengine.h"
+
+using namespace std;
 
 class Voters
 {
@@ -32,6 +34,7 @@ public:
     void setAssignedStationId(const QString &stationId) { m_assignedStationId = stationId; }
     void setTokenSignature(const QString &sig) { m_tokenSignature = sig; }
     void setIssuedAt(const QDateTime &time) { m_issuedAt = time; }
+
     static optional<QString> generateSignature(const QString &userCnic, const QString &electionId, const QDateTime &issuedAt, const QByteArray &privateKey)
     {
         QString data = userCnic + electionId + issuedAt.toString(Qt::ISODate);

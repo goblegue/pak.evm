@@ -2,6 +2,7 @@
 #define USER_H
 
 #include <optional>
+#include <QString>
 
 class User
 {

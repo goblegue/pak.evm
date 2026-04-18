@@ -61,9 +61,15 @@ qt_add_executable(online_voting_app
     smtp_lib/smtpmime_global.h
     smtp_lib/SmtpMime
 
+    qr_lib/qrcodegen.cpp
+    qr_lib/qrcodegen.hpp
+
     src/email/emailservice.h src/email/emailservice.cpp
 
     src/crypto/cryptoengine.h src/crypto/cryptoengine.cpp
+
+    src/AuthManager/auth_manager.h src/AuthManager/auth_manager.cpp
+    src/QR/qr.h src/QR/qr.cpp
 
     src/states.h
     src/user.h

@@ -4,6 +4,7 @@
 #include "states.h"
 #include "user.h"
 #include <optional>
+#include <QString>
 
 class Admin : public User
 {
