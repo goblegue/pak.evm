@@ -3,7 +3,7 @@
 
 #include <QDateTime>
 #include <QString>
-#include "states.h"
+#include "../states.h"
 #include <optional>
 
 class Election

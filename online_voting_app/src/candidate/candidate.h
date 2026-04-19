@@ -2,7 +2,7 @@
 #define CANDIDATE_H
 
 #include <QString>
-#include "states.h"
+#include "../states.h"
 #include <optional>
 
 class Candidate

@@ -1,5 +1,5 @@
 #include "qr.h"
-#include "../voters.h"
+#include "../voters/voters.h"
 
 #include <QPainter>
 

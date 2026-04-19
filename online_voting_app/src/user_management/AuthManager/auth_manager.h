@@ -5,11 +5,11 @@
 
 #include <QString>
 
-#include "../admin.h"
-#include "../user.h"
-#include "../otp.h"
-#include "../email/emailservice.h"
-#include "../crypto/cryptoengine.h"
+#include "../admin/admin.h"
+#include "../user/user.h"
+#include "../../otp/otp.h"
+#include "../../email/emailservice.h"
+#include "../../crypto/cryptoengine.h"
 
 using namespace std;
 

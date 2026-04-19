@@ -1,8 +1,8 @@
 #ifndef ADMIN_H
 #define ADMIN_H
 
-#include "states.h"
-#include "user.h"
+#include "../../states.h"
+#include "../user/user.h"
 #include <optional>
 #include <QString>
 

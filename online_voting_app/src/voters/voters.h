@@ -4,7 +4,7 @@
 
 #include <QDateTime>
 #include <QString>
-#include "./crypto/cryptoengine.h"
+#include "../crypto/cryptoengine.h"
 
 using namespace std;
 
