@@ -57,7 +57,7 @@ std::optional<User> userrepository::getUserByCnic(const QString &cnic) {
         // Extracting binary hash back to QByteArray
         auto binary = view["passwordHash"].get_binary();
         QByteArray hash(reinterpret_cast<const char*>(binary.bytes), binary.size);
-        user.setPassword(hash, view["salt"].get_int32().value);
+        user.setPassword(hash, view["salt"].get_int64().value);
 
         return user;
     }
@@ -81,7 +81,7 @@ std::optional<User> userrepository::getUserByEmail(const QString &email) {
 
         auto binary = view["passwordHash"].get_binary();
         QByteArray hash(reinterpret_cast<const char*>(binary.bytes), binary.size);
-        user.setPassword(hash, view["salt"].get_int32().value);
+        user.setPassword(hash, view["salt"].get_int64().value);
 
         return user;
     }
