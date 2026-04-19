@@ -3,7 +3,7 @@
 
 #include <QString>
 
-enum class ElectionState { Draft, Published, VotingOpen, VotingClosed, ResultsAnnounced };
+enum class ElectionState { Draft,Rejected, Published, VotingOpen, VotingClosed, ResultsAnnounced };
 
 enum class ApprovalStatus { Pending, Approved, Rejected };
 
