@@ -1,5 +1,16 @@
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QFile>
+
+
 #include "electionController.h"
+#include "../candidate/candidateController.h"
+#include "../crypto/cryptoengine.h"
+#include "../email/emailservice.h"
 #include <optional>
+
+using namespace std;
 
 const int ELECTION_APPROVAL_THRESHOLD = 2; // More than 50% of admins must approve
 const int ELECTION_REJECTION_THRESHOLD = 3; // More than 33% of admins
@@ -134,6 +145,99 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     electionsSize = count;
     return filteredElections;
 }
+
+ bool ElectionController::sendElectionDataToAdmin(const QString &electionId, const QString &adminId, const QByteArray &privateKey)
+ {
+    if (!m_electionRepo || !m_adminRepo)
+    {
+        return false; // Repositories not injected
+    }
+    auto electionOpt = m_electionRepo->getElectionById(electionId);
+    if (!electionOpt.has_value())
+    {
+        return false; // Election not found
+    }
+    Election election = electionOpt.value();
+    if(/*!(election.getStatus() == ElectionState::Published)||*/
+       !(election.getStatus() == ElectionState::VotingOpen))
+    {
+        return false; // Election not active
+    }
+    auto adminOpt = m_adminRepo->getAdminByCnic(adminId);
+    if (!adminOpt.has_value())
+    {
+        return false; // Admin not found
+    }
+    Admin admin = adminOpt.value();
+    if (admin.getStatus() != ApprovalStatus::Approved)
+    {
+        return false; // Admin not approved
+    }
+
+    QJsonObject electionJson;
+    electionJson["id"] = election.getId();
+    electionJson["title"] = election.getTitle();
+    electionJson["startTime"] = election.getStartTime().toString(Qt::ISODate);
+    electionJson["endTime"] = election.getEndTime().toString(Qt::ISODate);
+
+    
+
+    QString candidatesJsonString = CandidateController::getInstance().getCandidatesJsonByElection(electionId);
+
+    QByteArray candidateBytes = candidatesJsonString.toUtf8();
+
+    QJsonDocument candidateJsonDoc = QJsonDocument::fromJson(candidateBytes);
+
+    if (candidateJsonDoc.isNull() && !candidateJsonDoc.isArray()){
+        return false;
+    }
+    QJsonArray candidateJsonArray = candidateJsonDoc.array();
+
+    QJsonObject payload;
+    payload["election"] = electionJson;
+    payload["candidates"] = candidateJsonArray;
+    payload["exportTimeStamp"]= QDateTime::currentDateTime().toString(Qt::ISODate);
+
+    QJsonDocument doc(payload);
+
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+
+    auto signatureOpt = CryptoEngine::getInstance().signMessage(jsonData, privateKey);
+
+    if (!signatureOpt.has_value())
+    {
+        return false;
+    }
+
+    QByteArray signature = signatureOpt.value();
+
+    payload["signature"] = QString(signature.toBase64());
+
+    doc.setObject(payload);
+    QString fileName = QString("election_%1_data.json").arg(electionId);
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    jsonData = doc.toJson(QJsonDocument::Indented);
+
+    file.write(jsonData);
+    file.close();
+
+    QString adminEmail = admin.getEmail();
+    QString subject = QString("Election Data for %1").arg(election.getTitle());
+    QString body= QString("Hello %1,\n\nPlease find attached the requested election data in json formate below\n\nElection Commission\n\nDo not replay to this mail" )
+    .arg(admin.getName());
+
+    bool emailSuccess = EmailService::getInstance().sendEmail(adminEmail,subject,body,false,fileName);
+
+    file.remove();
+
+    return emailSuccess;
+
+ }
 
 // std::optional<Election> ElectionController::getElectionById(const QString &id)
 // {

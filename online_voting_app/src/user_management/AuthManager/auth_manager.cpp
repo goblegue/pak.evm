@@ -69,7 +69,7 @@ AuthManager::SignUpResult AuthManager::signUp(User &user, const QString &passwor
     }
 }
 
-bool AuthManager::requestOtp(const QString &email, EmailService &emailService)
+bool AuthManager::requestOtp(const QString &email)
 {
     if (!m_otpRepo)
     {
@@ -86,7 +86,8 @@ bool AuthManager::requestOtp(const QString &email, EmailService &emailService)
         return false; // Failed to insert OTP into database
     }
 
-    return emailService.sendEmail(email, "Email Verification", "Your OTP is: " + otpCode + "\nIt will expire in 5 minutes.\n\n Do not share this with anyone");
+
+    return EmailService::getInstance().sendEmail(email, "Email Verification", "Your OTP is: " + otpCode + "\nIt will expire in 5 minutes.\n\n Do not share this with anyone");
 }
 
 bool AuthManager::verifyOtp(const QString &email, const QString &otpCode)

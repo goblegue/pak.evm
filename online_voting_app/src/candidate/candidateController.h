@@ -23,10 +23,10 @@ public:
     bool createCandidate(Candidate &candidate);
     bool requestCandidateStatusChange(const QString &candidateCnic, const QString &adminCnic, ApprovalStatus status);
 
-    Candidate *getCandidatesByElection(const QString &electionId, int &candidatesSize, bool isAdminRequesting= false);
+    Candidate *getCandidatesByElection(const QString &electionId, int &candidatesSize, bool isAdminRequesting = false);
 
     Candidate *getCandidatesByElectionAndStatus(const QString &electionId, ApprovalStatus status, int &candidatesSize);
-    
+
     QString getCandidatesJsonByElection(const QString &electionId);
 };
 

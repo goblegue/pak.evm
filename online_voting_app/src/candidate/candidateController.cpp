@@ -2,6 +2,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+
 #include "candidateController.h"
 
 const int CANDIDATE_APPROVAL_THRESHOLD = 3;
@@ -24,7 +25,7 @@ void CandidateController::injectRepositories(ICandidateRepository *candidateRepo
     m_electionRepo = electionRepo;
 }
 
-bool CandidateController::createCandidate(const Candidate &candidate)
+bool CandidateController::createCandidate(Candidate &candidate)
 {
     if (!m_candidateRepo || !m_electionRepo)
     {
@@ -34,7 +35,7 @@ bool CandidateController::createCandidate(const Candidate &candidate)
     Candidate *existingCandidates = m_candidateRepo->getCandidates(candidatesSize, candidate.getElectionId()); // Get existing candidates for the election to check for duplicate CNIC
     for (int i = 0; i < candidatesSize; ++i)
     {
-        if (existingCandidates[i].getCnic() == candidate.getCnic())
+        if (existingCandidates[i].getUserCnic() == candidate.getUserCnic())
         {
             delete[] existingCandidates;
             return false; // Candidate with same CNIC already exists for the election

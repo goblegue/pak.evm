@@ -7,12 +7,22 @@
 #include "../smtp_lib/mimetext.h"
 #include "../smtp_lib/smtpclient.h"
 
-EmailService::EmailService(QString host, int port, QString email, QString password)
-{
+EmailService::EmailService() : m_isConfigured(false) {}
+EmailService::~EmailService() {}
+
+
+
+void EmailService::configure(const QString& host, int port, const QString& email, const QString& password) {
     m_smtpHost = host;
     m_smtpPort = port;
     m_senderEmail = email;
     m_appPassword = password;
+    m_isConfigured = true;
+}
+
+EmailService& EmailService::getInstance() {
+    static EmailService instance;
+    return instance;
 }
 
 bool EmailService::sendEmail(const QString &recipientEmail,
