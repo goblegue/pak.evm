@@ -29,7 +29,7 @@ CryptoEngine &CryptoEngine::getInstance()
     return instance;
 }
 
-int CryptoEngine::generateRandomInt(int min, int max)
+long long CryptoEngine::generateRandomInt(long long min, long long max)
 {
     if (min > max)
     {
@@ -41,7 +41,7 @@ int CryptoEngine::generateRandomInt(int min, int max)
     return static_cast<int>(randombytes_uniform(range)) + min;
 }
 
-std::optional<HashResult> CryptoEngine::hashData(const QByteArray &data, long long salt)
+std::optional<CryptoEngine::HashResult> CryptoEngine::hashData(const QByteArray &data, long long salt)
 {
     if (salt < 0)
     {
@@ -78,7 +78,7 @@ std::optional<HashResult> CryptoEngine::hashData(const QByteArray &data, long lo
         return nullopt;
 }
 
-std::optional<KeyPair> CryptoEngine::generateKeyPair()
+std::optional<CryptoEngine::KeyPair> CryptoEngine::generateKeyPair()
 {
     QByteArray publicKey, privateKey;
     publicKey.resize(crypto_sign_PUBLICKEYBYTES);

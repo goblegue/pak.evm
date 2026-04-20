@@ -14,8 +14,16 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+private slots:
+    void on_goToSignupBtn_clicked();
+    void on_goToLoginBtn_clicked();
+    void on_loginSubmitBtn_clicked();
+    void on_signupSubmitBtn_clicked();
+
+
+    void on_adminWaitBackBtn_clicked();
 
 private:
     Ui::MainWindow *ui;

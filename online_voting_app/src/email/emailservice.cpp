@@ -1,11 +1,11 @@
 #include "emailservice.h"
 #include <QDebug>
 #include <QFile>
-#include "smtp_lib/mimeattachment.h"
-#include "smtp_lib/mimehtml.h"
-#include "smtp_lib/mimemessage.h"
-#include "smtp_lib/mimetext.h"
-#include "smtp_lib/smtpclient.h"
+#include "../smtp_lib/mimeattachment.h"
+#include "../smtp_lib/mimehtml.h"
+#include "../smtp_lib/mimemessage.h"
+#include "../smtp_lib/mimetext.h"
+#include "../smtp_lib/smtpclient.h"
 
 EmailService::EmailService(QString host, int port, QString email, QString password)
 {

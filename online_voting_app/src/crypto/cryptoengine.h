@@ -35,9 +35,9 @@ public:
     CryptoEngine(const CryptoEngine &) = delete;
     void operator=(const CryptoEngine &) = delete;
 
-    int generateRandomInt(int min, int max);
+    long long generateRandomInt(long long min, long long max);
 
-    std::optional<HashResult> hashData(const QByteArray &data, int salt = -1);
+    std::optional<HashResult> hashData(const QByteArray &data, long long salt = -1);
 
     std::optional<KeyPair> generateKeyPair();
 
