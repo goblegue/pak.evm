@@ -143,7 +143,7 @@ AuthManager::LoginResult AuthManager::login(const QString &password, const QStri
 
     if (adminOpt.has_value() && adminOpt->getStatus() == ApprovalStatus::Pending)
     {
-        m_currentUser = make_unique<User>(adminOpt.value());
+        m_currentUser = make_unique<Admin>(adminOpt.value());
         return LoginResult::SuccessAdminPending; // Admin status pending
     }
     else if (adminOpt.has_value() && adminOpt->getStatus() == ApprovalStatus::Approved)

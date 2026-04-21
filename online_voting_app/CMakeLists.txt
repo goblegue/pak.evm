@@ -78,9 +78,9 @@ qt_add_executable(online_voting_app
 
     src/user_management/admin/admin.h
 
-    src/election/election.h
+    src/election/election.h src/election/electionController.h src/election/electionController.cpp
 
-    src/candidate/candidate.h
+    src/candidate/candidate.h src/candidate/candidateController.h src/candidate/candidateController.cpp 
 
     src/voters/voters.h
 
