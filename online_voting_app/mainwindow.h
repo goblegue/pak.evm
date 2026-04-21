@@ -2,6 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "./src/user.h"
+
+enum StackedPages{
+    LoginPage,
+    SignupPage,
+    AdminWaitingPage,
+    UserDashPage,
+    AdminDashPage
+};
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,5 +36,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    // This function returns: 0 = Invalid, 1 = Email, 2 = CNIC
+    int identifyInputType(const QString &input);
 };
 #endif // MAINWINDOW_H

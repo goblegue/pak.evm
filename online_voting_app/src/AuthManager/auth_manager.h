@@ -3,9 +3,11 @@
 
 #include <memory>
 
-#include "admin.h"
-#include "user.h"
-#include "otp.h"
+#include <QString>
+
+#include "../admin.h"
+#include "../user.h"
+#include "../otp.h"
 #include "../email/emailservice.h"
 #include "../crypto/cryptoengine.h"
 
@@ -53,7 +55,7 @@ public:
     void logout() { m_currentUser.reset(); }
 
     SignUpResult signUp(User &user, const QString &password, bool applyForAdmin = false);
-    bool requestOtp(const QString &email, EmailService &emailService);
+    bool requestOtp(const QString &email);
     bool verifyOtp(const QString &email, const QString &otpCode);
 
     LoginResult login(const QString &password, const QString &cnic = "", const QString &email = "");

@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    try{
+  /*  try{
 
         DatabaseManager::getInstance().setupSchema();
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     }catch(const std::exception & e){
         qDebug()<<"error";
         qDebug()<<e.what();
-    }
+    }*/
 
     MainWindow w;
     w.show();

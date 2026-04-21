@@ -67,6 +67,8 @@ qt_add_executable(online_voting_app
 
     src/crypto/cryptoengine.h src/crypto/cryptoengine.cpp
 
+    src/AuthManager/auth_manager.h src/AuthManager/auth_manager.cpp
+
     src/states.h
     src/user.h
     src/admin.h
