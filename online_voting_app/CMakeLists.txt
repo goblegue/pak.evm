@@ -78,6 +78,9 @@ qt_add_executable(online_voting_app
     src/voting_station.h
     src/otp.h
     resources.qrc
+    src/electionmodel.h
+    src/electiondelegate.h
+
 
 )
 
