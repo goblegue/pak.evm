@@ -7,12 +7,22 @@
 #include "../smtp_lib/mimetext.h"
 #include "../smtp_lib/smtpclient.h"
 
-EmailService::EmailService(QString host, int port, QString email, QString password)
+EmailService::EmailService() : m_isConfigured(false) {}
+EmailService::~EmailService() {}
+
+void EmailService::configure(const QString &host, int port, const QString &email, const QString &password)
 {
     m_smtpHost = host;
     m_smtpPort = port;
     m_senderEmail = email;
     m_appPassword = password;
+    m_isConfigured = true;
+}
+
+EmailService &EmailService::getInstance()
+{
+    static EmailService instance;
+    return instance;
 }
 
 bool EmailService::sendEmail(const QString &recipientEmail,
@@ -34,23 +44,30 @@ bool EmailService::sendEmail(const QString &recipientEmail,
     message.setSubject(subject);
 
     // 3. Add the Body (Text or HTML)
-    if (isHtml) {
+    if (isHtml)
+    {
         MimeHtml *html = new MimeHtml();
         html->setHtml(bodyContent);
         message.addPart(html, true); // true = take ownership (deletes memory automatically)
-    } else {
+    }
+    else
+    {
         MimeText *text = new MimeText();
         text->setText(bodyContent);
         message.addPart(text, true);
     }
 
     // 4. Handle Attachments (Optional)
-    if (!attachmentPath.isEmpty()) {
+    if (!attachmentPath.isEmpty())
+    {
         QFile *file = new QFile(attachmentPath);
-        if (file->exists()) {
+        if (file->exists())
+        {
             MimeAttachment *attachment = new MimeAttachment(file);
             message.addPart(attachment, true);
-        } else {
+        }
+        else
+        {
             qDebug() << "Warning: Attachment file not found!";
             delete file;
         }
@@ -58,14 +75,16 @@ bool EmailService::sendEmail(const QString &recipientEmail,
 
     // Step A: Connect to Google
     smtp.connectToHost();
-    if (!smtp.waitForReadyConnected(5000)) { // Wait up to 5 seconds
+    if (!smtp.waitForReadyConnected(5000))
+    { // Wait up to 5 seconds
         qDebug() << "EmailService Error: Failed to connect to host!";
         return false;
     }
 
     // Step B: Authenticate with App Password
     smtp.login(m_senderEmail, m_appPassword, SmtpClient::AuthLogin);
-    if (!smtp.waitForAuthenticated(5000)) {
+    if (!smtp.waitForAuthenticated(5000))
+    {
         qDebug() << "EmailService Error: Authentication failed! Check App Password.";
         smtp.quit();
         return false;
@@ -73,7 +92,8 @@ bool EmailService::sendEmail(const QString &recipientEmail,
 
     // Step C: Send the Email
     smtp.sendMail(message);
-    if (!smtp.waitForMailSent(10000)) { // Wait up to 10 seconds for large attachments
+    if (!smtp.waitForMailSent(10000))
+    { // Wait up to 10 seconds for large attachments
         qDebug() << "EmailService Error: Failed to send the email payload!";
         smtp.quit();
         return false;

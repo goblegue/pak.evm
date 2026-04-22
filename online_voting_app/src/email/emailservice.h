@@ -12,10 +12,18 @@ private:
     int m_smtpPort;
     QString m_senderEmail;
     QString m_appPassword;
+    bool m_isConfigured;
+    EmailService();
+    ~EmailService();
+    
 
 public:
-    // Constructor
-    EmailService(QString host, int port, QString email, QString password);
+    EmailService(const EmailService &) = delete;
+    void operator=(const EmailService &) = delete;
+
+    static EmailService &getInstance();
+
+    void configure(const QString& host, int port, const QString& email, const QString& password);
 
     // The Universal Method
     // isHtml = true allows you to send bold text, colors, and tables.

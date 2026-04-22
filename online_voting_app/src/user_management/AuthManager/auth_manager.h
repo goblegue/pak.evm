@@ -27,19 +27,19 @@ private:
 public:
     enum class LoginResult
     {
-        SuccessUserLoggedIn,     // Logged in as regular user
-        SuccessAdminLoggedIn,    // Logged in as admin
-        SuccessAdminPending, // Logged in, but admin status isn't approved yet
-        InvalidCnicOrEmail,  // No user found with given CNIC or Email
-        InvalidPassword,     // User found, but password is incorrect
-        EmailNotVerified,    // Password correct, but needs OTP verification
-        SystemError          // Database or Crypto failure
+        SuccessUserLoggedIn,  // Logged in as regular user
+        SuccessAdminLoggedIn, // Logged in as admin
+        SuccessAdminPending,  // Logged in, but admin status isn't approved yet
+        InvalidCnicOrEmail,   // No user found with given CNIC or Email
+        InvalidPassword,      // User found, but password is incorrect
+        EmailNotVerified,     // Password correct, but needs OTP verification
+        SystemError           // Database or Crypto failure
     };
 
     enum class SignUpResult
     {
-        SuccessUserCreated,       // User created successfully
-        SuccessAdminCreated,      // User created and applied for admin successfully
+        SuccessUserCreated,  // User created successfully
+        SuccessAdminCreated, // User created and applied for admin successfully
         UserAlreadyExists,
         SystemError
     };
@@ -55,7 +55,7 @@ public:
     void logout() { m_currentUser.reset(); }
 
     SignUpResult signUp(User &user, const QString &password, bool applyForAdmin = false);
-    bool requestOtp(const QString &email, EmailService &emailService);
+    bool requestOtp(const QString &email);
     bool verifyOtp(const QString &email, const QString &otpCode);
 
     LoginResult login(const QString &password, const QString &cnic = "", const QString &email = "");

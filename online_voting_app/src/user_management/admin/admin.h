@@ -117,6 +117,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetAdminCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
+    virtual int getAdminCount() = 0;
 };
 
 #endif // ADMIN_H
