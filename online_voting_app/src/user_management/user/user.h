@@ -1,8 +1,9 @@
 #ifndef USER_H
 #define USER_H
 
-#include <optional>
 #include <QString>
+#include <QByteArray>
+#include <optional>
 
 class User
 {
@@ -16,8 +17,8 @@ protected:
     bool m_isEmailVerified;
 
 public:
-    User() = default;
-    
+    User() : m_salt(0), m_isEmailVerified(false) {}
+
     User(const User &other)
         : m_id(other.m_id),
           m_cnic(other.m_cnic),
