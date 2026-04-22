@@ -173,6 +173,54 @@ QStackedWidget#userContentStack, QStackedWidget#adminContentStack {
 /* Ensure the Inner Pages themselves are also transparent so the stack color shows */
 QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPage_Results {
     background-color: transparent; 
+}
+
+/* =======================================================
+   11. SCROLL AREA &amp; DYNAMIC ELECTION CARDS
+======================================================= */
+
+/* Remove the ugly border around the Scroll Area */
+QScrollArea#electionsScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+/* Make the background of the scroll content match your dashboard */
+QWidget#scrollAreaWidgetContents {
+    background-color: transparent;
+}
+
+/* Style the dynamically generated buttons to look like modern Cards */
+QPushButton[class=&quot;electionCardBtn&quot;] {
+    background-color: #ffffff;
+    border: 1px solid #d1d9e6;
+    border-radius: 12px;
+    color: #1a2845; /* Dark text */
+    font-size: 18px;
+    font-weight: bold;
+    padding: 25px; /* Big padding makes it a 'Card' instead of a tiny button */
+    text-align: left; /* Text on the left */
+    margin-bottom: 10px; /* Space between cards */
+}
+
+/* Hover Effect for the Election Cards */
+QPushButton[class=&quot;electionCardBtn&quot;]:hover {
+    background-color: #f0f4fa;
+    border: 2px solid #3b5998; /* Highlight edge in theme blue */
+    color: #3b5998;
+}
+
+/* Custom Scrollbar (Makes it look sleek like Mac/Web) */
+QScrollBar:vertical {
+    border: none;
+    background: #e0eaf5;
+    width: 10px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background: #3b5998;
+    min-height: 30px;
+    border-radius: 5px;
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -844,19 +892,11 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
              </widget>
             </widget>
             <widget class="QWidget" name="userInnerPage_Elections">
-             <widget class="QLabel" name="label_5">
-              <property name="geometry">
-               <rect>
-                <x>300</x>
-                <y>140</y>
-                <width>229</width>
-                <height>23</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;List of Elections Here&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QListView" name="electionsListView"/>
+              </item>
+             </layout>
             </widget>
             <widget class="QWidget" name="userInnerPage_Results">
              <widget class="QLabel" name="label_7">
@@ -879,7 +919,201 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="AdminDashPage"/>
+      <widget class="QWidget" name="AdminDashPage">
+       <layout class="QVBoxLayout" name="verticalLayout_admin_main">
+        <item>
+         <widget class="QFrame" name="adminTopNavbarFrame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_admin_nav">
+           <item row="0" column="2">
+            <widget class="QLabel" name="adminNameLabel">
+             <property name="text">
+              <string>Hello, Admin</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <spacer name="horizontalSpacer_admin">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>1042</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="adminProfilePicBtn">
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_admin">
+          <item>
+           <widget class="QFrame" name="adminSidebarFrame">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_admin_sidebar">
+             <item>
+              <widget class="QLabel" name="label_adminLogo">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;ADMIN.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminHome">
+               <property name="text">
+                <string>Dashboard</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminManageElections">
+               <property name="text">
+                <string>Manage Elections</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminCandidates">
+               <property name="text">
+                <string>Approve Candidates</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_admin">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>413</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminLogout">
+               <property name="text">
+                <string>Logout</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QStackedWidget" name="adminContentStack">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="adminInnerPage_Home">
+             <widget class="QLabel" name="label_adminHomeText">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>90</y>
+                <width>231</width>
+                <height>41</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Welcome Admin&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QWidget" name="adminInnerPage_Elections">
+             <widget class="QLabel" name="label_adminElectionsText">
+              <property name="geometry">
+               <rect>
+                <x>300</x>
+                <y>140</y>
+                <width>229</width>
+                <height>23</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Election Controls&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QWidget" name="adminInnerPage_Candidates">
+             <widget class="QLabel" name="label_adminCandidatesText">
+              <property name="geometry">
+               <rect>
+                <x>340</x>
+                <y>120</y>
+                <width>250</width>
+                <height>41</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Pending Approvals&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>

@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QInputDialog> // For the OTP Popup
-#include <QMessageBox>  // For error/success messages
+#include <QInputDialog>
+#include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include "./src/user_management/AuthManager/auth_manager.h"
@@ -10,6 +10,10 @@
 #include <QFile>
 #include "./src/email/emailservice.h"
 #include "./src/user_management/user/user.h"
+#include "./src/election/election.h"
+#include "./src/electionmodel.h"
+#include "./src/electiondelegate.h"
+
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -17,12 +21,30 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->setupUi(this);
 
     ui->MainStack->setCurrentIndex(3);
-
-    // 2. Steal the focus away from the text boxes
-    // This makes sure no input field is glowing blue/selected on startup.
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com", 465, "pak.evm.project@gmail.com", "dtgn pptc jspd vjnk");
+
+    ElectionModel *model = new ElectionModel(this);
+    ui->electionsListView->setModel(model);
+
+    // Assign our custom painter
+    ui->electionsListView->setItemDelegate(new ElectionDelegate(this));
+
+    // UI Polish for the ListView
+    ui->electionsListView->setFrameShape(QFrame::NoFrame); // Remove default border
+    ui->electionsListView->viewport()->setAttribute(Qt::WA_Hover); // Enable hover effects!
+
+    // THE CLICK EVENT: Make the entire Card clickable
+    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index){
+        // Fetch the secret ID
+        QString clickedId = index.data(ElectionModel::IdRole).toString();
+        QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
+
+        qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
+        // Proceed to your Voting screen!
+    });
+
 }
 
 MainWindow::~MainWindow()
@@ -358,27 +380,6 @@ void MainWindow::on_adminWaitBackBtn_clicked()
 
 }
 
-int MainWindow::identifyInputType(const QString &input)
-{
-    if (input.isEmpty())
-        return 0;
-
-    // Define Regex patterns
-    QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
-
-    if (emailRegex.match(input).hasMatch())
-    {
-        return 1; // It's an Email
-    }
-
-    if (cnicRegex.match(input).hasMatch())
-    {
-        return 2; // It's a CNIC
-    }
-
-    return 0;
-}
 
 void MainWindow::on_btnUserHome_clicked()
 {
@@ -386,10 +387,6 @@ void MainWindow::on_btnUserHome_clicked()
     this->setFocus();
 }
 
-void MainWindow::on_btnUserElections_Clicked() {
-    ui->userContentStack->setCurrentIndex(1);
-    this->setFocus();
-}
 
 void MainWindow::on_btnUserResults_clicked() {
     ui->userContentStack->setCurrentIndex(2);
@@ -411,6 +408,51 @@ void MainWindow::on_btnUserLogout_clicked() {
         this->setFocus();
         QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
     }
+}
+
+
+void MainWindow::on_btnUserElections_clicked() {
+    ui->userContentStack->setCurrentIndex(1);
+    this->setFocus();
+    int currentCount = 0;
+
+    // 3. Update the Model
+    ElectionModel *model = qobject_cast<ElectionModel*>(ui->electionsListView->model());
+
+    Election* dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
+
+    if (model) {
+        if (currentCount > 0) {
+
+
+            model->setElections(dynamicElectionsArray, currentCount);
+
+            delete[] dynamicElectionsArray;
+
+        } else {
+            model->setElections(nullptr, 0);
+        }
+    }
+}
+
+//Helping Functions
+
+int MainWindow::identifyInputType(const QString &input) {
+    if (input.isEmpty()) return 0;
+
+    // Define Regex patterns
+    QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
+
+    if (emailRegex.match(input).hasMatch()) {
+        return 1; // It's an Email
+    }
+
+    if (cnicRegex.match(input).hasMatch()) {
+        return 2; // It's a CNIC
+    }
+
+    return 0;
 }
 
 void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePath) {
@@ -448,7 +490,6 @@ void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePa
     ui->profilePicBtn->setIcon(QIcon(circularImage));
     ui->profilePicBtn->setIconSize(QSize(50, 50));
 }
-
 
 
 

@@ -26,6 +26,7 @@ public:
     MainWindow(const AppConfig &config, QWidget *parent = nullptr);
     ~MainWindow();
     void loadUserProfile(const QString& fullName, const QString& imagePath);
+    void populateActiveElections(QString* electionNames, int count);
 private slots:
     void on_goToSignupBtn_clicked();
     void on_goToLoginBtn_clicked();
@@ -36,7 +37,7 @@ private slots:
     void on_adminWaitBackBtn_clicked();
 
     void on_btnUserHome_clicked();
-    void on_btnUserElections_Clicked();
+    void on_btnUserElections_clicked();
     void on_btnUserResults_clicked();
     void on_btnUserLogout_clicked();
 
