@@ -4,6 +4,9 @@
 #include <QMessageBox>  // For error/success messages
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QPainter>
+#include <QPainterPath>
+#include <QFile>
 #include "./src/AuthManager/auth_manager.h"
 #include "./src/email/emailservice.h"
 #include "./src/user.h"
@@ -14,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(3);
 
     // 2. Steal the focus away from the text boxes
     // This makes sure no input field is glowing blue/selected on startup.
@@ -32,12 +35,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_goToSignupBtn_clicked() {
     // Switch to Signup Page(Index 1)
-    ui->stackedWidget->setCurrentIndex(1);
+    ui->MainStack->setCurrentIndex(1);
+    this->setFocus();
 }
 
 void MainWindow::on_goToLoginBtn_clicked() {
     // Switch to Login Page(Index 0)
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(0);
+    this->setFocus();
 }
 
 // Authentication
@@ -102,16 +107,19 @@ void MainWindow::on_loginSubmitBtn_clicked() {
                 if (loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn) {
                     // Send to Admin Dashboard
                     QMessageBox::information(this, "Admin Verified", "Accessing Admin Portal...");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::AdminDashPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::AdminDashPage);
+                    this->setFocus();
                 }
                 else if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn) {
                     // Send to Voter Dashboard
                     QMessageBox::information(this, "Voter Verified", "Welcome to the Voting Booth.");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+                    this->setFocus();
                 }
                 else if(loginResult== AuthManager::LoginResult::SuccessAdminPending)
                 {
-                    ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
+                    this->setFocus();
                 }
         }
     }
@@ -148,7 +156,8 @@ void MainWindow::on_loginSubmitBtn_clicked() {
             }
             if(AuthManager::getInstance().verifyOtp(userEmail,otp))
             {
-                ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+                ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+                this->setFocus();
             }
     }
 
@@ -233,13 +242,15 @@ void MainWindow::on_signupSubmitBtn_clicked() {
                 {
                     QMessageBox::information(this, "Registration Successful",
                                              "Account created successfully! Welcome to the dashboard.");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+                    this->setFocus();
                 }
                 else if(signupResult==AuthManager::SignUpResult::SuccessAdminCreated)
                 {
                     QMessageBox::information(this, "Pending Authorization",
                                              "Admin request submitted. Please wait for Two-Person authorization.");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
+                    this->setFocus();
                 }
             }
         }
@@ -268,7 +279,8 @@ void MainWindow::on_signupSubmitBtn_clicked() {
 
 void MainWindow::on_adminWaitBackBtn_clicked()
 {
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
+    this->setFocus();
 
 }
 
@@ -287,5 +299,83 @@ int MainWindow::identifyInputType(const QString &input) {
         return 2; // It's a CNIC
     }
 
-    return 0; // Invalid Format
+    return 0;
 }
+
+void MainWindow::on_btnUserHome_clicked()
+{
+  ui->userContentStack->setCurrentIndex(0);
+    this->setFocus();
+}
+
+void MainWindow::on_btnUserElections_Clicked() {
+    ui->userContentStack->setCurrentIndex(1);
+    this->setFocus();
+}
+
+void MainWindow::on_btnUserResults_clicked() {
+    ui->userContentStack->setCurrentIndex(2);
+    this->setFocus();
+}
+
+void MainWindow::on_btnUserLogout_clicked() {
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Logout Confirmation",
+                                  "Are you sure you want to log out of the Pak Voting System?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        AuthManager::getInstance().logout();
+
+        ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+        this->setFocus();
+        QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
+    }
+}
+
+
+#include <QPainter>
+#include <QPainterPath>
+#include <QFile>
+
+void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePath) {
+    // 1. Set the Dynamic Name
+    ui->userNameLabel->setText("Hello, " + fullName);
+
+    // 2. Load the Dynamic Image
+    QPixmap originalImage;
+
+    // Check if the user has an uploaded image path, and if the file actually exists
+    if (!imagePath.isEmpty() && QFile::exists(imagePath)) {
+        originalImage.load(imagePath);
+    } else {
+        // Fallback: If they haven't uploaded one, load a default silhouette from your resources
+        originalImage.load(":/images/default_avatar.png");
+    }
+
+    // 3. Make the Image a Perfect Circle
+    QPixmap circularImage(50, 50);
+    circularImage.fill(Qt::transparent);
+
+    QPainter painter(&circularImage);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPainterPath path;
+    path.addEllipse(0, 0, 50, 50);
+    painter.setClipPath(path);
+
+    // Scale the image down so it fits nicely inside the 50x50 circle
+    QPixmap scaledOriginal = originalImage.scaled(50, 50, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    painter.drawPixmap(0, 0, scaledOriginal);
+
+    // 4. Apply to the Button
+    ui->profilePicBtn->setIcon(QIcon(circularImage));
+    ui->profilePicBtn->setIconSize(QSize(50, 50));
+}
+
+
+
+
