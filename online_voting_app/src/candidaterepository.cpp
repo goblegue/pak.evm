@@ -17,7 +17,7 @@ bool candidaterepository::insertCandidate(const Candidate &candidate) {
 
     auto electionFilter = document{}
                           << "id" << candidate.getElectionId().toStdString()
-                          << "status" << static_cast<int>(ElectionState::Published)
+                          << "status" << static_cast<int>(ElectionState::Drafted)
                           << finalize;
 
     if (!db["Elections"].find_one(electionFilter.view())) {
