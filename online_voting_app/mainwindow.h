@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "./src/user.h"
+#include "./src/user_management/user/user.h"
 
 enum StackedPages{
     LoginPage,

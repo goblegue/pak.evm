@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-
-    }catch(const std::exception & e){
-        qDebug()<<"error";
+    MainWindow w;
+    w.show();
+    return QCoreApplication::exec();
 }

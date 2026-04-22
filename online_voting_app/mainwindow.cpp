@@ -4,9 +4,9 @@
 #include <QMessageBox>  // For error/success messages
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include "./src/AuthManager/auth_manager.h"
+#include "./src/user_management/AuthManager/auth_manager.h"
 #include "./src/email/emailservice.h"
-#include "./src/user.h"
+#include "./src/user_management/user/user.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -191,16 +191,16 @@ void MainWindow::on_loginSubmitBtn_clicked()
             if (AuthManager::getInstance().verifyOtp(userEmail, otp))
             {
                 verified = true;
+                QMessageBox::information(
+                    this,
+                    "Verification Successful",
+                    "Email verified successfully! Redirecting to dashboard...");
+                ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
             }
             else
             {
                 QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
             }
-        }
-        if (AuthManager::getInstance().verifyOtp(userEmail, otp))
-        {
-            QMessageBox::information(this, "Verification Successful", "Email verified successfully! Redirecting to dashboard...");
-            ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
         }
     }
 }
