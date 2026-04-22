@@ -17,7 +17,7 @@
    <string notr="true">/* =======================================================
    1. LEFT FRAMES (Gradient Background for both pages)
 ======================================================= */
-QFrame#leftLoginFrame, QFrame#leftSignupFrame,QFrame#waitingFrame {
+QFrame#leftLoginFrame, QFrame#leftSignupFrame, QFrame#waitingFrame {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
                                 stop:0 #ffffff, 
                                 stop:1 #e0eaf5);
@@ -32,7 +32,7 @@ QFrame#rightImageFrame, QFrame#rightImageFrame_2 {
 }
 
 /* =======================================================
-   3. PRIMARY ACTION BUTTONS (Login &amp; Register)
+   3. PRIMARY ACTION BUTTONS (Login, Register, Back)
       Smooth Solid Blue Pill shape
 ======================================================= */
 QPushButton#loginSubmitBtn, QPushButton#signupSubmitBtn, QPushButton#adminWaitBackBtn {
@@ -45,7 +45,7 @@ QPushButton#loginSubmitBtn, QPushButton#signupSubmitBtn, QPushButton#adminWaitBa
     font-weight: bold;
 }
 
-QPushButton#loginSubmitBtn:hover, QPushButton#signupSubmitBtn:hover, QPushButton#adminWaitBackBtn {
+QPushButton#loginSubmitBtn:hover, QPushButton#signupSubmitBtn:hover, QPushButton#adminWaitBackBtn:hover {
     background-color: #4b6ea8; 
 }
 
@@ -79,7 +79,6 @@ QPushButton#goToSignupBtn:pressed, QPushButton#goToLoginBtn:pressed {
 /* =======================================================
    5. ALL TEXT INPUTS (User, Pass, Email, etc.)
 ======================================================= */
-/* By omitting the #ID, this automatically styles EVERY QLineEdit on EVERY page! */
 QLineEdit {
     background-color: #ffffff;
     border: 1px solid #cccccc;
@@ -92,12 +91,94 @@ QLineEdit {
 QLineEdit:focus {
     border: 2px solid #3b5998; 
     background-color: #fbfcff;
+}
+
+/* =======================================================
+   6. DASHBOARD SIDEBAR (User &amp; Admin)
+======================================================= */
+/* The dark sidebar container */
+QFrame#userSidebarFrame, QFrame#adminSidebarFrame {
+    background-color: #314a75; /* A much lighter, smoother slate-blue */
+    border-right: 2px solid #3b5998;
+}
+
+/* Sidebar Title Labels (e.g., &quot;VOTER MENU&quot;) */
+QFrame#userSidebarFrame QLabel, QFrame#adminSidebarFrame QLabel {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+}
+
+/* Sidebar Navigation Buttons */
+QFrame#userSidebarFrame QPushButton, QFrame#adminSidebarFrame QPushButton {
+    background-color: transparent; 
+    color: #e8eef7; /* Slightly brighter text to keep high contrast */
+    text-align: left; /* Flushes text to the left */
+    padding: 15px 20px; /* Taller padding for easy clicking */
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0px; /* Removes pill shape for sidebar items */
+}
+
+/* Sidebar Hover Effect */
+QFrame#userSidebarFrame QPushButton:hover, QFrame#adminSidebarFrame QPushButton:hover {
+    background-color: #4b6ea8; /* Boosted hover color so it stands out against the new background */
+    color: white;
+    border-left: 5px solid #ffffff; /* Cool white indicator bar on the left edge */
+}
+
+/* Sidebar Pressed Effect */
+QFrame#userSidebarFrame QPushButton:pressed, QFrame#adminSidebarFrame QPushButton:pressed {
+    background-color: #263a5c; /* Darkens nicely when clicked */
+}
+
+/* =======================================================
+   8. PROFILE TOP BAR
+======================================================= */
+/* The Avatar Button */
+QPushButton#profilePicBtn {
+    background-color: transparent;
+    border: 2px solid #3b5998; /* A nice blue ring around the profile pic */
+    border-radius: 25px; /* Makes it a perfect circle (assuming 50x50 size) */
+}
+QPushButton#profilePicBtn:hover {
+    border: 2px solid #4b6ea8; /* Lighter blue glow on hover */
+}
+
+/* The Name Label */
+QLabel#userNameLabel {
+    color: #ffffff; /* Assuming this is on a light background now. If dark, use 'white' */
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+/* =======================================================
+   10. DASHBOARD LAYOUT BACKGROUNDS
+======================================================= */
+
+/* The Top Navigation Bar (Holding Name and Profile Pic) */
+QFrame#topNavbarFrame {
+    background-color: #314a75; /* Crisp white background */
+    border-bottom: 2px solid #e0eaf5; /* Subtle grey-blue line separating header from content */
+}
+
+/* The Nested Inner Stack (Where the actual dashboard content goes) */
+QStackedWidget#userContentStack, QStackedWidget#adminContentStack {
+    background-color: #f5f7fb; /* Very soft grey/blue so the white cards/widgets pop out */
+}
+
+/* Ensure the Inner Pages themselves are also transparent so the stack color shows */
+QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPage_Results {
+    background-color: transparent; 
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="0">
-     <widget class="QStackedWidget" name="stackedWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QStackedWidget" name="MainStack">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -105,9 +186,9 @@ QLineEdit:focus {
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
-      <widget class="QWidget" name="page">
+      <widget class="QWidget" name="LoginPage">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QFrame" name="leftLoginFrame">
@@ -143,15 +224,7 @@ QLineEdit:focus {
            <item row="1" column="1">
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-    &lt;p align=&quot;center&quot;&gt;
-        &lt;span style=&quot;font-size:28pt; font-weight:700; color:#3b5998;&quot;&gt;PAK EVM&lt;/span&gt;
-    &lt;/p&gt;
-    
-    &lt;p align=&quot;center&quot;&gt;
-        &lt;span style=&quot;font-size:14pt; font-weight:400; color:#000000;&quot;&gt;Electronic Voting System&lt;/span&gt;
-    &lt;/p&gt;
-&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:28pt; font-weight:700; color:#3b5998;&quot;&gt;PAK EVM&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;Electronic Voting System&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -332,7 +405,7 @@ QLineEdit:focus {
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2">
+      <widget class="QWidget" name="SignupPage">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QFrame" name="leftSignupFrame">
@@ -543,7 +616,7 @@ QLineEdit:focus {
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_3">
+      <widget class="QWidget" name="AdminWaitingPage">
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
          <widget class="QFrame" name="waitingFrame">
@@ -611,6 +684,202 @@ QLineEdit:focus {
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="UserDashPage">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QFrame" name="topNavbarFrame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="2">
+            <widget class="QLabel" name="userNameLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>1042</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="profilePicBtn">
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QFrame" name="userSidebarFrame">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;PAK.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserHome">
+               <property name="text">
+                <string>Home</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserElections">
+               <property name="text">
+                <string>Active Elections</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserResults">
+               <property name="text">
+                <string>Election Results</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>413</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserLogout">
+               <property name="text">
+                <string>Logout</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QStackedWidget" name="userContentStack">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <widget class="QWidget" name="userInnerPage_Home">
+             <widget class="QLabel" name="label_6">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>90</y>
+                <width>231</width>
+                <height>41</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Welcome Voter&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QWidget" name="userInnerPage_Elections">
+             <widget class="QLabel" name="label_5">
+              <property name="geometry">
+               <rect>
+                <x>300</x>
+                <y>140</y>
+                <width>229</width>
+                <height>23</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;List of Elections Here&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QWidget" name="userInnerPage_Results">
+             <widget class="QLabel" name="label_7">
+              <property name="geometry">
+               <rect>
+                <x>340</x>
+                <y>120</y>
+                <width>131</width>
+                <height>41</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Results!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="AdminDashPage"/>
      </widget>
     </item>
    </layout>
