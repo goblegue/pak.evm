@@ -104,3 +104,4 @@ bool EmailService::sendEmail(const QString &recipientEmail,
     qDebug() << "Success! Email reliably sent to" << recipientEmail;
     return true;
 }
+

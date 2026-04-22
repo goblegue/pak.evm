@@ -6,6 +6,7 @@ project(online_voting_app LANGUAGES CXX)
 # 1. Added Sql and Network to the required Qt components
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Network)
 find_package(PkgConfig REQUIRED)
+set(CMAKE_AUTORCC ON)
 # Automatically handles C++17/C++20, AUTOMOC, AUTORCC, and AUTOUIC
 qt_standard_project_setup()
 
@@ -20,6 +21,7 @@ qt_add_executable(online_voting_app
     mainwindow.ui
     databasemanager.h
     databasemanager.cpp
+    resources.qrc
 
     # --- SMTP LIBRARY FILES ---
     smtp_lib/emailaddress.cpp
@@ -87,6 +89,8 @@ qt_add_executable(online_voting_app
     src/voting_station/voting_station.h
     
     src/otp/otp.h
+
+    resources.qrc
 
 )
 

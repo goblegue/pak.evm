@@ -1,3 +1,4 @@
+
 #ifndef EMAILSERVICE_H
 #define EMAILSERVICE_H
 
@@ -5,7 +6,7 @@
 #include <QString>
 #include "SmtpMime"
 
-class EmailService
+    class EmailService
 {
 private:
     QString m_smtpHost;
@@ -16,6 +17,7 @@ private:
     EmailService();
     ~EmailService();
     
+
 
 public:
     EmailService(const EmailService &) = delete;
@@ -36,3 +38,4 @@ public:
 };
 
 #endif // EMAILSERVICE_H
+
