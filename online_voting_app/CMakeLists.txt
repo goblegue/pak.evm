@@ -18,8 +18,7 @@ qt_add_executable(online_voting_app
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    databasemanager.h
-    databasemanager.cpp
+
     resources.qrc
 
     # --- SMTP LIBRARY FILES ---
@@ -77,6 +76,26 @@ qt_add_executable(online_voting_app
     src/voters/voters.h
     src/voting_station/voting_station.h
     src/otp/otp.h
+    system_bootstrapper.h system_bootstrapper.cpp
+
+    src/databasemanager.h
+    src/databasemanager.cpp
+
+    src/userrepository.cpp
+     src/userrepository.h
+     src/adminrepository.cpp
+     src/adminrepository.h
+     src/electionrepository.cpp
+     src/electionrepository.h
+     src/candidaterepository.cpp
+     src/candidaterepository.h
+     src/otprepository.cpp
+     src/otprepository.h
+     src/voterrepository.cpp
+     src/voterrepository.h
+     src/votingstationrepository.cpp
+     src/votingstationrepository.h
+
 )
 
 # 3. Tell CMake where to look for the SMTP headers

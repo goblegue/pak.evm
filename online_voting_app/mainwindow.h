@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "./src/user_management/user/user.h"
+#include "system_bootstrapper.h"
 
 enum StackedPages{
     LoginPage,
@@ -23,7 +23,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(const AppConfig &config, QWidget *parent = nullptr);
     ~MainWindow();
 private slots:
     void on_goToSignupBtn_clicked();
@@ -36,6 +36,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    AppConfig m_config;
     // This function returns: 0 = Invalid, 1 = Email, 2 = CNIC
     int identifyInputType(const QString &input);
 };

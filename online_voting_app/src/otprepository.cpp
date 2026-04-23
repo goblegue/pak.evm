@@ -1,17 +1,19 @@
 #include "otprepository.h"
 
-#include "otprepository.h"
 #include <bsoncxx/builder/stream/document.hpp>
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 
-otprepository::otprepository() {
+otprepository::otprepository()
+{
     m_collection = DatabaseManager::getInstance().getDatabase()["otp"];
 }
 
-bool otprepository::insertOtp(const OTP &otp) {
-    try {
+bool otprepository::insertOtp(const OTP &otp)
+{
+    try
+    {
         auto builder = document{}
                        << "id" << otp.getId().toStdString()
                        << "email" << otp.getEmail().toStdString()
@@ -20,12 +22,15 @@ bool otprepository::insertOtp(const OTP &otp) {
 
         m_collection.insert_one(builder << finalize);
         return true;
-    } catch (...) {
+    }
+    catch (...)
+    {
         return false;
     }
 }
 
-std::optional<OTP> otprepository::getLatestOtpForEmail(const QString &email) {
+std::optional<OTP> otprepository::getLatestOtpForEmail(const QString &email)
+{
     auto filter = document{} << "email" << email.toStdString() << finalize;
 
     // descending order to get latest
@@ -35,12 +40,13 @@ std::optional<OTP> otprepository::getLatestOtpForEmail(const QString &email) {
 
     auto result = m_collection.find_one(filter.view(), opts);
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
         OTP otp;
-        otp.setId(QString::fromStdString(view["id"].get_string().value.to_string()));
-        otp.setEmail(QString::fromStdString(view["email"].get_string().value.to_string()));
-        otp.setOtpCode(QString::fromStdString(view["otpCode"].get_string().value.to_string()));
+        otp.setId(QString::fromUtf8(view["id"].get_string().value.data()));
+        otp.setEmail(QString::fromUtf8(view["email"].get_string().value.data()));
+        otp.setOtpCode(QString::fromUtf8(view["otpCode"].get_string().value.data()));
         otp.setExpiresAt(QDateTime::fromMSecsSinceEpoch(view["expiresAt"].get_int64().value));
         return otp;
     }

@@ -1,13 +1,14 @@
 #ifndef OTPREPOSITORY_H
 #define OTPREPOSITORY_H
 
-
-#include "otp.h"
+#include "./otp/otp.h"
 #include "databasemanager.h"
 
-class otprepository : public IOtpRepository {
+class otprepository : public IOtpRepository
+{
 private:
     mongocxx::collection m_collection;
+
 public:
     otprepository();
     ~otprepository() override = default;

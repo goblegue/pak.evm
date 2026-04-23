@@ -1,12 +1,14 @@
 #ifndef VOTINGSTATIONREPOSITORY_H
 #define VOTINGSTATIONREPOSITORY_H
 
-#include "voting_station.h"
+#include "./voting_station/voting_station.h"
 #include "databasemanager.h"
 
-class votingstationrepository : public IVotingStationRepository {
+class votingstationrepository : public IVotingStationRepository
+{
 private:
     mongocxx::collection m_collection;
+
 public:
     votingstationrepository();
     ~votingstationrepository() override = default;
