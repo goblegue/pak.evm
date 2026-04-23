@@ -37,8 +37,22 @@ long long CryptoEngine::generateRandomInt(long long min, long long max)
             << "CryptoEngine Warning: generateRandomInt called with min > max. Swapping values.";
         swap(min, max);
     }
-    uint32_t range = static_cast<uint32_t>((max - min) + 1);
-    return static_cast<long long>(randombytes_uniform(range)) + min;
+    // 2. Generate raw 64-bit randomness
+    unsigned long long rawRandom;
+    randombytes_buf(&rawRandom, sizeof(rawRandom));
+
+    // 3. Make it positive (Mask out the sign bit)
+    // This ensures the number is between 0 and LLONG_MAX
+    rawRandom &= 0x7FFFFFFFFFFFFFFF;
+
+    // 4. Calculate the range (Using unsigned to prevent overflow)
+    unsigned long long range = static_cast<unsigned long long>(max - min) + 1;
+
+    // 5. Apply the range and shift
+    // We use the modulo operator here.
+    // Architect's Note: While modulo has a tiny bias, at a 64-bit scale,
+    // the bias is mathematically invisible and safe for a voting salt.
+    return min + static_cast<long long>(rawRandom % range);
 }
 
 std::optional<CryptoEngine::HashResult> CryptoEngine::hashData(const QByteArray &data, long long salt)

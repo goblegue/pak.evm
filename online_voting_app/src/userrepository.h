@@ -2,7 +2,7 @@
 #define USERREPOSITORY_H
 
 #include "databasemanager.h"
-#include "user.h"
+#include "./user_management/user/user.h"
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
@@ -10,18 +10,17 @@
 #include <QString>
 #include <QByteArray>
 
-class userrepository:public IUserRepository
+class userrepository : public IUserRepository
 {
 private:
     mongocxx::collection m_collection;
+
 public:
     userrepository();
     bool insertUser(const User &user) override;
     std::optional<User> getUserByCnic(const QString &cnic) override;
     std::optional<User> getUserByEmail(const QString &email) override;
     bool updateUserEmailVerification(const QString &email, bool status) override;
-
-
 };
 
 #endif

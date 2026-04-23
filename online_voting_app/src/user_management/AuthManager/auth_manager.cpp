@@ -86,8 +86,16 @@ bool AuthManager::requestOtp(const QString &email)
         return false; // Failed to insert OTP into database
     }
 
+    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    return EmailService::getInstance().sendEmail(email, "Email Verification", "Your OTP is: " + otpCode + "\nIt will expire in 5 minutes.\n\n Do not share this with anyone");
+    // Append it to the subject
+    QString uniqueSubject = "Email Verification For [" + timestamp + "]";
+
+    return EmailService::getInstance()
+        .sendEmail(email,
+                   uniqueSubject,
+                   "Your OTP is: " + otpCode
+                       + "\nIt will expire in 5 minutes.\n\n Do not share this with anyone");
 }
 
 bool AuthManager::verifyOtp(const QString &email, const QString &otpCode)

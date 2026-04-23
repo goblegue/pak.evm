@@ -20,15 +20,11 @@ bool voterrepository::insertToken(const Voters &token)
 {
     auto db = DatabaseManager::getInstance().getDatabase();
 
-    auto electionFilter = document{}
-                          << "id" << token.getElectionId().toStdString()
-                          << "status" << open_document
-                            << $in << open_array
-                                << static_cast<int>(ElectionState::Published)
-                                << static_cast<int>(ElectionState::Voting)
-                            << close_array
-                          << close_document
-                          << finalize;
+    auto electionFilter = document{} << "id" << token.getElectionId().toStdString() << "status"
+                                     << open_document << "$in" << open_array
+                                     << static_cast<int>(ElectionState::Published)
+                                     << static_cast<int>(ElectionState::VotingOpen) << close_array
+                                     << close_document << finalize;
 
     if (!db["Elections"].find_one(electionFilter.view()))
     {
@@ -82,12 +78,13 @@ Voters *voterrepository::getTokensByElection(const QString &electionId, int &vot
     int i = 0;
     for (auto &&doc : cursor)
     {
-
-        tokens[i].setId(QString::fromStdString(doc["id"].get_string().value.to_string()));
-        tokens[i].setUserCnic(QString::fromStdString(doc["userCnic"].get_string().value.to_string()));
-        tokens[i].setElectionId(QString::fromStdString(doc["electionId"].get_string().value.to_string()));
-        tokens[i].setAssignedStationId(QString::fromStdString(doc["assignedStationId"].get_string().value.to_string()));
-        tokens[i].setTokenSignature(QString::fromStdString(doc["tokenSignature"].get_string().value.to_string()));
+        tokens[i].setId(QString::fromStdString(doc["id"].get_string().value.data()));
+        tokens[i].setUserCnic(QString::fromStdString(doc["userCnic"].get_string().value.data()));
+        tokens[i].setElectionId(QString::fromStdString(doc["electionId"].get_string().value.data()));
+        tokens[i].setAssignedStationId(
+            QString::fromStdString(doc["assignedStationId"].get_string().value.data()));
+        tokens[i].setTokenSignature(
+            QString::fromStdString(doc["tokenSignature"].get_string().value.data()));
         tokens[i].setIssuedAt(QDateTime::fromMSecsSinceEpoch(doc["issuedAt"].get_int64().value));
         i++;
     }
