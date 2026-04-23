@@ -8,8 +8,8 @@
 #include "./src/email/emailservice.h"
 #include "./src/user_management/user/user.h"
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
     ui->setupUi(this);
 
@@ -33,12 +33,14 @@ void MainWindow::on_goToSignupBtn_clicked()
 {
     // Switch to Signup Page(Index 1)
     ui->stackedWidget->setCurrentIndex(1);
+    this->setFocus(); // Steal focus back to the main window to prevent accidental typing in the signup fields
 }
 
 void MainWindow::on_goToLoginBtn_clicked()
 {
     // Switch to Login Page(Index 0)
     ui->stackedWidget->setCurrentIndex(0);
+    this->setFocus(); // Steal focus back to the main window to prevent accidental typing in the login fields
 }
 
 // Authentication
@@ -68,6 +70,7 @@ void MainWindow::on_loginSubmitBtn_clicked()
     else
     {
         QMessageBox::warning(this, "Error", "Please enter Correct Format!");
+        return;
     }
 
     // Handle Errors first to keep code clean
@@ -255,6 +258,7 @@ void MainWindow::on_signupSubmitBtn_clicked()
 
     newUser.setCnic(newCnic);
     newUser.setEmail(newEmail);
+    newUser.setName(newUsername);
 
     bool isAdminRegistration = ui->adminCheckBox->isChecked();
     AuthManager::SignUpResult signupResult = AuthManager::getInstance().signUp(newUser, newPassword, isAdminRegistration);
@@ -302,23 +306,23 @@ void MainWindow::on_signupSubmitBtn_clicked()
             if (AuthManager::getInstance().verifyOtp(newEmail, otp))
             {
                 verified = true; // Breaks the loop naturally
+                if (signupResult == AuthManager::SignUpResult::SuccessUserCreated) {
+                    QMessageBox::information(
+                        this,
+                        "Registration Successful",
+                        "Account created successfully! Welcome to the dashboard.");
+                    ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+                } else if (signupResult == AuthManager::SignUpResult::SuccessAdminCreated) {
+                    QMessageBox::information(
+                        this,
+                        "Pending Authorization",
+                        "Admin request submitted. Please wait for Two-Person authorization.");
+                    ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
+                }
             }
             else
             {
                 QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
-            }
-
-            if (signupResult == AuthManager::SignUpResult::SuccessUserCreated)
-            {
-                QMessageBox::information(this, "Registration Successful",
-                                         "Account created successfully! Welcome to the dashboard.");
-                ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
-            }
-            else if (signupResult == AuthManager::SignUpResult::SuccessAdminCreated)
-            {
-                QMessageBox::information(this, "Pending Authorization",
-                                         "Admin request submitted. Please wait for Two-Person authorization.");
-                ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
             }
         }
     }
