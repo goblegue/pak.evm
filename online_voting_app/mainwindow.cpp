@@ -4,7 +4,6 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-<<<<<<< HEAD
 #include "./src/user_management/AuthManager/auth_manager.h"
 #include <QPainter>
 #include <QPainterPath>
@@ -14,18 +13,6 @@
 #include "./src/election/election.h"
 #include "./src/electionmodel.h"
 #include "./src/electiondelegate.h"
-=======
-#include <QPainter>
-#include <QPainterPath>
-#include <QFile>
-#include "./src/AuthManager/auth_manager.h"
-#include "./src/email/emailservice.h"
-#include "./src/user.h"
-#include "./src/election.h"
-#include "./src/electionmodel.h"
-#include "./src/electiondelegate.h"
-
->>>>>>> 20f2830743a56c387378b4df5f0df8cf19e8524c
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -44,19 +31,19 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->electionsListView->setItemDelegate(new ElectionDelegate(this));
 
     // UI Polish for the ListView
-    ui->electionsListView->setFrameShape(QFrame::NoFrame); // Remove default border
+    ui->electionsListView->setFrameShape(QFrame::NoFrame);         // Remove default border
     ui->electionsListView->viewport()->setAttribute(Qt::WA_Hover); // Enable hover effects!
 
     // THE CLICK EVENT: Make the entire Card clickable
-    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index){
-        // Fetch the secret ID
-        QString clickedId = index.data(ElectionModel::IdRole).toString();
-        QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
+    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index)
+            {
+                // Fetch the secret ID
+                QString clickedId = index.data(ElectionModel::IdRole).toString();
+                QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
 
-        qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
-        // Proceed to your Voting screen!
-    });
-
+                qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
+                // Proceed to your Voting screen!
+            });
 }
 
 MainWindow::~MainWindow()
@@ -392,19 +379,16 @@ void MainWindow::on_adminWaitBackBtn_clicked()
 {
     ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
     this->setFocus();
-
 }
-
-
 
 void MainWindow::on_btnUserHome_clicked()
 {
-  ui->userContentStack->setCurrentIndex(0);
+    ui->userContentStack->setCurrentIndex(0);
     this->setFocus();
 }
 
-
-void MainWindow::on_btnUserResults_clicked() {
+void MainWindow::on_btnUserResults_clicked()
+{
     ui->userContentStack->setCurrentIndex(2);
     this->setFocus();
 }
@@ -434,28 +418,32 @@ void MainWindow::on_btnUserElections_clicked()
     int currentCount = 0;
 
     // 3. Update the Model
-    ElectionModel *model = qobject_cast<ElectionModel*>(ui->electionsListView->model());
+    ElectionModel *model = qobject_cast<ElectionModel *>(ui->electionsListView->model());
 
-    Election* dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
+    Election *dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
 
-    if (model) {
-        if (currentCount > 0) {
-
+    if (model)
+    {
+        if (currentCount > 0)
+        {
 
             model->setElections(dynamicElectionsArray, currentCount);
 
             delete[] dynamicElectionsArray;
-
-        } else {
+        }
+        else
+        {
             model->setElections(nullptr, 0);
         }
     }
 }
 
-//Helping Functions
+// Helping Functions
 
-int MainWindow::identifyInputType(const QString &input) {
-    if (input.isEmpty()) return 0;
+int MainWindow::identifyInputType(const QString &input)
+{
+    if (input.isEmpty())
+        return 0;
 
     // Define Regex patterns
     QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
@@ -474,7 +462,8 @@ int MainWindow::identifyInputType(const QString &input) {
     return 0;
 }
 
-void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePath) {
+void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePath)
+{
     // 1. Set the Dynamic Name
     ui->userNameLabel->setText("Hello, " + fullName);
 
@@ -482,9 +471,12 @@ void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePa
     QPixmap originalImage;
 
     // Check if the user has an uploaded image path, and if the file actually exists
-    if (!imagePath.isEmpty() && QFile::exists(imagePath)) {
+    if (!imagePath.isEmpty() && QFile::exists(imagePath))
+    {
         originalImage.load(imagePath);
-    } else {
+    }
+    else
+    {
         // Fallback: If they haven't uploaded one, load a default silhouette from your resources
         originalImage.load(":/images/default_avatar.png");
     }
@@ -509,6 +501,3 @@ void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePa
     ui->profilePicBtn->setIcon(QIcon(circularImage));
     ui->profilePicBtn->setIconSize(QSize(50, 50));
 }
-
-
-
