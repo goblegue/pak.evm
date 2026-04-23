@@ -14,7 +14,6 @@
 #include "./src/electionmodel.h"
 #include "./src/electiondelegate.h"
 
-
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
@@ -32,19 +31,19 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->electionsListView->setItemDelegate(new ElectionDelegate(this));
 
     // UI Polish for the ListView
-    ui->electionsListView->setFrameShape(QFrame::NoFrame); // Remove default border
+    ui->electionsListView->setFrameShape(QFrame::NoFrame);         // Remove default border
     ui->electionsListView->viewport()->setAttribute(Qt::WA_Hover); // Enable hover effects!
 
     // THE CLICK EVENT: Make the entire Card clickable
-    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index){
-        // Fetch the secret ID
-        QString clickedId = index.data(ElectionModel::IdRole).toString();
-        QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
+    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index)
+            {
+                // Fetch the secret ID
+                QString clickedId = index.data(ElectionModel::IdRole).toString();
+                QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
 
-        qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
-        // Proceed to your Voting screen!
-    });
-
+                qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
+                // Proceed to your Voting screen!
+            });
 }
 
 MainWindow::~MainWindow()
@@ -144,7 +143,7 @@ void MainWindow::on_loginSubmitBtn_clicked()
             if (!ok)
             {
                 QMessageBox::information(this, "Cancelled", "Verification cancelled. Returning to login page.");
-                ui->stackedWidget->setCurrentIndex(StackedPages::LoginPage);
+                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
                 return;
             }
 
@@ -168,17 +167,17 @@ void MainWindow::on_loginSubmitBtn_clicked()
         {
             // Send to Admin Dashboard
             QMessageBox::information(this, "Admin Verified", "Accessing Admin Portal...");
-            ui->stackedWidget->setCurrentIndex(StackedPages::AdminDashPage);
+            ui->MainStack->setCurrentIndex(StackedPages::AdminDashPage);
         }
         else if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn)
         {
             // Send to Voter Dashboard
             QMessageBox::information(this, "Voter Verified", "Welcome to the Voting Booth.");
-            ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+            ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
         }
         else if (loginResult == AuthManager::LoginResult::SuccessAdminPending)
         {
-            ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
+            ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
         }
     }
     else if (AuthManager::LoginResult::EmailNotVerified == loginResult)
@@ -206,7 +205,7 @@ void MainWindow::on_loginSubmitBtn_clicked()
             if (!ok)
             {
                 QMessageBox::information(this, "Cancelled", "Verification cancelled. Returning to login page.");
-                ui->stackedWidget->setCurrentIndex(StackedPages::LoginPage);
+                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
                 return;
             }
 
@@ -223,7 +222,7 @@ void MainWindow::on_loginSubmitBtn_clicked()
                     this,
                     "Verification Successful",
                     "Email verified successfully! Redirecting to dashboard...");
-                ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
+                ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
             }
             else
             {
@@ -317,7 +316,7 @@ void MainWindow::on_signupSubmitBtn_clicked()
                 ui->newPasswordInput->clear();
                 ui->confirmPasswordInput->clear();
                 ui->adminCheckBox->setChecked(false);
-                ui->stackedWidget->setCurrentIndex(StackedPages::LoginPage);
+                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
                 return;
             }
 
@@ -331,18 +330,21 @@ void MainWindow::on_signupSubmitBtn_clicked()
             if (AuthManager::getInstance().verifyOtp(newEmail, otp))
             {
                 verified = true; // Breaks the loop naturally
-                if (signupResult == AuthManager::SignUpResult::SuccessUserCreated) {
+                if (signupResult == AuthManager::SignUpResult::SuccessUserCreated)
+                {
                     QMessageBox::information(
                         this,
                         "Registration Successful",
                         "Account created successfully! Welcome to the dashboard.");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::UserDashPage);
-                } else if (signupResult == AuthManager::SignUpResult::SuccessAdminCreated) {
+                    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+                }
+                else if (signupResult == AuthManager::SignUpResult::SuccessAdminCreated)
+                {
                     QMessageBox::information(
                         this,
                         "Pending Authorization",
                         "Admin request submitted. Please wait for Two-Person authorization.");
-                    ui->stackedWidget->setCurrentIndex(StackedPages::AdminWaitingPage);
+                    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
                 }
             }
             else
@@ -377,23 +379,22 @@ void MainWindow::on_adminWaitBackBtn_clicked()
 {
     ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
     this->setFocus();
-
 }
-
 
 void MainWindow::on_btnUserHome_clicked()
 {
-  ui->userContentStack->setCurrentIndex(0);
+    ui->userContentStack->setCurrentIndex(0);
     this->setFocus();
 }
 
-
-void MainWindow::on_btnUserResults_clicked() {
+void MainWindow::on_btnUserResults_clicked()
+{
     ui->userContentStack->setCurrentIndex(2);
     this->setFocus();
 }
 
-void MainWindow::on_btnUserLogout_clicked() {
+void MainWindow::on_btnUserLogout_clicked()
+{
 
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Logout Confirmation",
@@ -410,52 +411,59 @@ void MainWindow::on_btnUserLogout_clicked() {
     }
 }
 
-
-void MainWindow::on_btnUserElections_clicked() {
+void MainWindow::on_btnUserElections_clicked()
+{
     ui->userContentStack->setCurrentIndex(1);
     this->setFocus();
     int currentCount = 0;
 
     // 3. Update the Model
-    ElectionModel *model = qobject_cast<ElectionModel*>(ui->electionsListView->model());
+    ElectionModel *model = qobject_cast<ElectionModel *>(ui->electionsListView->model());
 
-    Election* dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
+    Election *dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
 
-    if (model) {
-        if (currentCount > 0) {
-
+    if (model)
+    {
+        if (currentCount > 0)
+        {
 
             model->setElections(dynamicElectionsArray, currentCount);
 
             delete[] dynamicElectionsArray;
-
-        } else {
+        }
+        else
+        {
             model->setElections(nullptr, 0);
         }
     }
 }
 
-//Helping Functions
+// Helping Functions
 
-int MainWindow::identifyInputType(const QString &input) {
-    if (input.isEmpty()) return 0;
+int MainWindow::identifyInputType(const QString &input)
+{
+    if (input.isEmpty())
+        return 0;
 
     // Define Regex patterns
     QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
 
-    if (emailRegex.match(input).hasMatch()) {
+    if (emailRegex.match(input).hasMatch())
+    {
         return 1; // It's an Email
     }
 
-    if (cnicRegex.match(input).hasMatch()) {
+    if (cnicRegex.match(input).hasMatch())
+    {
         return 2; // It's a CNIC
     }
 
     return 0;
 }
 
-void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePath) {
+void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePath)
+{
     // 1. Set the Dynamic Name
     ui->userNameLabel->setText("Hello, " + fullName);
 
@@ -463,9 +471,12 @@ void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePa
     QPixmap originalImage;
 
     // Check if the user has an uploaded image path, and if the file actually exists
-    if (!imagePath.isEmpty() && QFile::exists(imagePath)) {
+    if (!imagePath.isEmpty() && QFile::exists(imagePath))
+    {
         originalImage.load(imagePath);
-    } else {
+    }
+    else
+    {
         // Fallback: If they haven't uploaded one, load a default silhouette from your resources
         originalImage.load(":/images/default_avatar.png");
     }
@@ -490,6 +501,3 @@ void MainWindow::loadUserProfile(const QString& fullName, const QString& imagePa
     ui->profilePicBtn->setIcon(QIcon(circularImage));
     ui->profilePicBtn->setIconSize(QSize(50, 50));
 }
-
-
-
