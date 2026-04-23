@@ -3,7 +3,7 @@
 
 #include <QDateTime>
 #include <QString>
-#include "states.h"
+#include "../states.h"
 #include <optional>
 
 class Election
@@ -132,7 +132,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetElectionId,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus status) = 0;
-    virtual Election *getAllElections(int electionsSize) = 0;
+    virtual Election *getAllElections(int & electionsSize) = 0;
     virtual std::optional<Election> getElectionById(const QString &id) = 0;
 };
 

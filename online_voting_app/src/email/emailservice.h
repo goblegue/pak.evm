@@ -16,6 +16,7 @@ private:
     bool m_isConfigured;
     EmailService();
     ~EmailService();
+    
 
 
 public:

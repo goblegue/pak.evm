@@ -1,9 +1,24 @@
 #ifndef STATES_H
 #define STATES_H
 
-enum class ElectionState { Draft, Published, VotingOpen, VotingClosed, ResultsAnnounced };
+#include <QString>
 
-enum class ApprovalStatus { Pending, Approved, Rejected };
+enum class ElectionState
+{
+    Draft,
+    Rejected,
+    Published,
+    VotingOpen,
+    VotingClosed,
+    ResultsAnnounced
+};
+
+enum class ApprovalStatus
+{
+    Pending,
+    Approved,
+    Rejected
+};
 
 struct StatusChangeRequest
 {

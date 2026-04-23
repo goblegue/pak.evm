@@ -2,7 +2,7 @@
 #define CANDIDATE_H
 
 #include <QString>
-#include "states.h"
+#include "../states.h"
 #include <optional>
 
 class Candidate
@@ -120,7 +120,7 @@ public:
     }
     Candidate &operator=(const Candidate &other)
     {
-        if (this != &other)             // Prevent self-assignment crash
+        if (this != &other) // Prevent self-assignment crash
         {
             m_id = other.m_id;
             m_userCnic = other.m_userCnic;
@@ -165,7 +165,9 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetCandidateCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
-    virtual Candidate *getCandidatesByElection(const QString &electionId, int &candidatesSize) = 0;
+    virtual Candidate *getCandidates(int &candidatesSize, const QString &electionId = "") = 0;
+    virtual Candidate *getCandidatesByStatus(int &candidatesSize, const QString &electionId, ApprovalStatus status) = 0;
+    virtual bool updateCandidateStatus(const QString &candidateCnic, ApprovalStatus newStatus) = 0;
 };
 
 #endif // CANDIDATE_H

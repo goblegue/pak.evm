@@ -7,7 +7,7 @@
 #include "../smtp_lib/mimetext.h"
 #include "../smtp_lib/smtpclient.h"
 
-    EmailService::EmailService() : m_isConfigured(false) {}
+EmailService::EmailService() : m_isConfigured(false) {}
 EmailService::~EmailService() {}
 
 void EmailService::configure(const QString &host, int port, const QString &email, const QString &password)

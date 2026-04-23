@@ -1,9 +1,10 @@
 #ifndef ADMIN_H
 #define ADMIN_H
 
-#include "states.h"
-#include "user.h"
+#include "../../states.h"
+#include "../user/user.h"
 #include <optional>
+#include <QString>
 
 class Admin : public User
 {
@@ -116,6 +117,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetAdminCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
+    virtual int getAdminCount() = 0;
 };
 
 #endif // ADMIN_H

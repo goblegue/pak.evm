@@ -247,19 +247,19 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="1">
             <spacer name="verticalSpacer">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -279,10 +279,10 @@ QScrollBar::handle:vertical {
            <item row="2" column="1">
             <spacer name="verticalSpacer_2">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -295,10 +295,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="0">
             <spacer name="horizontalSpacer">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -317,10 +317,10 @@ QScrollBar::handle:vertical {
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
+              <enum>QFrame::Shape::NoFrame</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <property name="spacing">
@@ -348,7 +348,7 @@ QScrollBar::handle:vertical {
                  </size>
                 </property>
                 <property name="echoMode">
-                 <enum>QLineEdit::Password</enum>
+                 <enum>QLineEdit::EchoMode::Password</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Enter Password</string>
@@ -358,10 +358,10 @@ QScrollBar::handle:vertical {
               <item>
                <spacer name="verticalSpacer_7">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Orientation::Vertical</enum>
                 </property>
                 <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
+                 <enum>QSizePolicy::Policy::Fixed</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -403,10 +403,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="2">
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -419,10 +419,10 @@ QScrollBar::handle:vertical {
            <item row="4" column="1">
             <spacer name="verticalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -444,10 +444,10 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
          </widget>
         </item>
@@ -464,10 +464,10 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="1" column="0" colspan="3">
@@ -486,10 +486,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="2">
             <spacer name="horizontalSpacer_4">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -502,10 +502,10 @@ QScrollBar::handle:vertical {
            <item row="0" column="1">
             <spacer name="verticalSpacer_4">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -518,10 +518,10 @@ QScrollBar::handle:vertical {
            <item row="2" column="1">
             <spacer name="verticalSpacer_5">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -534,10 +534,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="0">
             <spacer name="horizontalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -550,16 +550,16 @@ QScrollBar::handle:vertical {
            <item row="3" column="1">
             <widget class="QFrame" name="frame_2">
              <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
+              <enum>QFrame::Shape::NoFrame</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="3" column="0">
                <widget class="QLineEdit" name="newPasswordInput">
                 <property name="echoMode">
-                 <enum>QLineEdit::Password</enum>
+                 <enum>QLineEdit::EchoMode::Password</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Password</string>
@@ -576,7 +576,7 @@ QScrollBar::handle:vertical {
               <item row="4" column="0">
                <widget class="QLineEdit" name="confirmPasswordInput">
                 <property name="echoMode">
-                 <enum>QLineEdit::Password</enum>
+                 <enum>QLineEdit::EchoMode::Password</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Confirm Password</string>
@@ -630,10 +630,10 @@ QScrollBar::handle:vertical {
            <item row="4" column="1">
             <spacer name="verticalSpacer_6">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -655,10 +655,10 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
          </widget>
         </item>
@@ -675,10 +675,10 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="0" column="0">
@@ -691,10 +691,10 @@ QScrollBar::handle:vertical {
            <item row="1" column="1">
             <spacer name="verticalSpacer_8">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -714,10 +714,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="1">
             <spacer name="verticalSpacer_9">
              <property name="orientation">
-              <enum>Qt::Vertical</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -1124,7 +1124,7 @@ QScrollBar::handle:vertical {
      <x>0</x>
      <y>0</y>
      <width>1163</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

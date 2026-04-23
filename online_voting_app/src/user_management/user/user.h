@@ -1,6 +1,8 @@
 #ifndef USER_H
 #define USER_H
 
+#include <QString>
+#include <QByteArray>
 #include <optional>
 
 class User
@@ -15,8 +17,8 @@ protected:
     bool m_isEmailVerified;
 
 public:
-    User() = default;
-    
+    User() : m_salt(0), m_isEmailVerified(false) {}
+
     User(const User &other)
         : m_id(other.m_id),
           m_cnic(other.m_cnic),
@@ -36,14 +38,14 @@ public:
     QString getName() const { return m_name; }
     QString getEmail() const { return m_email; }
     QByteArray getPasswordHash() const { return m_passwordHash; }
-    int getSalt() const { return m_salt; }
+    long long getSalt() const { return m_salt; }
 
     // Setters
     void setId(const QString &id) { m_id = id; }
     void setCnic(const QString &cnic) { m_cnic = cnic; }
     void setName(const QString &name) { m_name = name; }
     void setEmail(const QString &email) { m_email = email; }
-    void setPassword(const QByteArray &hash, const int &salt)
+    void setPassword(const QByteArray &hash, const long long &salt)
     {
         m_passwordHash = hash;
         m_salt = salt;

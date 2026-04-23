@@ -5,11 +5,11 @@
 
 #include <QString>
 
-#include "../admin.h"
-#include "../user.h"
-#include "../otp.h"
-#include "../email/emailservice.h"
-#include "../crypto/cryptoengine.h"
+#include "../admin/admin.h"
+#include "../user/user.h"
+#include "../../otp/otp.h"
+#include "../../email/emailservice.h"
+#include "../../crypto/cryptoengine.h"
 
 using namespace std;
 
@@ -27,19 +27,19 @@ private:
 public:
     enum class LoginResult
     {
-        SuccessUserLoggedIn,     // Logged in as regular user
-        SuccessAdminLoggedIn,    // Logged in as admin
-        SuccessAdminPending, // Logged in, but admin status isn't approved yet
-        InvalidCnicOrEmail,  // No user found with given CNIC or Email
-        InvalidPassword,     // User found, but password is incorrect
-        EmailNotVerified,    // Password correct, but needs OTP verification
-        SystemError          // Database or Crypto failure
+        SuccessUserLoggedIn,  // Logged in as regular user
+        SuccessAdminLoggedIn, // Logged in as admin
+        SuccessAdminPending,  // Logged in, but admin status isn't approved yet
+        InvalidCnicOrEmail,   // No user found with given CNIC or Email
+        InvalidPassword,      // User found, but password is incorrect
+        EmailNotVerified,     // Password correct, but needs OTP verification
+        SystemError           // Database or Crypto failure
     };
 
     enum class SignUpResult
     {
-        SuccessUserCreated,       // User created successfully
-        SuccessAdminCreated,      // User created and applied for admin successfully
+        SuccessUserCreated,  // User created successfully
+        SuccessAdminCreated, // User created and applied for admin successfully
         UserAlreadyExists,
         SystemError
     };
