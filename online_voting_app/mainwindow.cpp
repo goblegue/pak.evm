@@ -11,39 +11,32 @@
 #include "./src/email/emailservice.h"
 #include "./src/user_management/user/user.h"
 #include "./src/election/election.h"
-#include "./src/electionmodel.h"
-#include "./src/electiondelegate.h"
+#include "./src/Models.h"
+#include "./src/election/electionController.h"
+#include "./src/AdminCandidatePage.h"
+
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
     ui->setupUi(this);
 
-    ui->MainStack->setCurrentIndex(3);
+    ui->MainStack->setCurrentIndex(4);
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com", 465, "pak.evm.project@gmail.com", "dtgn pptc jspd vjnk");
 
-    ElectionModel *model = new ElectionModel(this);
-    ui->electionsListView->setModel(model);
+    // 1. Create the custom page purely in C++
+    m_adminInnerPage_Candidates = new AdminCandidatePage(this);
 
-    // Assign our custom painter
-    ui->electionsListView->setItemDelegate(new ElectionDelegate(this));
+    // 2. Add it to the Stacked Widget manually
+    ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
 
-    // UI Polish for the ListView
-    ui->electionsListView->setFrameShape(QFrame::NoFrame);         // Remove default border
-    ui->electionsListView->viewport()->setAttribute(Qt::WA_Hover); // Enable hover effects!
+    connect(m_adminInnerPage_Candidates, &AdminCandidatePage::electionSelected,
+            this, &MainWindow::handleElectionSelectedForCandidates);
 
-    // THE CLICK EVENT: Make the entire Card clickable
-    connect(ui->electionsListView, &QListView::clicked, this, [=](const QModelIndex &index)
-            {
-                // Fetch the secret ID
-                QString clickedId = index.data(ElectionModel::IdRole).toString();
-                QString clickedTitle = index.data(ElectionModel::TitleRole).toString();
 
-                qDebug() << "Opening voting dashboard for Election:" << clickedTitle << "ID:" << clickedId;
-                // Proceed to your Voting screen!
-            });
+
 }
 
 MainWindow::~MainWindow()
@@ -411,32 +404,57 @@ void MainWindow::on_btnUserLogout_clicked()
     }
 }
 
-void MainWindow::on_btnUserElections_clicked()
+void MainWindow::on_adminSidebarCandidatesBtn_clicked()
 {
-    ui->userContentStack->setCurrentIndex(1);
-    this->setFocus();
-    int currentCount = 0;
+    // 1. Change the nested stacked widget to show the candidate page
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 
-    // 3. Update the Model
-    ElectionModel *model = qobject_cast<ElectionModel *>(ui->electionsListView->model());
+    // 2. Fetch all Elections from Database (Using Mock Data for now)
+    int electionCount = 3;
+    Election* mockElections = new Election[electionCount];
 
-    Election *dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
+    mockElections[0].setId("ELEC-001");
+    mockElections[0].setTitle("Presidential Election 2026");
 
-    if (model)
-    {
-        if (currentCount > 0)
-        {
+    mockElections[1].setId("ELEC-002");
+    mockElections[1].setTitle("Karachi Mayoral Election");
 
-            model->setElections(dynamicElectionsArray, currentCount);
+    mockElections[2].setId("ELEC-003");
+    mockElections[2].setTitle("Punjab Provincial Assembly");
 
-            delete[] dynamicElectionsArray;
-        }
-        else
-        {
-            model->setElections(nullptr, 0);
-        }
-    }
+    // 3. Load them into the UI
+    m_adminInnerPage_Candidates->loadElections(mockElections, electionCount);
+
+    // 4. Cleanup memory to prevent leaks!
+    delete[] mockElections;
 }
+void MainWindow::handleElectionSelectedForCandidates(QString electionId)
+{
+    // Normally: candidateRepo->getCandidatesByElection(electionId, size);
+
+    // Mock Data for now (so the Frontend Engineer can test the UI colors)
+    int candidateCount = 3;
+    Candidate* mockCandidates = new Candidate[candidateCount];
+
+    mockCandidates[0].setUserCnic("42101-1234567-1");
+    mockCandidates[0].setPartyName("Democratic Party");
+    mockCandidates[0].setStatus(ApprovalStatus::Approved); // Should show GREEN border
+
+    mockCandidates[1].setUserCnic("42101-9876543-2");
+    mockCandidates[1].setPartyName("Independent");
+    mockCandidates[1].setStatus(ApprovalStatus::Pending); // Should show YELLOW border
+
+    mockCandidates[2].setUserCnic("42101-5555555-3");
+    mockCandidates[2].setPartyName("Liberty Front");
+    mockCandidates[2].setStatus(ApprovalStatus::Rejected); // Should show RED border
+
+    // Load them into the UI
+    m_adminInnerPage_Candidates->loadCandidates(mockCandidates, candidateCount);
+
+    // Cleanup memory
+    delete[] mockCandidates;
+}
+
 
 // Helping Functions
 
@@ -498,6 +516,46 @@ void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePa
     painter.drawPixmap(0, 0, scaledOriginal);
 
     // 4. Apply to the Button
-    ui->profilePicBtn->setIcon(QIcon(circularImage));
-    ui->profilePicBtn->setIconSize(QSize(50, 50));
+    ui->userProfilePicBtn->setIcon(QIcon(circularImage));
+    ui->userProfilePicBtn->setIconSize(QSize(50, 50));
 }
+void MainWindow::loadAdminProfile(const QString &fullName, const QString &imagePath)
+{
+    // 1. Set the Dynamic Name
+    ui->adminNameLabel->setText("Hello, " + fullName);
+
+    // 2. Load the Dynamic Image
+    QPixmap originalImage;
+
+    // Check if the user has an uploaded image path, and if the file actually exists
+    if (!imagePath.isEmpty() && QFile::exists(imagePath))
+    {
+        originalImage.load(imagePath);
+    }
+    else
+    {
+        // Fallback: If they haven't uploaded one, load a default silhouette from your resources
+        originalImage.load(":/images/default_avatar.png");
+    }
+
+    // 3. Make the Image a Perfect Circle
+    QPixmap circularImage(50, 50);
+    circularImage.fill(Qt::transparent);
+
+    QPainter painter(&circularImage);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPainterPath path;
+    path.addEllipse(0, 0, 50, 50);
+    painter.setClipPath(path);
+
+    // Scale the image down so it fits nicely inside the 50x50 circle
+    QPixmap scaledOriginal = originalImage.scaled(50, 50, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    painter.drawPixmap(0, 0, scaledOriginal);
+
+    // 4. Apply to the Button
+    ui->adminProfilePicBtn->setIcon(QIcon(circularImage));
+    ui->adminProfilePicBtn->setIconSize(QSize(50, 50));
+}
+
