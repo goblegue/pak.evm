@@ -4,7 +4,7 @@
 #include <QPainter>
 
 AdminElectionsPage::AdminElectionsPage(QWidget *parent) : QWidget(parent) {
-    electionModel = new ElectionListModel(this);
+    electionModel = new ManageElectionListModel(this);
     proxyModel = new ElectionFilterProxyModel(this);
     proxyModel->setSourceModel(electionModel);
 

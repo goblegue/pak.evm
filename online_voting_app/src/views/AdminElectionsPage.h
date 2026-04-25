@@ -34,7 +34,7 @@ private:
     QPushButton *createElectionBtn; // The + Button
     QMenu *filterMenu;
 
-    ElectionListModel *electionModel;
+    ManageElectionListModel *electionModel;
     ElectionFilterProxyModel *proxyModel;
 
     void setupUi();

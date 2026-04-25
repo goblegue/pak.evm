@@ -557,6 +557,12 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
     delete[] mockElections;
 }
 
+void MainWindow::handleNavigateToCreateElection()
+{
+    // TODO: Navigate to Create Election page when implemented
+    QMessageBox::information(this, "Create Election", "Create Election functionality coming soon!");
+}
+
 // Helping Functions
 
 int MainWindow::identifyInputType(const QString &input)

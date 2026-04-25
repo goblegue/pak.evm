@@ -324,6 +324,8 @@ public:
         endResetModel();
     }
 
+    Election getElectionAt(int index) const { return m_elections.at(index); }
+
     // Toggle the accordion state when clicked
     void toggleExpanded(QString electionId) {
         if (m_expandedItems.contains(electionId)) {
