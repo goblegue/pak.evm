@@ -15,11 +15,58 @@ qt_add_executable(online_voting_app
 
     # --- CORE UI FILES ---
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-
     resources.qrc
+
+    # --- SRC FILES (MVC) ---
+    src/controllers/auth_manager.cpp
+    src/controllers/auth_manager.h
+    src/controllers/candidateController.cpp
+    src/controllers/candidateController.h
+    src/controllers/electionController.cpp
+    src/controllers/electionController.h
+    src/controllers/system_bootstrapper.cpp
+    src/controllers/system_bootstrapper.h
+    src/controllers/voterController.cpp
+    src/controllers/voterController.h
+    src/models/Models.h
+    src/models/databasemanager.cpp
+    src/models/databasemanager.h
+    src/models/electionmodel.h
+    src/models/entities/admin.h
+    src/models/entities/candidate.h
+    src/models/entities/election.h
+    src/models/entities/otp.h
+    src/models/entities/user.h
+    src/models/entities/voters.h
+    src/models/entities/voting_station.h
+    src/models/repositories/adminrepository.cpp
+    src/models/repositories/adminrepository.h
+    src/models/repositories/candidaterepository.cpp
+    src/models/repositories/candidaterepository.h
+    src/models/repositories/electionrepository.cpp
+    src/models/repositories/electionrepository.h
+    src/models/repositories/otprepository.cpp
+    src/models/repositories/otprepository.h
+    src/models/repositories/userrepository.cpp
+    src/models/repositories/userrepository.h
+    src/models/repositories/voterrepository.cpp
+    src/models/repositories/voterrepository.h
+    src/models/repositories/votingstationrepository.cpp
+    src/models/repositories/votingstationrepository.h
+    src/models/states.h
+    src/services/QR/qr.cpp
+    src/services/QR/qr.h
+    src/services/crypto/cryptoengine.cpp
+    src/services/crypto/cryptoengine.h
+    src/services/email/emailservice.cpp
+    src/services/email/emailservice.h
+    src/views/AdminCandidatePage.cpp
+    src/views/AdminCandidatePage.h
+    src/views/admindelegates.h
+    src/views/electiondelegate.h
+    src/views/mainwindow.cpp
+    src/views/mainwindow.h
+    src/views/mainwindow.ui
 
     # --- SMTP LIBRARY FILES ---
     smtp_lib/emailaddress.cpp
@@ -63,48 +110,10 @@ qt_add_executable(online_voting_app
 
     qr_lib/qrcodegen.cpp
     qr_lib/qrcodegen.hpp
-
-    src/email/emailservice.h src/email/emailservice.cpp
-    src/crypto/cryptoengine.h src/crypto/cryptoengine.cpp
-    src/user_management/AuthManager/auth_manager.h src/user_management/AuthManager/auth_manager.cpp
-    src/QR/qr.h src/QR/qr.cpp
-    src/states.h
-    src/user_management/user/user.h
-    src/user_management/admin/admin.h
-    src/election/election.h src/election/electionController.h src/election/electionController.cpp
-    src/candidate/candidate.h src/candidate/candidateController.h src/candidate/candidateController.cpp
-    src/voters/voters.h
-    src/voting_station/voting_station.h
-    src/otp/otp.h
-    system_bootstrapper.h system_bootstrapper.cpp
-
-    src/databasemanager.h
-    src/databasemanager.cpp
-
-    src/userrepository.cpp
-     src/userrepository.h
-     src/adminrepository.cpp
-     src/adminrepository.h
-     src/electionrepository.cpp
-     src/electionrepository.h
-     src/candidaterepository.cpp
-     src/candidaterepository.h
-     src/otprepository.cpp
-     src/otprepository.h
-     src/voterrepository.cpp
-     src/voterrepository.h
-     src/votingstationrepository.cpp
-     src/votingstationrepository.h
-     src/Models.h
-     src/AdminCandidatePage.h
-     src/AdminCandidatePage.cpp
-     src/admindelegates.h
-
-
 )
 
 # 3. Tell CMake where to look for the SMTP headers
-target_include_directories(online_voting_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/smtp_lib)
+target_include_directories(online_voting_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/smtp_lib ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # 4. Define the macro to fix SMTP DLL export issues
 target_compile_definitions(online_voting_app PRIVATE SMTP_MIME_LIBRARY)

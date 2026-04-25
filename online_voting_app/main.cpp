@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "system_bootstrapper.h"
+#include "views/mainwindow.h"
+#include "controllers/system_bootstrapper.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QDebug>
