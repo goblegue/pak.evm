@@ -955,7 +955,7 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btnAdminManageElections">
+              <widget class="QPushButton" name="adminSidebarElectionsBtn">
                <property name="text">
                 <string>Manage Elections</string>
                </property>

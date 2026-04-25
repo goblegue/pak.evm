@@ -111,6 +111,8 @@ qt_add_executable(online_voting_app
 
     qr_lib/qrcodegen.cpp
     qr_lib/qrcodegen.hpp
+    src/views/AdminElectionsPage.h
+    src/views/AdminElectionsPage.cpp
 )
 
 # 3. Tell CMake where to look for the SMTP headers

@@ -6,6 +6,7 @@
 #include <QPainterPath>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QDateTime>
 #include "views/AdminCandidatePage.h"
 #include "models/Models.h"
 #include "models/entities/election.h"
@@ -31,15 +32,19 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     // 1. Create the custom page purely in C++
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
+    m_adminInnerPage_Elections = new AdminElectionsPage(this);
 
     // 2. Add it to the Stacked Widget manually
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
+    ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
 
     connect(m_adminInnerPage_Candidates,
             &AdminCandidatePage::electionSelected,
             this,
             &MainWindow::handleElectionSelectedForCandidates);
+    connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
+            this, &MainWindow::handleNavigateToCreateElection);
 }
 
 MainWindow::~MainWindow()
@@ -496,6 +501,60 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
     m_adminInnerPage_Admins->loadAdmins(mockAdmins, adminCount);
 
     delete[] mockAdmins;
+}
+
+// ---------------------------------------------------------
+// Triggered when the Admin clicks "Elections" on Left Sidebar
+// ---------------------------------------------------------
+void MainWindow::on_adminSidebarElectionsBtn_clicked()
+{
+    // 1. Show the Elections page
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
+
+    // 2. Generate Mock Elections with various states to test the UI
+    int electionCount = 5;
+    Election* mockElections = new Election[electionCount];
+
+    // Status: Published (Blue)
+    mockElections[0].setId("ELEC-101");
+    mockElections[0].setTitle("Federal Senate Election 2026");
+    mockElections[0].setStartTime(QDateTime::currentDateTime().addDays(5));
+    mockElections[0].setEndTime(QDateTime::currentDateTime().addDays(6));
+    mockElections[0].setStatus(ElectionState::Published);
+
+    // Status: Voting Open (Green)
+    mockElections[1].setId("ELEC-102");
+    mockElections[1].setTitle("Lahore Local Council");
+    mockElections[1].setStartTime(QDateTime::currentDateTime().addDays(-1));
+    mockElections[1].setEndTime(QDateTime::currentDateTime().addDays(1));
+    mockElections[1].setStatus(ElectionState::VotingOpen);
+
+    // Status: Draft (Grey)
+    mockElections[2].setId("ELEC-103");
+    mockElections[2].setTitle("Karachi Medical Board Draft");
+    mockElections[2].setStartTime(QDateTime::currentDateTime().addDays(20));
+    mockElections[2].setEndTime(QDateTime::currentDateTime().addDays(21));
+    mockElections[2].setStatus(ElectionState::Draft);
+
+    // Status: Rejected (Red)
+    mockElections[3].setId("ELEC-104");
+    mockElections[3].setTitle("Fake Test Election");
+    mockElections[3].setStartTime(QDateTime::currentDateTime());
+    mockElections[3].setEndTime(QDateTime::currentDateTime().addDays(1));
+    mockElections[3].setStatus(ElectionState::Rejected);
+
+    // Status: Results Announced (Purple)
+    mockElections[4].setId("ELEC-105");
+    mockElections[4].setTitle("Sindh Bar Council 2025");
+    mockElections[4].setStartTime(QDateTime::currentDateTime().addDays(-30));
+    mockElections[4].setEndTime(QDateTime::currentDateTime().addDays(-29));
+    mockElections[4].setStatus(ElectionState::ResultsAnnounced);
+
+    // 3. Load the data into your custom UI
+    m_adminInnerPage_Elections->loadElections(mockElections, electionCount);
+
+    // 4. Prevent memory leaks!
+    delete[] mockElections;
 }
 
 // Helping Functions

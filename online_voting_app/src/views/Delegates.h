@@ -263,4 +263,101 @@ public:
         painter->restore();
     }
 };
+
+// ==========================================
+// ELECTION ACCORDION DELEGATE
+// ==========================================
+class ElectionAccordionDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+signals:
+    void electionClicked(const QModelIndex &index) const;
+
+public:
+    explicit ElectionAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+    // Dynamic Height: 60px collapsed, 120px expanded
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        bool isExpanded = index.data(ElectionExpandedRole).toBool();
+        return QSize(option.rect.width(), isExpanded ? 120 : 60);
+    }
+
+    // Catch the mouse click anywhere on the box to trigger the expand/collapse
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            emit electionClicked(index);
+            return true;
+        }
+        return QStyledItemDelegate::editorEvent(event, model, option, index);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        QRect rect = option.rect;
+        bool isExpanded = index.data(ElectionExpandedRole).toBool();
+        painter->setBrush(Qt::white);
+
+        int statusInt = index.data(ElectionStatusRole).toInt();
+        ElectionState status = static_cast<ElectionState>(statusInt);
+
+        QColor statusColor;
+        QString statusText;
+        switch(status) {
+        case ElectionState::Draft: statusColor = QColor("#95A5A6"); statusText = "Draft"; break; // Gray
+        case ElectionState::Rejected: statusColor = QColor("#E74C3C"); statusText = "Rejected"; break; // Red
+        case ElectionState::Published: statusColor = QColor("#3498DB"); statusText = "Published"; break; // Blue
+        case ElectionState::VotingOpen: statusColor = QColor("#2ECC71"); statusText = "Voting Open"; break; // Green
+        case ElectionState::VotingClosed: statusColor = QColor("#F39C12"); statusText = "Voting Closed"; break; // Orange
+        case ElectionState::ResultsAnnounced: statusColor = QColor("#9B59B6"); statusText = "Results Announced"; break; // Purple
+        default: statusColor = QColor("#34495E"); statusText = "Unknown"; break;
+        }
+
+        if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
+
+        painter->setPen(QPen(statusColor, 2));
+        painter->drawRoundedRect(rect, 8, 8);
+
+        // --- TITLE ---
+        QString title = index.data(Qt::DisplayRole).toString();
+        QRect titleRect = rect.adjusted(15, 10, -150, isExpanded ? -80 : 0);
+        QFont titleFont = option.font;
+        titleFont.setBold(true);
+        titleFont.setPointSize(11);
+        painter->setFont(titleFont);
+        painter->setPen(QColor("#2C3E50")); // Dark grey for title
+        painter->drawText(titleRect, Qt::AlignLeft | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), title);
+
+        // --- STATUS TEXT (Top Right) ---
+        QRect statusRect = rect.adjusted(0, 10, -15, isExpanded ? -80 : 0);
+        painter->setPen(statusColor);
+        painter->drawText(statusRect, Qt::AlignRight | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), statusText);
+
+        // --- EXPANDED DETAILS ---
+        if (isExpanded) {
+            QString startTime = "Start: " + index.data(ElectionStartTimeRole).toString();
+            QString endTime = "End: " + index.data(ElectionEndTimeRole).toString();
+
+            painter->setPen(QColor("#7F8C8D")); // Light grey text for times
+            QFont detailFont = option.font;
+            detailFont.setPointSize(9);
+            painter->setFont(detailFont);
+
+            QRect startRect = rect.adjusted(15, 45, -15, 0);
+            QRect endRect = rect.adjusted(15, 70, -15, 0);
+
+            painter->drawText(startRect, Qt::AlignLeft | Qt::AlignTop, startTime);
+            painter->drawText(endRect, Qt::AlignLeft | Qt::AlignTop, endTime);
+
+            // Draw a tiny arrow indicating it can be closed
+            painter->setPen(QColor("#BDC3C7"));
+            painter->drawText(rect.adjusted(0,0,-15,-15), Qt::AlignRight | Qt::AlignBottom, "▲ Collapse");
+        } else {
+            painter->setPen(QColor("#BDC3C7"));
+            painter->drawText(rect.adjusted(0,0,-15,-15), Qt::AlignRight | Qt::AlignBottom, "▼ Details");
+        }
+
+        painter->restore();
+    }
+};
 #endif // DELEGATES_H

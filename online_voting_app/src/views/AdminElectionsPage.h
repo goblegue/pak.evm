@@ -1,0 +1,43 @@
+#ifndef ADMINELECTIONSPAGE_H
+#define ADMINELECTIONSPAGE_H
+
+#include <QWidget>
+#include <QListView>
+#include <QPushButton>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QMenu>
+#include <QAction>
+#include "./models/entities/election.h"
+#include "./models/Models.h"
+
+class AdminElectionsPage : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit AdminElectionsPage(QWidget *parent = nullptr);
+    void loadElections(Election* elections, int size);
+
+signals:
+    // Tells the MainWindow to swap to the "Create Election" page!
+    void navigateToCreateElection();
+
+private slots:
+    void showFilterMenu();
+    void applyFilter(int status, QString filterName);
+    void onElectionBoxClicked(const QModelIndex &proxyIndex);
+
+private:
+    QListView *electionListView;
+    QPushButton *filterBtn;
+    QPushButton *createElectionBtn; // The + Button
+    QMenu *filterMenu;
+
+    ElectionListModel *electionModel;
+    ElectionFilterProxyModel *proxyModel;
+
+    void setupUi();
+};
+
+#endif // ADMINELECTIONSPAGE_H

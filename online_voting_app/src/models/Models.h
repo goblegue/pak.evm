@@ -6,6 +6,8 @@
 #include <QSortFilterProxyModel>
 #include "models/entities/election.h"
 #include "models/entities/candidate.h"
+#include <QSet>
+#include <QDateTime>
 #include "models/states.h"
 #include "models/entities/admin.h"
 
@@ -21,6 +23,14 @@ enum AdminCustomRoles
 {
     AdminStatusRole = Qt::UserRole + 10,
     LocalVoteRole = Qt::UserRole + 11 // NEW: Tracks the button's locked state
+};
+
+// Add Custom Roles for the Election Delegate to use
+enum ElectionCustomRoles {
+    ElectionStatusRole = Qt::UserRole + 20,
+    ElectionExpandedRole = Qt::UserRole + 21,
+    ElectionStartTimeRole = Qt::UserRole + 22,
+    ElectionEndTimeRole = Qt::UserRole + 23
 };
 
 // ==========================================
@@ -282,4 +292,100 @@ protected:
     }
 };
 
+// ==========================================
+// ELECTION LIST MODEL (UPDATED FOR ACCORDION)
+// ==========================================
+class ManageElectionListModel : public QAbstractListModel {
+    Q_OBJECT
+private:
+    QList<Election> m_elections;
+    QSet<QString> m_expandedItems; // Remembers which election IDs are currently expanded
+
+    QString statusToString(ElectionState status) const {
+        switch(status) {
+        case ElectionState::Draft: return "Draft";
+        case ElectionState::Rejected: return "Rejected";
+        case ElectionState::Published: return "Published";
+        case ElectionState::VotingOpen: return "Voting Open";
+        case ElectionState::VotingClosed: return "Voting Closed";
+        case ElectionState::ResultsAnnounced: return "Results Announced";
+        default: return "Unknown";
+        }
+    }
+
+public:
+    explicit ManageElectionListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+
+    void setElections(Election* electionsArray, int size) {
+        beginResetModel();
+        m_elections.clear();
+        m_expandedItems.clear(); // Collapse all on load
+        for(int i = 0; i < size; ++i) m_elections.append(electionsArray[i]);
+        endResetModel();
+    }
+
+    // Toggle the accordion state when clicked
+    void toggleExpanded(QString electionId) {
+        if (m_expandedItems.contains(electionId)) {
+            m_expandedItems.remove(electionId); // Collapse
+        } else {
+            m_expandedItems.insert(electionId); // Expand
+        }
+
+        // Tell the UI to instantly redraw this specific row
+        for(int i = 0; i < m_elections.count(); ++i) {
+            if(m_elections[i].getId() == electionId) {
+                QModelIndex idx = index(i);
+                emit dataChanged(idx, idx, {ElectionExpandedRole});
+                break;
+            }
+        }
+    }
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
+        if (parent.isValid()) return 0;
+        return m_elections.count();
+    }
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
+        if (!index.isValid() || index.row() >= m_elections.count()) return QVariant();
+
+        const Election &election = m_elections.at(index.row());
+
+        if (role == Qt::DisplayRole) return election.getTitle();
+        if (role == ElectionStatusRole) return static_cast<int>(election.getStatus());
+        if (role == ElectionExpandedRole) return m_expandedItems.contains(election.getId());
+        if (role == ElectionStartTimeRole) return election.getStartTime().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == ElectionEndTimeRole) return election.getEndTime().toString("MMM dd, yyyy - hh:mm AP");
+
+        return QVariant();
+    }
+};
+
+// ==========================================
+// ELECTION FILTER PROXY MODEL
+// ==========================================
+class ElectionFilterProxyModel : public QSortFilterProxyModel {
+    Q_OBJECT
+private:
+    int m_filterStatus = -1; // -1 means "Show All"
+
+public:
+    explicit ElectionFilterProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
+
+    void setFilterStatus(int status) {
+        m_filterStatus = status;
+        invalidateFilter();
+    }
+
+protected:
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override {
+        if (m_filterStatus == -1) return true;
+
+        QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+        int status = sourceModel()->data(index, ElectionStatusRole).toInt();
+
+        return status == m_filterStatus;
+    }
+};
 #endif // ADMIN_MODELS_H

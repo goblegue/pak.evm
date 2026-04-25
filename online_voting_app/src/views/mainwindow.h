@@ -5,6 +5,7 @@
 #include "controllers/system_bootstrapper.h"
 #include "views/AdminCandidatePage.h"
 #include "views/AdminManagementPage.h"
+#include "views/AdminElectionsPage.h"
 
 enum StackedPages
 {
@@ -46,6 +47,8 @@ private slots:
     void on_adminSidebarCandidatesBtn_clicked();
     void handleElectionSelectedForCandidates(QString);
     void on_adminSidebarAdminsBtn_clicked();
+    void on_adminSidebarElectionsBtn_clicked();
+    void handleNavigateToCreateElection();
 
 private:
     Ui::MainWindow *ui;
@@ -54,5 +57,6 @@ private:
     int identifyInputType(const QString &input);
     AdminCandidatePage *m_adminInnerPage_Candidates;
     AdminManagementPage *m_adminInnerPage_Admins;
+    AdminElectionsPage *m_adminInnerPage_Elections;
 };
 #endif // MAINWINDOW_H
