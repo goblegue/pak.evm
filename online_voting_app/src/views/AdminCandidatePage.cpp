@@ -1,9 +1,10 @@
 #include "views/AdminCandidatePage.h"
-#include "views/admindelegates.h"
+#include "views/Delegates.h"
 #include <QPixmap>
 #include <QPainter>
 
-AdminCandidatePage::AdminCandidatePage(QWidget *parent) : QWidget(parent) {
+AdminCandidatePage::AdminCandidatePage(QWidget *parent) : QWidget(parent)
+{
     electionModel = new ElectionListModel(this);
     candidateModel = new CandidateListModel(this);
 
@@ -14,7 +15,8 @@ AdminCandidatePage::AdminCandidatePage(QWidget *parent) : QWidget(parent) {
     setupUi();
 }
 
-void AdminCandidatePage::setupUi() {
+void AdminCandidatePage::setupUi()
+{
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(25);
@@ -46,8 +48,7 @@ void AdminCandidatePage::setupUi() {
     filterBtn->setCursor(Qt::PointingHandCursor);
     filterBtn->setStyleSheet(
         "QPushButton { background-color: #2980B9; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #1A5276; }"
-        );
+        "QPushButton:hover { background-color: #1A5276; }");
 
     // --- SETUP THE DROPDOWN MENU ---
     filterMenu = new QMenu(this);
@@ -56,7 +57,8 @@ void AdminCandidatePage::setupUi() {
                               "QMenu::item:selected { background-color: #ECF0F1; }");
 
     // Helper lambda to draw a colored square icon
-    auto createColorIcon =[](QColor color) {
+    auto createColorIcon = [](QColor color)
+    {
         QPixmap pix(16, 16);
         pix.fill(Qt::transparent);
         QPainter painter(&pix);
@@ -74,10 +76,14 @@ void AdminCandidatePage::setupUi() {
     QAction *actRejected = new QAction(createColorIcon(QColor("#C0392B")), "Rejected", this);
 
     // Wire up the menu actions to our filter logic
-    connect(actAll, &QAction::triggered, this, [this](){ applyFilter(-1, "Filter Status"); });
-    connect(actPending, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ApprovalStatus::Pending), "Pending"); });
-    connect(actApproved, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ApprovalStatus::Approved), "Approved"); });
-    connect(actRejected, &QAction::triggered, this,[this](){ applyFilter(static_cast<int>(ApprovalStatus::Rejected), "Rejected"); });
+    connect(actAll, &QAction::triggered, this, [this]()
+            { applyFilter(-1, "Filter Status"); });
+    connect(actPending, &QAction::triggered, this, [this]()
+            { applyFilter(static_cast<int>(ApprovalStatus::Pending), "Pending"); });
+    connect(actApproved, &QAction::triggered, this, [this]()
+            { applyFilter(static_cast<int>(ApprovalStatus::Approved), "Approved"); });
+    connect(actRejected, &QAction::triggered, this, [this]()
+            { applyFilter(static_cast<int>(ApprovalStatus::Rejected), "Rejected"); });
 
     filterMenu->addAction(actAll);
     filterMenu->addSeparator();
@@ -119,12 +125,14 @@ void AdminCandidatePage::setupUi() {
 
 // ...[Keep loadElections and loadCandidates exactly the same] ...
 
-void AdminCandidatePage::onElectionClicked(const QModelIndex &index) {
+void AdminCandidatePage::onElectionClicked(const QModelIndex &index)
+{
     Election selected = electionModel->getElectionAt(index.row());
     emit electionSelected(selected.getId());
 }
 
-void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex) {
+void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex)
+{
     // 3. CRITICAL: Because we use a filter, row '0' in the UI might be row '5' in the database.
     // We must map the Proxy index back to the real Source index!
     QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
@@ -134,13 +142,15 @@ void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex) {
 }
 
 // Shows the Dropdown right below the button
-void AdminCandidatePage::showFilterMenu() {
+void AdminCandidatePage::showFilterMenu()
+{
     QPoint globalPos = filterBtn->mapToGlobal(QPoint(0, filterBtn->height()));
     filterMenu->popup(globalPos);
 }
 
 // Executes the filter
-void AdminCandidatePage::applyFilter(int status, QString filterName) {
+void AdminCandidatePage::applyFilter(int status, QString filterName)
+{
     // Update button text so the admin knows what they are looking at
     filterBtn->setText(filterName);
 
@@ -148,9 +158,11 @@ void AdminCandidatePage::applyFilter(int status, QString filterName) {
     proxyModel->setFilterStatus(status);
 }
 // Data loading functions called by Backend/Lead
-void AdminCandidatePage::loadElections(Election* elections, int size) {
+void AdminCandidatePage::loadElections(Election *elections, int size)
+{
     electionModel->setElections(elections, size);
 }
-void AdminCandidatePage::loadCandidates(Candidate* candidates, int size) {
+void AdminCandidatePage::loadCandidates(Candidate *candidates, int size)
+{
     candidateModel->setCandidates(candidates, size);
 }

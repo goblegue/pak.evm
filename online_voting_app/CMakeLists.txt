@@ -62,8 +62,9 @@ qt_add_executable(online_voting_app
     src/services/email/emailservice.h
     src/views/AdminCandidatePage.cpp
     src/views/AdminCandidatePage.h
-    src/views/admindelegates.h
-    src/views/electiondelegate.h
+    src/views/Delegates.h
+    src/views/AdminManagementPage.cpp
+    src/views/AdminManagementPage.h
     src/views/mainwindow.cpp
     src/views/mainwindow.h
     src/views/mainwindow.ui
