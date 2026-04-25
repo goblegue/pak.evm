@@ -145,8 +145,8 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
     QString names[2] = {"Root Admin One", "Root Admin Two"};
     QString cnics[2] = {"00000-0000000-1", "00000-0000000-2"};
-    QString emails[2] = {"admin1@evm.pk", "admin2@evm.pk"};
-    QString rawPass = "Admin123"; // Initial password for both
+    QString emails[2] = {"am7862760@gmail.com", "pak.evm.project@gmail.com"};
+    QByteArray rawPass = "Admin123"; // Initial password for both
 
     for (int i = 0; i < 2; ++i)
     {
@@ -159,7 +159,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
         admin.setStatus(ApprovalStatus::Approved); // Direct approval
 
         // Securely hash the bootstrap password
-        auto hashRes = CryptoEngine::getInstance().hashData(rawPass.toUtf8());
+        auto hashRes = CryptoEngine::getInstance().hashData(rawPass);
         if (hashRes)
         {
             admin.setPassword(hashRes->hash, hashRes->salt);

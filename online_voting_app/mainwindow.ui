@@ -969,6 +969,13 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="adminSidebarAdminsBtn">
+               <property name="text">
+                <string>Admins</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="verticalSpacer_admin">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>

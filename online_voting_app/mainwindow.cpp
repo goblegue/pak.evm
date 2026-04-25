@@ -21,7 +21,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->MainStack->setCurrentIndex(4);
+    ui->MainStack->setCurrentIndex(0);
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com", 465, "pak.evm.project@gmail.com", "dtgn pptc jspd vjnk");
