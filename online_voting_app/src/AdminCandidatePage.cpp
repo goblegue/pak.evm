@@ -1,5 +1,5 @@
 #include "AdminCandidatePage.h"
-#include "admindelegates.h"
+#include "Delegates.h"
 #include <QPixmap>
 #include <QPainter>
 

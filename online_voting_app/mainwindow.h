@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "system_bootstrapper.h"
 #include "./src/AdminCandidatePage.h"
+#include "./src/AdminManagementPage.h"
 
 enum StackedPages{
     LoginPage,
@@ -43,6 +44,7 @@ private slots:
 
     void on_adminSidebarCandidatesBtn_clicked();
     void handleElectionSelectedForCandidates(QString );
+    void on_adminSidebarAdminsBtn_clicked();
 
 
 private:
@@ -51,5 +53,6 @@ private:
     // This function returns: 0 = Invalid, 1 = Email, 2 = CNIC
     int identifyInputType(const QString &input);
     AdminCandidatePage * m_adminInnerPage_Candidates;
+    AdminManagementPage *m_adminInnerPage_Admins;
 };
 #endif // MAINWINDOW_H

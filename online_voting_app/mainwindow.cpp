@@ -35,7 +35,8 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     connect(m_adminInnerPage_Candidates, &AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
 
-
+    m_adminInnerPage_Admins = new AdminManagementPage(this);
+    ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
 
 }
 
@@ -453,6 +454,34 @@ void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 
     // Cleanup memory
     delete[] mockCandidates;
+}
+
+void MainWindow::on_adminSidebarAdminsBtn_clicked()
+{
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
+
+    // Mock Data for the Admins
+    int adminCount = 3;
+    Admin* mockAdmins = new Admin[adminCount];
+
+    mockAdmins[0].setName("Ahmed Munir");
+    mockAdmins[0].setEmail("ahmed@pakevm.com");
+    mockAdmins[0].setCnic("42101-1111111-1");
+    mockAdmins[0].setStatus(ApprovalStatus::Approved);
+
+    mockAdmins[1].setName("Ali Khan");
+    mockAdmins[1].setEmail("ali@pakevm.com");
+    mockAdmins[1].setCnic("42101-2222222-2");
+    mockAdmins[1].setStatus(ApprovalStatus::Pending);
+
+    mockAdmins[2].setName("Usman Tariq");
+    mockAdmins[2].setEmail("usman@pakevm.com");
+    mockAdmins[2].setCnic("42101-3333333-3");
+    mockAdmins[2].setStatus(ApprovalStatus::Rejected);
+
+    m_adminInnerPage_Admins->loadAdmins(mockAdmins, adminCount);
+
+    delete[] mockAdmins;
 }
 
 

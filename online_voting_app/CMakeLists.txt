@@ -98,7 +98,9 @@ qt_add_executable(online_voting_app
      src/Models.h
      src/AdminCandidatePage.h
      src/AdminCandidatePage.cpp
-     src/admindelegates.h
+     src/Delegates.h
+     src/AdminManagementPage.h
+     src/AdminManagementPage.cpp
 
 
 
