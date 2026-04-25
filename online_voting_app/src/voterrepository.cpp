@@ -11,12 +11,12 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
-voterrepository::voterrepository()
+TokenRepository::TokenRepository()
 {
-    m_collection = DatabaseManager::getInstance().getDatabase()["Voters"];
+    m_collection = DatabaseManager::getInstance().getDatabase()["Token"];
 }
 
-bool voterrepository::insertToken(const Voters &token)
+bool TokenRepository::insertToken(const Token &token)
 {
     auto db = DatabaseManager::getInstance().getDatabase();
 
@@ -55,7 +55,7 @@ bool voterrepository::insertToken(const Voters &token)
     }
 }
 
-bool voterrepository::hasUserRequestedToken(const QString &cnic, const QString &electionId)
+bool TokenRepository::hasUserRequestedToken(const QString &cnic, const QString &electionId)
 {
     auto filter = document{} << "userCnic" << cnic.toStdString()
                              << "electionId" << electionId.toStdString()
@@ -64,7 +64,7 @@ bool voterrepository::hasUserRequestedToken(const QString &cnic, const QString &
     return static_cast<bool>(result);
 }
 
-Voters *voterrepository::getTokensByElection(const QString &electionId, int &votersSize)
+Token *TokenRepository::getTokensByElection(const QString &electionId, int &votersSize)
 {
     auto filter = document{} << "electionId" << electionId.toStdString() << finalize;
 
@@ -72,7 +72,34 @@ Voters *voterrepository::getTokensByElection(const QString &electionId, int &vot
     if (votersSize == 0)
         return nullptr;
 
-    Voters *tokens = new Voters[votersSize];
+    Token *tokens = new Token[votersSize];
+    auto cursor = m_collection.find(filter.view());
+
+    int i = 0;
+    for (auto &&doc : cursor)
+    {
+        tokens[i].setId(QString::fromStdString(doc["id"].get_string().value.data()));
+        tokens[i].setUserCnic(QString::fromStdString(doc["userCnic"].get_string().value.data()));
+        tokens[i].setElectionId(QString::fromStdString(doc["electionId"].get_string().value.data()));
+        tokens[i].setAssignedStationId(
+            QString::fromStdString(doc["assignedStationId"].get_string().value.data()));
+        tokens[i].setTokenSignature(
+            QString::fromStdString(doc["tokenSignature"].get_string().value.data()));
+        tokens[i].setIssuedAt(QDateTime::fromMSecsSinceEpoch(doc["issuedAt"].get_int64().value));
+        i++;
+    }
+    return tokens;
+}
+
+Token *TokenRepository::getTokensByUser(const QString &userCnic, int &tokensSize)
+{
+    auto filter = document{} << "userCnic" << userCnic.toStdString() << finalize;
+
+    tokensSize = static_cast<int>(m_collection.count_documents(filter.view()));
+    if (tokensSize == 0)
+        return nullptr;
+
+    Token *tokens = new Token[tokensSize];
     auto cursor = m_collection.find(filter.view());
 
     int i = 0;

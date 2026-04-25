@@ -4,14 +4,12 @@
 #include <QImage>
 #include <QString>
 
-
-class Voters;
+class Token;
 class QR
 {
 public:
-    static QString preparePayload(const Voters &voter);
-    
+    static QString preparePayload(const Token &voter);
+
     static QImage generateQRCode(const QString &payload);
-    
 };
 #endif // QR_H

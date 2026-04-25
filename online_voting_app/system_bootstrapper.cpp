@@ -180,7 +180,7 @@ void SystemBootstrapper::instantiateRepositories()
     m_electionRepo = std::unique_ptr<IElectionRepository>(new electionrepository());
     m_candidateRepo = std::unique_ptr<ICandidateRepository>(new candidaterepository());
     m_otpRepo = std::unique_ptr<IOtpRepository>(new otprepository());
-    m_voterRepo = std::unique_ptr<ITokenRepository>(new voterrepository());
+    m_voterRepo = std::unique_ptr<ITokenRepository>(new TokenRepository());
     m_stationRepo = std::unique_ptr<IVotingStationRepository>(new votingstationrepository());
 }
 

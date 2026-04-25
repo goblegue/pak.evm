@@ -117,6 +117,9 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetAdminCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
+    virtual bool updateAdminStatus(const QString &cnic, const ApprovalStatus &status) = 0;
+    virtual std::optional<StatusChangeRequest *> getStatusChangeRequests(const QString &cnic, int &count) = 0;
+    virtual std::optional<Admin *> getAllAdmins(int &count) = 0;                                    
     virtual int getAdminCount() = 0;
 };
 

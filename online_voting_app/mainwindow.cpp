@@ -1,18 +1,19 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QFile>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QRegularExpressionMatch>
-#include "./src/user_management/AuthManager/auth_manager.h"
 #include <QPainter>
 #include <QPainterPath>
-#include <QFile>
-#include "./src/email/emailservice.h"
-#include "./src/user_management/user/user.h"
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include "./src/election/election.h"
-#include "./src/electionmodel.h"
+#include "./src/election/electionController.h"
 #include "./src/electiondelegate.h"
+#include "./src/electionmodel.h"
+#include "./src/email/emailservice.h"
+#include "./src/user_management/AuthManager/auth_manager.h"
+#include "./src/user_management/user/user.h"
+#include "ui_mainwindow.h"
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -420,7 +421,8 @@ void MainWindow::on_btnUserElections_clicked()
     // 3. Update the Model
     ElectionModel *model = qobject_cast<ElectionModel *>(ui->electionsListView->model());
 
-    Election *dynamicElectionsArray = Election::getInstance().getAllElections(currentCount);
+    Election *dynamicElectionsArray = ElectionController::getInstance().getAllElections(
+        currentCount);
 
     if (model)
     {

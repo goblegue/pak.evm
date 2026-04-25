@@ -6,19 +6,20 @@
 #include <optional>
 
 #include "states.h"
-class voterrepository : public ITokenRepository
+class TokenRepository : public ITokenRepository
 {
 private:
     mongocxx::collection m_collection;
 
 public:
-    voterrepository();
+    TokenRepository();
 
-    bool insertToken(const Voters &token) override;
+    bool insertToken(const Token &token) override;
 
     bool hasUserRequestedToken(const QString &cnic, const QString &electionId) override;
 
-    Voters *getTokensByElection(const QString &electionId, int &votersSize) override;
+    Token *getTokensByElection(const QString &electionId, int &votersSize) override;
+    Token *getTokensByUser(const QString &userCnic, int &tokensSize) override;
 };
 
 #endif // VOTERREPOSITORY_H

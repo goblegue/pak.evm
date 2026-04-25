@@ -22,6 +22,10 @@ public:
                                 const ApprovalStatus &status) override;
 
     int getAdminCount() override;
+
+    bool updateAdminStatus(const QString &cnic, const ApprovalStatus &status) override;
+    std::optional<StatusChangeRequest *> getStatusChangeRequests(const QString &cnic, int &count) override;
+    std::optional<Admin *> getAllAdmins(int &count) override;
 };
 
 #endif // ADMINREPOSITORY_H

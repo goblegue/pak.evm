@@ -138,3 +138,85 @@ int adminrepository::getAdminCount()
 {
     return static_cast<int>(m_collection.count_documents({}));
 }
+
+bool adminrepository::updateAdminStatus(const QString &cnic, const ApprovalStatus &status)
+{
+    auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
+    auto update = document{} << "$set" << open_document
+                             << "status" << static_cast<int>(status)
+                             << close_document << finalize;
+
+    auto result = m_collection.update_one(filter.view(), update.view());
+    return result && result->modified_count() > 0;
+}
+
+std::optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(const QString &cnic, int &count)
+{
+    auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
+    auto result = m_collection.find_one(filter.view());
+
+    if (result)
+    {
+        auto view = result->view();
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
+            auto requestsArray = view["statusChangeRequests"].get_array().value;
+            count = static_cast<int>(requestsArray.size());
+            StatusChangeRequest *requests = new StatusChangeRequest[count];
+            int index = 0;
+            for (auto &&doc : requestsArray)
+            {
+                auto reqView = doc.get_document().view();
+                QString requesterId = QString::fromUtf8(
+                    reqView["requestById"].get_string().value.data());
+                ApprovalStatus reqStatus = static_cast<ApprovalStatus>(reqView["status"].get_int32().value);
+                requests[index++] = {reqStatus, requesterId};
+            }
+            return requests;
+        }
+    }
+    count = 0;
+    return std::nullopt;
+}
+
+std::optional<Admin *> adminrepository::getAllAdmins(int &count)
+{
+    auto cursor = m_collection.find({});
+    count = getAdminCount();
+    if (count == 0)
+    {
+        return std::nullopt;
+    }
+
+    Admin *admins = new Admin[count];
+    int index = 0;
+    for (auto &&doc : cursor)
+    {
+        auto view = doc.get_document().view();
+        Admin admin;
+        admin.setCnic(QString::fromUtf8(view["cnic"].get_string().value.data()));
+        admin.setName(QString::fromUtf8(view["name"].get_string().value.data()));
+        admin.setEmail(QString::fromUtf8(view["email"].get_string().value.data()));
+        admin.setId(QString::fromUtf8(view["id"].get_string().value.data()));
+        admin.setEmailVerified(view["isEmailVerified"].get_bool().value);
+        admin.setStatus(static_cast<ApprovalStatus>(view["status"].get_int32().value));
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
+            auto requestsArray = view["statusChangeRequests"].get_array().value;
+            for (auto &&doc : requestsArray)
+            {
+                auto reqView = doc.get_document().view();
+                QString requesterId = QString::fromUtf8(
+                    reqView["requestById"].get_string().value.data());
+                ApprovalStatus reqStatus = static_cast<ApprovalStatus>(reqView["status"].get_int32().value);
+                admin.addStatusChangeRequest(requesterId, reqStatus);
+            }
+        }
+        auto binary = view["passwordHash"].get_binary();
+        QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
+        admin.setPassword(hash, view["salt"].get_int32().value);
+        admins[index++] = admin;
+    }
+    return admins;
+}
+

@@ -165,7 +165,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetCandidateCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
-    virtual Candidate *getCandidates(int &candidatesSize, const QString &electionId = "") = 0;
+    virtual Candidate *getCandidates(int &candidatesSize, const QString &electionId = QString()) = 0;
     virtual Candidate *getCandidatesByStatus(int &candidatesSize, const QString &electionId, ApprovalStatus status) = 0;
     virtual bool updateCandidateStatus(const QString &candidateCnic, ApprovalStatus newStatus) = 0;
 };

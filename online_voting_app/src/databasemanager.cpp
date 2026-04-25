@@ -27,8 +27,8 @@ void DatabaseManager::setupSchema()
         document{} << "email" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
 
-    db["Voter_Registrations"].create_index(
-        document{} << "user_cnic" << 1 << "id" << 1 << finalize,
+    db["Tokens"].create_index(
+        document{} << "user_cnic" << 1 << "election_id" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
 
     db["otp"].create_index(

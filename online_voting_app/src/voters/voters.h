@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class Voters
+class Token
 {
 private:
     QString m_id;
@@ -51,8 +51,9 @@ class ITokenRepository
 {
 public:
     virtual ~ITokenRepository() = default;
-    virtual bool insertToken(const Voters &token) = 0;
-    virtual Voters* getTokensByElection(const QString &electionId, int &votersSize) = 0;
+    virtual bool insertToken(const Token &token) = 0;
+    virtual Token *getTokensByElection(const QString &electionId, int &votersSize) = 0;
+    virtual Token *getTokensByUser(const QString &userCnic, int &tokensSize) = 0;
     // Critical function for security constraint:
     virtual bool hasUserRequestedToken(const QString &userCnic, const QString &electionId) = 0;
 };
