@@ -182,15 +182,17 @@ optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(const Q
     return std::nullopt;
 }
 
-std::optional<Admin *> adminrepository::getAllAdmins(int &count)
+std::optional<Admin *> adminrepository::getAllAdminsExcept(const QString &cnic, int &count)
 {
-    auto cursor = m_collection.find({});
-    count = getAdminCount();
-    if (count == 0)
-    {
-        return std::nullopt;
-    }
+    // 1. Build the filter securely using BSON stream operators
+    auto filter = document{} << "cnic" << open_document << "$ne" << cnic.toStdString()
+                             << close_document << finalize;
 
+    // 2. Pass the filter view to the find function
+    auto cursor = m_collection.find(filter.view());
+
+    // 3. CRITICAL BUG FIX: Get the count of THIS specific query, not the whole DB!
+    count = static_cast<int>(m_collection.count_documents(filter.view()));
     Admin *admins = new Admin[count];
     int index = 0;
     for (auto &&doc : cursor)
@@ -222,4 +224,3 @@ std::optional<Admin *> adminrepository::getAllAdmins(int &count)
     }
     return admins;
 }
-
