@@ -1,12 +1,15 @@
 #include "adminrepository.h"
 #include "./user_management/admin/admin.h"
 #include <bsoncxx/builder/stream/document.hpp>
+#include <iterator>
 #include <bsoncxx/types.hpp>
 
 using bsoncxx::builder::stream::close_document;
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_document;
+
+using namespace std;
 
 adminrepository::adminrepository()
 {
@@ -42,7 +45,7 @@ bool adminrepository::insertAdmin(const Admin &admin)
     }
 }
 
-std::optional<Admin> adminrepository::getAdminByEmail(const QString &email)
+optional<Admin> adminrepository::getAdminByEmail(const QString &email)
 {
     auto filter = document{} << "email" << email.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
@@ -74,7 +77,7 @@ std::optional<Admin> adminrepository::getAdminByEmail(const QString &email)
         admin.setPassword(hash, view["salt"].get_int32().value);
         return admin;
     }
-    return std::nullopt;
+    return nullopt;
 }
 
 bool adminrepository::addStatusChangeRequest(const QString &targetAdminCnic,
@@ -94,7 +97,7 @@ bool adminrepository::addStatusChangeRequest(const QString &targetAdminCnic,
     return result && result->modified_count() > 0;
 }
 
-std::optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
+optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
 {
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
@@ -131,7 +134,7 @@ std::optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
 
         return admin;
     }
-    return std::nullopt;
+    return nullopt;
 }
 
 int adminrepository::getAdminCount()
@@ -150,7 +153,7 @@ bool adminrepository::updateAdminStatus(const QString &cnic, const ApprovalStatu
     return result && result->modified_count() > 0;
 }
 
-std::optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(const QString &cnic, int &count)
+optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(const QString &cnic, int &count)
 {
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
@@ -161,7 +164,7 @@ std::optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(co
         if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
         {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
-            count = static_cast<int>(requestsArray.size());
+            count = static_cast<int>(distance(requestsArray.begin(), requestsArray.end()));
             StatusChangeRequest *requests = new StatusChangeRequest[count];
             int index = 0;
             for (auto &&doc : requestsArray)
@@ -192,7 +195,7 @@ std::optional<Admin *> adminrepository::getAllAdmins(int &count)
     int index = 0;
     for (auto &&doc : cursor)
     {
-        auto view = doc.get_document().view();
+        auto view = doc;
         Admin admin;
         admin.setCnic(QString::fromUtf8(view["cnic"].get_string().value.data()));
         admin.setName(QString::fromUtf8(view["name"].get_string().value.data()));
