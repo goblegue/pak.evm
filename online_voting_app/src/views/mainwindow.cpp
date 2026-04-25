@@ -33,18 +33,24 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
+    m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
 
     // 2. Add it to the Stacked Widget manually
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
+    ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
 
-    connect(m_adminInnerPage_Candidates,
-            &AdminCandidatePage::electionSelected,
-            this,
-            &MainWindow::handleElectionSelectedForCandidates);
+    connect(m_adminInnerPage_Candidates,&AdminCandidatePage::electionSelected,
+            this, &MainWindow::handleElectionSelectedForCandidates);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
             this, &MainWindow::handleNavigateToCreateElection);
+    connect(m_adminInnerPage_Candidates, &AdminCandidatePage::navigateToCandidateDetails,
+            this, &MainWindow::handleNavigateToCandidateDetails);
+    connect(m_adminInnerPage_CandidateDetails, &AdminCandidateDetailsPage::backBtnClicked,
+            this, &MainWindow::handleBackToCandidateList);
+    connect(m_adminInnerPage_CandidateDetails, &AdminCandidateDetailsPage::candidateStatusChangeRequested,
+            this, &MainWindow::handleCandidateStatusChangeRequested);
 }
 
 MainWindow::~MainWindow()
@@ -562,6 +568,79 @@ void MainWindow::handleNavigateToCreateElection()
     // TODO: Navigate to Create Election page when implemented
     QMessageBox::information(this, "Create Election", "Create Election functionality coming soon!");
 }
+
+
+// ---------------------------------------------------------
+// Navigation: Go TO Details Page
+// ---------------------------------------------------------
+void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
+{
+    // For testing purposes, let's inject a HUGE manifesto into the selected
+    // candidate right before we show it, just to ensure the QScrollArea works perfectly.
+    if (selectedCandidate.getManifesto().isEmpty()) {
+        selectedCandidate.setManifesto(
+            "1. Economic Reform: We will introduce a comprehensive tax relief plan...\n\n"
+            "2. Healthcare: Free access to primary care facilities across the province.\n\n"
+            "3. Education: Building 50 new IT universities by the year 2028.\n\n"
+            "4. Infrastructure: Expanding the Metro bus network to all major cities.\n\n"
+            "5. Environment: Planting 10 million trees to combat urban heat islands.\n\n"
+            "6. Law & Order: Increasing police presence and digitizing all FIRs.\n\n"
+            "7. Youth Empowerment: Paid internships for 100,000 graduates.\n\n"
+            "(Keep scrolling...) \n\n"
+            "8. Foreign Policy: Enhancing trade with neighboring regions.\n\n"
+            "9. Agriculture: Subsidies for solar-powered tube wells."
+            );
+        selectedCandidate.setPreviousHistory("Served as MPA from 2018-2023. Member of Finance Committee.");
+        selectedCandidate.setEducationLevel("Ph.D. in Economics from LUMS");
+    }
+
+    // 1. Pass the data to the page UI
+    m_adminInnerPage_CandidateDetails->setCandidate(selectedCandidate);
+
+    // 2. Tell the StackedWidget to change screens!
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_CandidateDetails);
+}
+
+// ---------------------------------------------------------
+// Navigation: Go BACK to List
+// ---------------------------------------------------------
+void MainWindow::handleBackToCandidateList()
+{
+    // Change the screen back to the candidates list
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
+}
+
+// ---------------------------------------------------------
+// Action: Test the Approve/Reject Buttons
+// ---------------------------------------------------------
+void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus)
+{
+    // 1. Get current Admin ID (Using a fake one for testing if AuthManager isn't hooked up yet)
+    // QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    QString currentAdminCnic = "42101-ADMIN-1";
+
+    QString statusText = (newStatus == ApprovalStatus::Approved) ? "APPROVE" : "REJECT";
+
+    // 2. Show a MessageBox to prove the signal works perfectly!
+    QMessageBox::information(this, "Controller Simulation",
+                             QString("Simulating passing data to CandidateController...\n\n"
+                                     "Target Candidate: %1\n"
+                                     "Action: %2\n"
+                                     "Requested By: Admin %3")
+                                 .arg(targetCnic, statusText, currentAdminCnic)
+                             );
+
+    /*
+     * WHEN YOUR BACKEND IS READY, THIS IS ALL YOU WRITE HERE:
+     *
+     * bool success = CandidateController::getInstance().requestCandidateStatusChange(targetCnic, currentAdminCnic, newStatus);
+     * if(success) {
+     *     QMessageBox::information(this, "Success", "Status request logged.");
+     *     handleBackToCandidateList(); // Kick them back to the list
+     * }
+     */
+}
+
 
 // Helping Functions
 

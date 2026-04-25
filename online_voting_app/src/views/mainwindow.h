@@ -6,6 +6,7 @@
 #include "views/AdminCandidatePage.h"
 #include "views/AdminManagementPage.h"
 #include "views/AdminElectionsPage.h"
+#include "views/AdminCandidateDetailsPage.h"
 
 enum StackedPages
 {
@@ -49,6 +50,10 @@ private slots:
     void on_adminSidebarAdminsBtn_clicked();
     void on_adminSidebarElectionsBtn_clicked();
     void handleNavigateToCreateElection();
+    void handleNavigateToCandidateDetails(Candidate selectedCandidate);
+    void handleBackToCandidateList();
+    //Handles the Approve/Reject button clicks from the Details Page
+    void handleCandidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus);
 
 private:
     Ui::MainWindow *ui;
@@ -58,5 +63,6 @@ private:
     AdminCandidatePage *m_adminInnerPage_Candidates;
     AdminManagementPage *m_adminInnerPage_Admins;
     AdminElectionsPage *m_adminInnerPage_Elections;
+    AdminCandidateDetailsPage *m_adminInnerPage_CandidateDetails;
 };
 #endif // MAINWINDOW_H

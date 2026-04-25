@@ -116,8 +116,7 @@ void AdminCandidatePage::setupUi()
     connect(electionListView, &QListView::clicked, this, &AdminCandidatePage::onElectionClicked);
 
     // When click candidate button, open the custom menu manually to keep the button looking clean
-    connect(filterBtn, &QPushButton::clicked, this, &AdminCandidatePage::showFilterMenu);
-
+    connect(candidateListView, &QListView::clicked, this, &AdminCandidatePage::onCandidateClicked);
     // Warning: When using a ProxyModel, the index returned by QListView belongs to the PROXY.
     // We map it back to the source model in the slot below!
     connect(candidateListView, &QListView::clicked, this, &AdminCandidatePage::onCandidateClicked);
@@ -131,15 +130,6 @@ void AdminCandidatePage::onElectionClicked(const QModelIndex &index)
     emit electionSelected(selected.getId());
 }
 
-void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex)
-{
-    // 3. CRITICAL: Because we use a filter, row '0' in the UI might be row '5' in the database.
-    // We must map the Proxy index back to the real Source index!
-    QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
-
-    Candidate selected = candidateModel->getCandidateAt(realIndex.row());
-    emit navigateToCandidateDetails(selected);
-}
 
 // Shows the Dropdown right below the button
 void AdminCandidatePage::showFilterMenu()
@@ -165,4 +155,16 @@ void AdminCandidatePage::loadElections(Election *elections, int size)
 void AdminCandidatePage::loadCandidates(Candidate *candidates, int size)
 {
     candidateModel->setCandidates(candidates, size);
+}
+
+void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex) {
+    // 1. Because we are using a Filter (ProxyModel), row '0' on screen might be row '5' in the data.
+    // We MUST map the proxy index back to the real source index!
+    QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
+
+    // 2. Get the selected Candidate object from the actual model
+    Candidate selected = candidateModel->getCandidateAt(realIndex.row());
+
+    // 3. Emit the signal! (MainWindow catches this and changes the page)
+    emit navigateToCandidateDetails(selected);
 }

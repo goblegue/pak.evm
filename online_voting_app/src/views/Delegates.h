@@ -349,12 +349,7 @@ public:
             painter->drawText(startRect, Qt::AlignLeft | Qt::AlignTop, startTime);
             painter->drawText(endRect, Qt::AlignLeft | Qt::AlignTop, endTime);
 
-            // Draw a tiny arrow indicating it can be closed
-            painter->setPen(QColor("#BDC3C7"));
-            painter->drawText(rect.adjusted(0,0,-15,-15), Qt::AlignRight | Qt::AlignBottom, "▲ Collapse");
-        } else {
-            painter->setPen(QColor("#BDC3C7"));
-            painter->drawText(rect.adjusted(0,0,-15,-15), Qt::AlignRight | Qt::AlignBottom, "▼ Details");
+
         }
 
         painter->restore();
