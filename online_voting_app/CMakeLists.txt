@@ -95,6 +95,13 @@ qt_add_executable(online_voting_app
      src/voterrepository.h
      src/votingstationrepository.cpp
      src/votingstationrepository.h
+     src/Models.h
+     src/AdminCandidatePage.h
+     src/AdminCandidatePage.cpp
+     src/admindelegates.h
+
+
+
 
      src/electiondelegate.h
      src/electionmodel.h
@@ -108,14 +115,28 @@ target_include_directories(online_voting_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_compile_definitions(online_voting_app PRIVATE SMTP_MIME_LIBRARY)
 
 # ---------------------------------------------------------------------
-# THE ARCHITECT'S FINAL FIX: DIRECT LINKING (MongoDB v2.x)
+# THE ARCHITECT'S CROSS-PLATFORM DATABASE FIX
+# This dynamically supports both Arch Linux (v2.x) and Ubuntu/WSL (v1.x)
 # ---------------------------------------------------------------------
 
-# 1. Find the C++ Wrappers (This gets the headers and C++ .so files)
+# 1. Find the C++ Wrappers (Standard across all OS)
 pkg_check_modules(MONGOCXX REQUIRED IMPORTED_TARGET libmongocxx)
 pkg_check_modules(BSONCXX REQUIRED IMPORTED_TARGET libbsoncxx)
 
-# 2. Link the libraries
+# 2. OS-Detection Logic: Look for Arch's v2 driver first
+find_library(ARCH_MONGOC_V2 NAMES mongoc2)
+
+if(ARCH_MONGOC_V2)
+    # If found, we are on Arch Linux
+    message(STATUS "🐘 Architect: Detected Arch Linux (MongoDB v2.x)")
+    set(OS_SPECIFIC_MONGO_C_DRIVERS mongoc2 bson2)
+else()
+    # If NOT found, we default to Ubuntu/WSL
+    message(STATUS "🐧 Architect: Detected Ubuntu/WSL (MongoDB v1.x)")
+    set(OS_SPECIFIC_MONGO_C_DRIVERS mongoc-1.0 bson-1.0)
+endif()
+
+# 3. Link all targets dynamically
 target_link_libraries(online_voting_app
     PRIVATE
         Qt::Core
@@ -123,12 +144,7 @@ target_link_libraries(online_voting_app
         Qt::Network
         PkgConfig::MONGOCXX
         PkgConfig::BSONCXX
-
-        # --- DIRECT GCC LINKING (Arch Linux v2.x Drivers) ---
-        # GCC will automatically look for libmongoc2.so and libbson2.so
-        mongoc2
-        bson2
-
+        ${OS_SPECIFIC_MONGO_C_DRIVERS}  # <-- This variable holds the correct OS files!
         sodium
 )
 

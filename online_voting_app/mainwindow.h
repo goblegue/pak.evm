@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "system_bootstrapper.h"
+#include "./src/AdminCandidatePage.h"
 
 enum StackedPages{
     LoginPage,
@@ -26,7 +27,7 @@ public:
     MainWindow(const AppConfig &config, QWidget *parent = nullptr);
     ~MainWindow();
     void loadUserProfile(const QString& fullName, const QString& imagePath);
-    void populateActiveElections(QString* electionNames, int count);
+    void loadAdminProfile(const QString& fullName, const QString& imagePath);
 private slots:
     void on_goToSignupBtn_clicked();
     void on_goToLoginBtn_clicked();
@@ -37,10 +38,11 @@ private slots:
     void on_adminWaitBackBtn_clicked();
 
     void on_btnUserHome_clicked();
-    void on_btnUserElections_clicked();
     void on_btnUserResults_clicked();
     void on_btnUserLogout_clicked();
 
+    void on_adminSidebarCandidatesBtn_clicked();
+    void handleElectionSelectedForCandidates(QString );
 
 
 private:
@@ -48,5 +50,6 @@ private:
     AppConfig m_config;
     // This function returns: 0 = Invalid, 1 = Email, 2 = CNIC
     int identifyInputType(const QString &input);
+    AdminCandidatePage * m_adminInnerPage_Candidates;
 };
 #endif // MAINWINDOW_H

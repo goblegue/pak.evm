@@ -138,17 +138,17 @@ QFrame#userSidebarFrame QPushButton:pressed, QFrame#adminSidebarFrame QPushButto
    8. PROFILE TOP BAR
 ======================================================= */
 /* The Avatar Button */
-QPushButton#profilePicBtn {
+QPushButton#userProfilePicBtn, QPushButton#adminProfilePicBtn {
     background-color: transparent;
     border: 2px solid #3b5998; /* A nice blue ring around the profile pic */
     border-radius: 25px; /* Makes it a perfect circle (assuming 50x50 size) */
 }
-QPushButton#profilePicBtn:hover {
+QPushButton#userProfilePicBtn, QPushButton#adminProfilePicBtn:hover {
     border: 2px solid #4b6ea8; /* Lighter blue glow on hover */
 }
 
 /* The Name Label */
-QLabel#userNameLabel {
+QLabel#userNameLabel, QLabel#adminNameLabel {
     color: #ffffff; /* Assuming this is on a light background now. If dark, use 'white' */
     font-size: 16px;
     font-weight: bold;
@@ -160,7 +160,7 @@ QLabel#userNameLabel {
 ======================================================= */
 
 /* The Top Navigation Bar (Holding Name and Profile Pic) */
-QFrame#topNavbarFrame {
+QFrame#userTopNavbarFrame, QFrame#adminTopNavbarFrame {
     background-color: #314a75; /* Crisp white background */
     border-bottom: 2px solid #e0eaf5; /* Subtle grey-blue line separating header from content */
 }
@@ -175,53 +175,7 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
     background-color: transparent; 
 }
 
-/* =======================================================
-   11. SCROLL AREA &amp; DYNAMIC ELECTION CARDS
-======================================================= */
-
-/* Remove the ugly border around the Scroll Area */
-QScrollArea#electionsScrollArea {
-    border: none;
-    background-color: transparent;
-}
-
-/* Make the background of the scroll content match your dashboard */
-QWidget#scrollAreaWidgetContents {
-    background-color: transparent;
-}
-
-/* Style the dynamically generated buttons to look like modern Cards */
-QPushButton[class=&quot;electionCardBtn&quot;] {
-    background-color: #ffffff;
-    border: 1px solid #d1d9e6;
-    border-radius: 12px;
-    color: #1a2845; /* Dark text */
-    font-size: 18px;
-    font-weight: bold;
-    padding: 25px; /* Big padding makes it a 'Card' instead of a tiny button */
-    text-align: left; /* Text on the left */
-    margin-bottom: 10px; /* Space between cards */
-}
-
-/* Hover Effect for the Election Cards */
-QPushButton[class=&quot;electionCardBtn&quot;]:hover {
-    background-color: #f0f4fa;
-    border: 2px solid #3b5998; /* Highlight edge in theme blue */
-    color: #3b5998;
-}
-
-/* Custom Scrollbar (Makes it look sleek like Mac/Web) */
-QScrollBar:vertical {
-    border: none;
-    background: #e0eaf5;
-    width: 10px;
-    border-radius: 5px;
-}
-QScrollBar::handle:vertical {
-    background: #3b5998;
-    min-height: 30px;
-    border-radius: 5px;
-}</string>
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -234,7 +188,7 @@ QScrollBar::handle:vertical {
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="LoginPage">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -247,19 +201,16 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="1">
             <spacer name="verticalSpacer">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -279,10 +230,10 @@ QScrollBar::handle:vertical {
            <item row="2" column="1">
             <spacer name="verticalSpacer_2">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -295,10 +246,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="0">
             <spacer name="horizontalSpacer">
              <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -317,10 +268,7 @@ QScrollBar::handle:vertical {
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::Shape::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Shadow::Raised</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout">
               <property name="spacing">
@@ -348,7 +296,7 @@ QScrollBar::handle:vertical {
                  </size>
                 </property>
                 <property name="echoMode">
-                 <enum>QLineEdit::EchoMode::Password</enum>
+                 <enum>QLineEdit::Normal</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Enter Password</string>
@@ -358,10 +306,10 @@ QScrollBar::handle:vertical {
               <item>
                <spacer name="verticalSpacer_7">
                 <property name="orientation">
-                 <enum>Qt::Orientation::Vertical</enum>
+                 <enum>Qt::Vertical</enum>
                 </property>
                 <property name="sizeType">
-                 <enum>QSizePolicy::Policy::Fixed</enum>
+                 <enum>QSizePolicy::Fixed</enum>
                 </property>
                 <property name="sizeHint" stdset="0">
                  <size>
@@ -403,10 +351,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="2">
             <spacer name="horizontalSpacer_2">
              <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -419,10 +367,10 @@ QScrollBar::handle:vertical {
            <item row="4" column="1">
             <spacer name="verticalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -444,10 +392,7 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
          </widget>
         </item>
@@ -464,10 +409,7 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="1" column="0" colspan="3">
@@ -486,10 +428,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="2">
             <spacer name="horizontalSpacer_4">
              <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -502,10 +444,10 @@ QScrollBar::handle:vertical {
            <item row="0" column="1">
             <spacer name="verticalSpacer_4">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -518,10 +460,10 @@ QScrollBar::handle:vertical {
            <item row="2" column="1">
             <spacer name="verticalSpacer_5">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -534,10 +476,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="0">
             <spacer name="horizontalSpacer_3">
              <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -550,16 +492,13 @@ QScrollBar::handle:vertical {
            <item row="3" column="1">
             <widget class="QFrame" name="frame_2">
              <property name="frameShape">
-              <enum>QFrame::Shape::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Shadow::Raised</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="3" column="0">
                <widget class="QLineEdit" name="newPasswordInput">
                 <property name="echoMode">
-                 <enum>QLineEdit::EchoMode::Password</enum>
+                 <enum>QLineEdit::Normal</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Password</string>
@@ -576,7 +515,7 @@ QScrollBar::handle:vertical {
               <item row="4" column="0">
                <widget class="QLineEdit" name="confirmPasswordInput">
                 <property name="echoMode">
-                 <enum>QLineEdit::EchoMode::Password</enum>
+                 <enum>QLineEdit::Normal</enum>
                 </property>
                 <property name="placeholderText">
                  <string>Confirm Password</string>
@@ -630,10 +569,10 @@ QScrollBar::handle:vertical {
            <item row="4" column="1">
             <spacer name="verticalSpacer_6">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -655,10 +594,7 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
          </widget>
         </item>
@@ -675,10 +611,7 @@ QScrollBar::handle:vertical {
            </sizepolicy>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Shape::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Shadow::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="0" column="0">
@@ -691,10 +624,10 @@ QScrollBar::handle:vertical {
            <item row="1" column="1">
             <spacer name="verticalSpacer_8">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -714,10 +647,10 @@ QScrollBar::handle:vertical {
            <item row="3" column="1">
             <spacer name="verticalSpacer_9">
              <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
+              <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Fixed</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -735,7 +668,7 @@ QScrollBar::handle:vertical {
       <widget class="QWidget" name="UserDashPage">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QFrame" name="topNavbarFrame">
+         <widget class="QFrame" name="userTopNavbarFrame">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -776,7 +709,7 @@ QScrollBar::handle:vertical {
             </spacer>
            </item>
            <item row="0" column="1">
-            <widget class="QPushButton" name="profilePicBtn">
+            <widget class="QPushButton" name="userProfilePicBtn">
              <property name="minimumSize">
               <size>
                <width>50</width>
@@ -945,7 +878,7 @@ QScrollBar::handle:vertical {
            <item row="0" column="2">
             <widget class="QLabel" name="adminNameLabel">
              <property name="text">
-              <string>Hello, Admin</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -1010,7 +943,7 @@ QScrollBar::handle:vertical {
              <item>
               <widget class="QLabel" name="label_adminLogo">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;ADMIN.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;PAK.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
              </item>
@@ -1029,9 +962,9 @@ QScrollBar::handle:vertical {
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btnAdminCandidates">
+              <widget class="QPushButton" name="adminSidebarCandidatesBtn">
                <property name="text">
-                <string>Approve Candidates</string>
+                <string>Candidates</string>
                </property>
               </widget>
              </item>
@@ -1061,53 +994,10 @@ QScrollBar::handle:vertical {
           <item>
            <widget class="QStackedWidget" name="adminContentStack">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
-            <widget class="QWidget" name="adminInnerPage_Home">
-             <widget class="QLabel" name="label_adminHomeText">
-              <property name="geometry">
-               <rect>
-                <x>330</x>
-                <y>90</y>
-                <width>231</width>
-                <height>41</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Welcome Admin&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </widget>
-            <widget class="QWidget" name="adminInnerPage_Elections">
-             <widget class="QLabel" name="label_adminElectionsText">
-              <property name="geometry">
-               <rect>
-                <x>300</x>
-                <y>140</y>
-                <width>229</width>
-                <height>23</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Election Controls&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </widget>
-            <widget class="QWidget" name="adminInnerPage_Candidates">
-             <widget class="QLabel" name="label_adminCandidatesText">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>120</y>
-                <width>250</width>
-                <height>41</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Pending Approvals&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </widget>
+            <widget class="QWidget" name="adminInnerPage_Home"/>
+            <widget class="QWidget" name="adminInnerPage_Elections"/>
            </widget>
           </item>
          </layout>
@@ -1124,7 +1014,7 @@ QScrollBar::handle:vertical {
      <x>0</x>
      <y>0</y>
      <width>1163</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
