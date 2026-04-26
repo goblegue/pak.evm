@@ -151,28 +151,24 @@ public:
         return QSize(option.rect.width(), 85);
     }
 
-    // Capture the Mouse Clicks inside the List View
-    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override
-    {
-        if (event->type() == QEvent::MouseButtonRelease)
-        {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-            QRect rect = option.rect;
+    // 1. UPDATE EDITOR EVENT (Only allow clicks if Pending)
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
+        if (event->type() == QEvent::MouseButtonRelease) {
 
-            // Define the exact clickable area of the button
-            QRect btnRect(rect.right() - 135, rect.bottom() - 35, 120, 25);
+            // Check if the admin is actually Pending!
+            int statusInt = index.data(AdminStatusRole).toInt();
+            if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending) {
 
-            // If they clicked inside the button...
-            if (btnRect.contains(mouseEvent->pos()))
-            {
-                int localVote = index.data(LocalVoteRole).toInt();
+                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                QRect btnRect(option.rect.right() - 135, option.rect.bottom() - 35, 120, 25);
 
-                // Only open the menu if it hasn't been locked yet!
-                if (localVote == 0)
-                {
-                    emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
+                if (btnRect.contains(mouseEvent->pos())) {
+                    int localVote = index.data(LocalVoteRole).toInt();
+                    if (localVote == 0) {
+                        emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
+                    }
+                    return true;
                 }
-                return true; // We handled the click
             }
         }
         return QStyledItemDelegate::editorEvent(event, model, option, index);
@@ -226,6 +222,7 @@ public:
         // ==========================================
         // DRAW THE ACTION BUTTON
         // ==========================================
+        if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending){
         QRect btnRect(rect.right() - 135, rect.bottom() - 35, 120, 25);
         int localVoteInt = index.data(LocalVoteRole).toInt();
 
@@ -259,6 +256,7 @@ public:
         btnFont.setBold(true);
         painter->setFont(btnFont);
         painter->drawText(btnRect, Qt::AlignCenter, btnText);
+        }
 
         painter->restore();
     }

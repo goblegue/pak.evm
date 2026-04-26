@@ -34,12 +34,14 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
+    m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
 
     // 2. Add it to the Stacked Widget manually
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
     ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
+    ui->adminContentStack->addWidget(m_adminInnerPage_CreateElection);
 
     connect(m_adminInnerPage_Candidates,&AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
@@ -51,6 +53,11 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleBackToCandidateList);
     connect(m_adminInnerPage_CandidateDetails, &AdminCandidateDetailsPage::candidateStatusChangeRequested,
             this, &MainWindow::handleCandidateStatusChangeRequested);
+    connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::backBtnClicked,
+            this, &MainWindow::handleBackToElectionList);
+    connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::createElectionRequested,
+            this, &MainWindow::handleCreateElectionSubmit);
+
 }
 
 MainWindow::~MainWindow()
@@ -563,13 +570,6 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
     delete[] mockElections;
 }
 
-void MainWindow::handleNavigateToCreateElection()
-{
-    // TODO: Navigate to Create Election page when implemented
-    QMessageBox::information(this, "Create Election", "Create Election functionality coming soon!");
-}
-
-
 // ---------------------------------------------------------
 // Navigation: Go TO Details Page
 // ---------------------------------------------------------
@@ -639,6 +639,46 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
      *     handleBackToCandidateList(); // Kick them back to the list
      * }
      */
+}
+
+void MainWindow::handleNavigateToCreateElection()
+{
+    // Important: Reset the dates to ensure they calculate "2 days from TODAY" accurately
+    m_adminInnerPage_CreateElection->resetForm();
+
+    // Swap the screen
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_CreateElection);
+}
+
+void MainWindow::handleBackToElectionList()
+{
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
+}
+
+// ---------------------------------------------------------
+// Triggered when Admin clicks "Create Election"
+// ---------------------------------------------------------
+void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime, QDateTime startTime, QDateTime endTime)
+{
+    QMessageBox::information(this, "Simulation",
+                             QString("Ready to send to ElectionController!\n\nTitle: %1\nPublish: %2\nStart: %3\nEnd: %4")
+                                 .arg(title,
+                                      publishTime.toString("dd MMM yyyy"),
+                                      startTime.toString("dd MMM yyyy"),
+                                      endTime.toString("dd MMM yyyy"))
+                             );
+
+    /* WHEN BACKEND IS READY:
+     * Election newElection;
+     * newElection.setTitle(title);
+     * newElection.setStartTime(startTime);
+     * newElection.setEndTime(endTime);
+     * // ... handle publishing time ...
+     * ElectionController::getInstance().createElection(newElection);
+     * QMessageBox::information(this, "Success", "Election created as Draft.");
+     */
+
+    handleBackToElectionList(); // Go back to list after success
 }
 
 

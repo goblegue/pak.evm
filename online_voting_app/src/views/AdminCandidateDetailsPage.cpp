@@ -7,8 +7,8 @@ AdminCandidateDetailsPage::AdminCandidateDetailsPage(QWidget *parent) : QWidget(
 
 void AdminCandidateDetailsPage::setupUi() {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(10, 10, 10, 10);
-    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
+    mainLayout->setSpacing(20);
 
     // ==========================================
     // 1. TOP HEADER (Back Btn, Center Title, Status)
@@ -17,16 +17,17 @@ void AdminCandidateDetailsPage::setupUi() {
 
     backBtn = new QPushButton("← Back", this);
     backBtn->setCursor(Qt::PointingHandCursor);
-    backBtn->setStyleSheet("QPushButton { border: none; color: #2980B9; font-weight: bold; font-size: 16px; }"
+    backBtn->setStyleSheet("QPushButton { border: none; color: #2980B9; font-weight: bold; font-size: 18px; }"
                            "QPushButton:hover { color: #1A5276; text-decoration: underline; }");
 
     headerTitleLabel = new QLabel("Candidate Details", this);
     headerTitleLabel->setAlignment(Qt::AlignCenter);
-    headerTitleLabel->setStyleSheet("font-size: 22px; font-weight: bold; color: #2C3E50;");
+    headerTitleLabel->setStyleSheet("font-size: 26px; font-weight: bold; color: #2C3E50;"); // BIGGER FONT
 
     statusLabel = new QLabel("STATUS", this);
     statusLabel->setAlignment(Qt::AlignCenter);
-    statusLabel->setFixedSize(100, 30); // Status Badge
+    statusLabel->setFixedSize(120, 35);
+    statusLabel->setStyleSheet("font-size: 14px; font-weight: bold;");
 
     headerLayout->addWidget(backBtn, 0, Qt::AlignLeft);
     headerLayout->addStretch(1);
@@ -35,50 +36,57 @@ void AdminCandidateDetailsPage::setupUi() {
     headerLayout->addWidget(statusLabel, 0, Qt::AlignRight);
 
     // ==========================================
-    // 2. SCROLL AREA (For long manifestos)
+    // 2. SCROLL AREA
     // ==========================================
     QScrollArea *scrollArea = new QScrollArea(this);
-    scrollArea->setWidgetResizable(true); // Crucial! Makes inner widget stretch
+    scrollArea->setWidgetResizable(true);
     scrollArea->setStyleSheet("QScrollArea { border: none; background: transparent; }");
 
-    // The container that goes INSIDE the scroll area
     QWidget *scrollContent = new QWidget(scrollArea);
     scrollContent->setStyleSheet("QWidget { background: white; border-radius: 8px; }");
     QVBoxLayout *contentLayout = new QVBoxLayout(scrollContent);
-    contentLayout->setContentsMargins(20, 20, 20, 20);
-    contentLayout->setSpacing(20);
+    contentLayout->setContentsMargins(30, 30, 30, 30);
+    contentLayout->setSpacing(25);
 
     // ==========================================
-    // 3. IMAGES SECTION (Profile + Symbol)
+    // 3. TOP PROFILE SECTION (SIDE-BY-SIDE FIX)
     // ==========================================
-    QHBoxLayout *imagesLayout = new QHBoxLayout();
+    // We use an HBoxLayout to put Images on the Left, and Details on the Right!
+    QHBoxLayout *topProfileLayout = new QHBoxLayout();
+
+    // --- Left Side: Images ---
+    QVBoxLayout *imagesLayout = new QVBoxLayout();
     profilePicLabel = new QLabel("No Profile", this);
-    profilePicLabel->setFixedSize(120, 120);
+    profilePicLabel->setFixedSize(150, 150); // INCREASED SIZE
     profilePicLabel->setAlignment(Qt::AlignCenter);
-    profilePicLabel->setStyleSheet("border: 2px solid #BDC3C7; border-radius: 60px;"); // Circle
+    profilePicLabel->setStyleSheet("border: 3px solid #BDC3C7; border-radius: 75px;");
 
     symbolPicLabel = new QLabel("No Symbol", this);
-    symbolPicLabel->setFixedSize(80, 80);
+    symbolPicLabel->setFixedSize(100, 100); // INCREASED SIZE
     symbolPicLabel->setAlignment(Qt::AlignCenter);
-    symbolPicLabel->setStyleSheet("border: 1px solid #BDC3C7;");
+    symbolPicLabel->setStyleSheet("border: 2px solid #BDC3C7; border-radius: 8px;");
 
-    imagesLayout->addWidget(profilePicLabel);
-    imagesLayout->addSpacing(20);
-    imagesLayout->addWidget(symbolPicLabel);
+    imagesLayout->addWidget(profilePicLabel, 0, Qt::AlignHCenter);
+    imagesLayout->addSpacing(15);
+    imagesLayout->addWidget(symbolPicLabel, 0, Qt::AlignHCenter);
     imagesLayout->addStretch();
 
-    // ==========================================
-    // 4. SHORT DETAILS (Form Layout)
-    // ==========================================
+    // --- Right Side: Form Details ---
     QFormLayout *formLayout = new QFormLayout();
-    formLayout->setHorizontalSpacing(30);
-    formLayout->setVerticalSpacing(15);
-    formLayout->setLabelAlignment(Qt::AlignRight);
+    formLayout->setHorizontalSpacing(40);
+    formLayout->setVerticalSpacing(20);
+    formLayout->setLabelAlignment(Qt::AlignLeft);
 
-    // Helper macro for styling labels
+    auto createKeyLabel =[this](const QString &text) {
+        QLabel *lbl = new QLabel(text, this);
+        lbl->setStyleSheet("font-size: 16px; color: #7F8C8D; font-weight: bold;"); // INCREASED FONT
+        return lbl;
+    };
+
     auto createValueLabel = [this]() {
         QLabel *lbl = new QLabel("-", this);
-        lbl->setStyleSheet("font-size: 14px; color: #34495E; font-weight: bold;");
+        lbl->setStyleSheet("font-size: 18px; color: #2C3E50; font-weight: bold;"); // INCREASED FONT
+        lbl->setWordWrap(true);
         return lbl;
     };
 
@@ -88,30 +96,36 @@ void AdminCandidateDetailsPage::setupUi() {
     symbolNameLabel = createValueLabel();
     educationLabel = createValueLabel();
 
-    formLayout->addRow("<b>CNIC:</b>", cnicLabel);
-    formLayout->addRow("<b>Election ID:</b>", electionIdLabel);
-    formLayout->addRow("<b>Party Name:</b>", partyNameLabel);
-    formLayout->addRow("<b>Symbol Name:</b>", symbolNameLabel);
-    formLayout->addRow("<b>Education:</b>", educationLabel);
+    formLayout->addRow(createKeyLabel("CNIC Number:"), cnicLabel);
+    formLayout->addRow(createKeyLabel("Election ID:"), electionIdLabel);
+    formLayout->addRow(createKeyLabel("Party Name:"), partyNameLabel);
+    formLayout->addRow(createKeyLabel("Symbol Name:"), symbolNameLabel);
+    formLayout->addRow(createKeyLabel("Education Level:"), educationLabel);
+
+    // Merge Images and Form side-by-side
+    topProfileLayout->addLayout(imagesLayout, 1); // Images take 1 part space
+    topProfileLayout->addSpacing(40);
+    topProfileLayout->addLayout(formLayout, 3);   // Text takes 3 parts space (Fills the empty void!)
 
     // ==========================================
-    // 5. LONG TEXT SECTION (History & Manifesto)
+    // 4. LONG TEXT SECTION (Grey Boxes)
     // ==========================================
-    QLabel *historyTitle = new QLabel("<b>Previous Political History</b>", this);
-    historyTitle->setStyleSheet("font-size: 16px; color: #2980B9; margin-top: 10px;");
+    QLabel *historyTitle = new QLabel("Previous Political History", this);
+    historyTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px;");
+
     historyLabel = new QLabel("-", this);
-    historyLabel->setWordWrap(true); // CRITICAL: Wraps text to next line
-    historyLabel->setStyleSheet("color: #2C3E50; line-height: 1.5;");
+    historyLabel->setWordWrap(true);
+    historyLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
 
-    QLabel *manifestoTitle = new QLabel("<b>Election Manifesto</b>", this);
-    manifestoTitle->setStyleSheet("font-size: 16px; color: #2980B9; margin-top: 10px;");
+    QLabel *manifestoTitle = new QLabel("Election Manifesto", this);
+    manifestoTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px; margin-top: 15px;");
+
     manifestoLabel = new QLabel("-", this);
     manifestoLabel->setWordWrap(true);
-    manifestoLabel->setStyleSheet("color: #2C3E50; line-height: 1.5;");
+    manifestoLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
 
-    // Assemble the Scroll Content
-    contentLayout->addLayout(imagesLayout);
-    contentLayout->addLayout(formLayout);
+    // Assemble Content inside Scroll Area
+    contentLayout->addLayout(topProfileLayout);
     contentLayout->addWidget(historyTitle);
     contentLayout->addWidget(historyLabel);
     contentLayout->addWidget(manifestoTitle);
@@ -120,44 +134,38 @@ void AdminCandidateDetailsPage::setupUi() {
 
     scrollArea->setWidget(scrollContent);
 
-    // Assemble Main Page
-    mainLayout->addLayout(headerLayout);
-    mainLayout->addWidget(scrollArea);
-
-    // Connect Back Button
-    connect(backBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::backBtnClicked);
-
     // ==========================================
-    // 6. ACTION BUTTONS (Approve / Reject)
+    // 5. ACTION BUTTONS (Approve / Reject)
     // ==========================================
     QHBoxLayout *actionLayout = new QHBoxLayout();
 
     approvalCountLabel = new QLabel("", this);
-    approvalCountLabel->setStyleSheet("color: #7F8C8D; font-weight: bold; font-style: italic;");
+    approvalCountLabel->setStyleSheet("color: #7F8C8D; font-size: 14px; font-weight: bold; font-style: italic;");
 
     rejectBtn = new QPushButton("✖ Reject Candidate", this);
     rejectBtn->setCursor(Qt::PointingHandCursor);
-    rejectBtn->setStyleSheet("QPushButton { background-color: #E74C3C; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; } QPushButton:hover { background-color: #C0392B; }");
+    rejectBtn->setStyleSheet("QPushButton { background-color: #E74C3C; color: white; padding: 12px 25px; border-radius: 6px; font-size: 16px; font-weight: bold; } QPushButton:hover { background-color: #C0392B; }");
 
     approveBtn = new QPushButton("✔ Approve Candidate", this);
     approveBtn->setCursor(Qt::PointingHandCursor);
-    approveBtn->setStyleSheet("QPushButton { background-color: #27AE60; color: white; padding: 10px 20px; border-radius: 6px; font-weight: bold; } QPushButton:hover { background-color: #219653; }");
+    approveBtn->setStyleSheet("QPushButton { background-color: #27AE60; color: white; padding: 12px 25px; border-radius: 6px; font-size: 16px; font-weight: bold; } QPushButton:hover { background-color: #219653; }");
 
     actionLayout->addWidget(approvalCountLabel);
     actionLayout->addStretch();
     actionLayout->addWidget(rejectBtn);
     actionLayout->addWidget(approveBtn);
 
-    // Add everything to the main layout
+    // ==========================================
+    // 6. FINAL ASSEMBLY & CONNECTIONS
+    // ==========================================
     mainLayout->addLayout(headerLayout);
     mainLayout->addWidget(scrollArea);
-    mainLayout->addLayout(actionLayout); // ADD THIS HERE
+    mainLayout->addLayout(actionLayout);
 
-    // Connect the buttons
+    connect(backBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::backBtnClicked);
     connect(approveBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::onApproveClicked);
-
+    connect(rejectBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::onRejectClicked); // This was missing in your old code!
 }
-
 // -------------------------------------------------------------------
 // DATA INJECTION: Populates the UI with the Candidate's data
 // -------------------------------------------------------------------
