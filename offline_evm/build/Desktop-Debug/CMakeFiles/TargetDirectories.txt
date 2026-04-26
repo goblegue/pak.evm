@@ -1,9 +1,0 @@
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/offline_evm.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/edit_cache.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/rebuild_cache.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/list_install_components.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/install.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/install/local.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/install/strip.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/offline_evm_autogen_timestamp_deps.dir
-/home/hamza/Documents/FAST CY/SEMESTER 2/oop/project/pak.evm/offline_evm/build/Desktop-Debug/CMakeFiles/offline_evm_autogen.dir

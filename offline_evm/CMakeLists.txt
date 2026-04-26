@@ -1,33 +1,46 @@
-cmake_minimum_required(VERSION 3.19)
-project(offline_evm LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(OfflineVotingKiosk VERSION 1.0 LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-qt_standard_project_setup()
+# Qt Automation: Handles .ui files and Signal/Slot MOC automatically
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
-qt_add_executable(offline_evm
-    WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+# 1. Find Qt6 Components
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql)
+
+# 2. Use PkgConfig to find Libsodium and SQLCipher
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+pkg_check_modules(SQLCIPHER REQUIRED IMPORTED_TARGET sqlcipher)
+
+# 3. Define Source Files (Add new files here as you create them)
+set(PROJECT_SOURCES
+    src/main.cpp
+
+
+    # Views (UI)
+    src/views/mainwindow.h
+    src/views/mainwindow.cpp
+    src/views/mainwindow.ui
+
+    # Add your controllers and models here...
 )
 
-target_link_libraries(offline_evm
-    PRIVATE
-        Qt::Core
-        Qt::Widgets
+# 4. Create the Executable
+add_executable(OfflineVotingKiosk ${PROJECT_SOURCES})
+
+# 5. Link Libraries
+target_link_libraries(OfflineVotingKiosk PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::Sql
+    PkgConfig::SODIUM      # Links Libsodium (Argon2, Ed25519)
+    PkgConfig::SQLCIPHER   # Links SQLCipher (Encrypted SQLite)
 )
 
-install(TARGETS offline_evm
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-qt_generate_deploy_app_script(
-    TARGET offline_evm
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
-install(SCRIPT ${deploy_script})
+# 6. Include Paths (So you can #include "models/Candidate.h" easily)
+target_include_directories(OfflineVotingKiosk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
