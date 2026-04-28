@@ -760,6 +760,20 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="userSidebarLocateStationBtn">
+               <property name="text">
+                <string>Locate Station</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarCandidacyBtn">
+               <property name="text">
+                <string>Run for Office</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="verticalSpacer_10">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>

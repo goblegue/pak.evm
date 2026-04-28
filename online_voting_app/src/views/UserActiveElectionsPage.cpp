@@ -23,7 +23,7 @@ void UserActiveElectionsPage::setupUi() {
     QVBoxLayout *leftLayout = new QVBoxLayout(leftPanel);
     leftLayout->setContentsMargins(0, 0, 0, 0);
 
-    QLabel *electionLabel = new QLabel("<b>Available Elections</b>", this);
+    QLabel *electionLabel = new QLabel("<b>Active Elections</b>", this);
     electionLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
 
     electionListView = new QListView(this);
@@ -114,6 +114,8 @@ void UserActiveElectionsPage::setupUi() {
     // Connections
     connect(electionListView, &QListView::clicked, this, &UserActiveElectionsPage::onElectionClicked);
     connect(generateTokenBtn, &QPushButton::clicked, this, &UserActiveElectionsPage::onGenerateTokenClicked);
+    connect(candidateListView, &QListView::clicked, this, &UserActiveElectionsPage::onCandidateClicked);
+
 }
 
 void UserActiveElectionsPage::loadElections(Election* elections, int size) {
@@ -153,4 +155,9 @@ void UserActiveElectionsPage::onGenerateTokenClicked() {
     if (!currentSelectedElectionId.isEmpty()) {
         emit generateTokenRequested(currentSelectedElectionId);
     }
+}
+
+void UserActiveElectionsPage::onCandidateClicked(const QModelIndex &index) {
+    Candidate selected = candidateModel->getCandidateAt(index.row());
+    emit navigateToCandidateDetails(selected);
 }

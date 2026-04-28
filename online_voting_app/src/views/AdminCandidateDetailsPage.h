@@ -15,6 +15,7 @@ class AdminCandidateDetailsPage : public QWidget {
 
 public:
     explicit AdminCandidateDetailsPage(QWidget *parent = nullptr);
+    void setUserMode(bool isUserMode);
 
     // Call this right before showing the page to populate all the text/images
     void setCandidate(const Candidate &candidate);
@@ -58,6 +59,7 @@ private:
 
     // Helper function to turn Base64 strings back into Qt Images
     QPixmap decodeBase64Image(const QString &base64Str, int expectedSize);
+    bool m_isUserMode = false;
 };
 
 #endif // ADMINCANDIDATEDETAILSPAGE_H

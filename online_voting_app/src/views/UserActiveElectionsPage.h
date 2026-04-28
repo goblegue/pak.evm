@@ -25,10 +25,12 @@ public:
 signals:
     void electionSelected(QString electionId);
     void generateTokenRequested(QString electionId);
+    void navigateToCandidateDetails(Candidate selectedCandidate);
 
 private slots:
     void onElectionClicked(const QModelIndex &index);
     void onGenerateTokenClicked();
+    void onCandidateClicked(const QModelIndex &index);
 
 private:
     QListView *electionListView;

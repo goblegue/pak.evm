@@ -1,6 +1,7 @@
 #ifndef DELEGATES_H
 #define DELEGATES_H
 
+#include <QImage>
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QPainterPath>
@@ -67,65 +68,64 @@ public:
 };
 
 // ==========================================
-// CANDIDATE STATUS BOX DELEGATE
+// CANDIDATE STATUS BOX DELEGATE (UPDATED)
 // ==========================================
-class CandidateDelegate : public QStyledItemDelegate
-{
+class CandidateDelegate : public QStyledItemDelegate {
 public:
     explicit CandidateDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
-        return QSize(option.rect.width(), 65); // Slightly taller for multi-line text
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        return QSize(option.rect.width(), 95); // Made it taller to fit the image and new text!
     }
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
         QRect rect = option.rect;
         painter->setBrush(Qt::white);
 
-        // Fetch the status from our custom Role!
         int statusInt = index.data(CandidateStatusRole).toInt();
         ApprovalStatus status = static_cast<ApprovalStatus>(statusInt);
 
         QColor statusColor;
-        switch (status)
-        {
-        case ApprovalStatus::Pending:
-            statusColor = QColor("#F39C12"); // Golden Yellow (easier to read than bright yellow)
-            break;
-        case ApprovalStatus::Approved:
-            statusColor = QColor("#27AE60"); // Emerald Green
-            break;
-        case ApprovalStatus::Rejected:
-            statusColor = QColor("#C0392B"); // Deep Red
-            break;
-        default:
-            statusColor = QColor("#7F8C8D"); // Grey fallback
-            break;
+        switch(status) {
+        case ApprovalStatus::Pending: statusColor = QColor("#F39C12"); break;
+        case ApprovalStatus::Approved: statusColor = QColor("#27AE60"); break;
+        case ApprovalStatus::Rejected: statusColor = QColor("#C0392B"); break;
+        default: statusColor = QColor("#7F8C8D"); break;
         }
 
-        if (option.state & QStyle::State_Selected)
-        {
-            painter->setBrush(QColor("#F8F9F9")); // Very light grey on hover/select
-        }
+        if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
 
-        // Draw border matching the status color
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // Draw Text
-        painter->setPen(statusColor); // Text color matches border
+        // 1. Draw Text (Leaving space on the right for the image)
+        painter->setPen(statusColor);
         QString text = index.data(Qt::DisplayRole).toString();
-        QRect textRect = rect.adjusted(15, 5, -15, -5);
+        QRect textRect = rect.adjusted(15, 5, -80, -5); // -80 cuts off the right side so text doesn't overlap the image
 
         QFont font = option.font;
         font.setBold(true);
         painter->setFont(font);
         painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextWordWrap, text);
+
+        // 2. Draw Symbol Image
+        QString b64Image = index.data(CandidateSymbolImageRole).toString();
+        if (!b64Image.isEmpty()) {
+            QByteArray imgData = QByteArray::fromBase64(b64Image.toUtf8());
+            QPixmap pixmap;
+            if (pixmap.loadFromData(imgData)) {
+                // Draw a 60x60 image on the far right
+                QRect imgRect(rect.right() - 75, rect.top() + 17, 60, 60);
+                QPixmap scaledPix = pixmap.scaled(imgRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+                // Centers the image exactly in the 60x60 box
+                QPoint centerTarget = imgRect.center() - scaledPix.rect().center();
+                painter->drawPixmap(centerTarget, scaledPix);
+            }
+        }
 
         painter->restore();
     }
@@ -355,14 +355,41 @@ public:
 };
 
 // ==========================================
-// TOKEN WALLET DELEGATE
+// TOKEN ACCORDION DELEGATE (RIGHT-SIDE QR LAYOUT)
 // ==========================================
-class TokenDelegate : public QStyledItemDelegate {
-public:
-    explicit TokenDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+class TokenAccordionDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+signals:
+    void tokenClicked(const QModelIndex &index) const;
+    void sendEmailClicked(const QModelIndex &index) const;
 
+public:
+    explicit TokenAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+    // Increased expanded height to 240px to fit QR and Button stacked perfectly
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
-        return QSize(option.rect.width(), 65);
+        bool isExpanded = index.data(TokenExpandedRole).toBool();
+        return QSize(option.rect.width(), isExpanded ? 240 : 65);
+    }
+
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            bool isExpanded = index.data(TokenExpandedRole).toBool();
+
+            if (isExpanded) {
+                // NEW BUTTON COORDINATES (Stacked under the QR code on the right)
+                QRect btnRect(option.rect.right() - 150, option.rect.top() + 190, 130, 30);
+                if (btnRect.contains(mouseEvent->pos())) {
+                    emit sendEmailClicked(index);
+                    return true;
+                }
+            }
+
+            emit tokenClicked(index);
+            return true;
+        }
+        return QStyledItemDelegate::editorEvent(event, model, option, index);
     }
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
@@ -370,27 +397,83 @@ public:
         painter->setRenderHint(QPainter::Antialiasing);
 
         QRect rect = option.rect;
-        painter->setBrush(Qt::white);
+        bool isExpanded = index.data(TokenExpandedRole).toBool();
 
-        QColor borderColor = QColor("#3498DB"); // Blue
-        if (option.state & QStyle::State_Selected) {
-            painter->setBrush(QColor("#EAF2F8")); // Light blue
-            borderColor = QColor("#2980B9"); // Darker blue
-        }
+        painter->setBrush(Qt::white);
+        QColor borderColor = QColor("#3498DB");
+
+        if (option.state & QStyle::State_Selected && !isExpanded) painter->setBrush(QColor("#EAF2F8"));
 
         painter->setPen(QPen(borderColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // Draw Text with a Ticket Emoji
+        // --- TITLE ---
+        QString title = "🎟️ " + index.data(Qt::DisplayRole).toString();
+        QRect titleRect = rect.adjusted(15, 15, -15, isExpanded ? -200 : 0);
+        QFont titleFont = option.font;
+        titleFont.setBold(true);
+        titleFont.setPointSize(12);
+        painter->setFont(titleFont);
         painter->setPen(QColor("#2C3E50"));
-        QString text = "🎟️ " + index.data(Qt::DisplayRole).toString();
-        QRect textRect = rect.adjusted(15, 0, -15, 0);
+        painter->drawText(titleRect, Qt::AlignLeft | Qt::AlignTop, title);
 
-        QFont font = option.font;
-        font.setBold(true);
-        font.setPointSize(11);
-        painter->setFont(font);
-        painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, text);
+        // --- EXPANDED DETAILS ---
+        if (isExpanded) {
+            painter->setPen(QPen(QColor("#ECF0F1"), 1, Qt::DashLine));
+            painter->drawLine(rect.left() + 15, rect.top() + 45, rect.right() - 15, rect.top() + 45);
+
+            // 1. DRAW TEXT DETAILS (Moved to the LEFT side)
+            QString issueDate = "Issued: " + index.data(TokenIssueDateRole).toString();
+            QString station = "Station: " + index.data(TokenStationRole).toString();
+
+            // We can show more of the hash now because it has the whole left side!
+            QString signature = "Hash: " + index.data(TokenSignatureRole).toString().left(45) + "...";
+
+            painter->setPen(QColor("#34495E"));
+            QFont detailFont = option.font; detailFont.setPointSize(10);
+            painter->setFont(detailFont);
+
+            painter->drawText(rect.left() + 20, rect.top() + 70, station);
+            painter->drawText(rect.left() + 20, rect.top() + 100, issueDate);
+
+            painter->setPen(QColor("#E74C3C"));
+            QFont monoFont("Courier New"); monoFont.setPointSize(10); monoFont.setBold(true);
+            painter->setFont(monoFont);
+            painter->drawText(rect.left() + 20, rect.top() + 140, signature);
+
+            // 2. DRAW REAL QR CODE IMAGE (Moved to the RIGHT side)
+            QRect qrRect(rect.right() - 150, rect.top() + 60, 130, 120);
+
+            QImage qrImage = qvariant_cast<QImage>(index.data(TokenQRCodeRole));
+
+            if (!qrImage.isNull()) {
+                QImage scaledQr = qrImage.scaled(qrRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                painter->drawImage(qrRect.topLeft(), scaledQr);
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen(QPen(QColor("#BDC3C7"), 1));
+                painter->drawRoundedRect(qrRect, 4, 4);
+            } else {
+                painter->setBrush(QColor("#F4F6F6"));
+                painter->setPen(QPen(QColor("#BDC3C7"), 2));
+                painter->drawRoundedRect(qrRect, 4, 4);
+
+                painter->setPen(QColor("#7F8C8D"));
+                QFont qrFont = option.font; qrFont.setPointSize(8); qrFont.setBold(true);
+                painter->setFont(qrFont);
+                painter->drawText(qrRect, Qt::AlignCenter, "QR CODE\nFAILED");
+            }
+
+            // 3. DRAW "SEND TO EMAIL" BUTTON (Stacked right UNDER the QR Code!)
+            QRect btnRect(rect.right() - 150, rect.top() + 190, 130, 30);
+            painter->setBrush(QColor("#27AE60"));
+            painter->setPen(Qt::NoPen);
+            painter->drawRoundedRect(btnRect, 4, 4);
+
+            painter->setPen(Qt::white);
+            QFont btnFont = option.font; btnFont.setPointSize(9); btnFont.setBold(true);
+            painter->setFont(btnFont);
+            painter->drawText(btnRect, Qt::AlignCenter, "✉ Send to Email");
+        }
 
         painter->restore();
     }

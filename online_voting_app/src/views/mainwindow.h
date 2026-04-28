@@ -10,6 +10,7 @@
 #include "views/AdminCreateElectionPage.h"
 #include "views/UserActiveElectionsPage.h"
 #include "views/UserMyTokensPage.h"
+#include "views/UserCandidacyPage.h"
 
 
 enum StackedPages
@@ -64,6 +65,12 @@ private slots:
     void on_userSidebarMyTokensBtn_clicked();
     void handleUserElectionSelected(QString electionId);
     void handleGenerateTokenRequested(QString electionId);
+    void handleEmailTokenRequested(Token selectedToken);
+    void handleUserNavigateToCandidateDetails(Candidate selectedCandidate);
+    void handleUserBackToActiveElections();
+    void on_userSidebarLocateStationBtn_clicked();
+    void on_userSidebarCandidacyBtn_clicked();
+    void handleCandidacyApplicationSubmit(Candidate newCandidate);
 
 private:
     Ui::MainWindow *ui;
@@ -75,9 +82,11 @@ private:
     AdminManagementPage *m_adminInnerPage_Admins;
     AdminElectionsPage *m_adminInnerPage_Elections;
     AdminCandidateDetailsPage *m_adminInnerPage_CandidateDetails;
-     AdminCreateElectionPage *m_adminInnerPage_CreateElection;
+    AdminCreateElectionPage *m_adminInnerPage_CreateElection;
     //user
-     UserActiveElectionsPage *userInnerPage_ActiveElections;
+    UserActiveElectionsPage *userInnerPage_ActiveElections;
     UserMyTokensPage *userInnerPage_MyTokens;
+    AdminCandidateDetailsPage *userInnerPage_CandidateDetails;
+    UserCandidacyPage *userInnerPage_Candidacy;
 };
 #endif // MAINWINDOW_H

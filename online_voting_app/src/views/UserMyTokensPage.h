@@ -5,9 +5,6 @@
 #include <QListView>
 #include <QLabel>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QStackedWidget>
-#include <QFrame>
 #include "models/entities/voters.h"
 #include "models/Models.h"
 
@@ -18,22 +15,17 @@ public:
     explicit UserMyTokensPage(QWidget *parent = nullptr);
     void loadTokens(Token* tokens, int size);
 
+signals:
+    // Emits the full token object so MainWindow can send the email
+    void emailTokenRequested(Token token);
+
 private slots:
-    void onTokenClicked(const QModelIndex &index);
+    void onTokenBoxClicked(const QModelIndex &index);
+    void onSendEmailClicked(const QModelIndex &index);
 
 private:
     QListView *tokenListView;
     TokenListModel *tokenModel;
-
-    QStackedWidget *rightStackedWidget;
-    QWidget *placeholderWidget;
-    QWidget *ticketContainer;
-
-    // Digital Ticket Labels
-    QLabel *ticketElectionIdLabel;
-    QLabel *ticketIssueDateLabel;
-    QLabel *ticketStationLabel;
-    QLabel *hashStringLabel;
 
     void setupUi();
 };
