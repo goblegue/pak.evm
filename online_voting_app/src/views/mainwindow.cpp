@@ -21,7 +21,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->MainStack->setCurrentIndex(4);
+    ui->MainStack->setCurrentIndex(3);
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com",
@@ -30,19 +30,28 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
                                           "dtgn pptc jspd vjnk");
 
     // 1. Create the custom page purely in C++
+    //admin
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
+    //user
+    userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
+    userInnerPage_MyTokens = new UserMyTokensPage(this);
 
     // 2. Add it to the Stacked Widget manually
+    //admin
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
     ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
     ui->adminContentStack->addWidget(m_adminInnerPage_CreateElection);
+    //user
+    ui->userContentStack->addWidget(userInnerPage_ActiveElections);
+    ui->userContentStack->addWidget(userInnerPage_MyTokens);
 
+    //admin
     connect(m_adminInnerPage_Candidates,&AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
@@ -57,6 +66,12 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleBackToElectionList);
     connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::createElectionRequested,
             this, &MainWindow::handleCreateElectionSubmit);
+    //user
+    connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
+            this, &MainWindow::handleUserElectionSelected);
+    connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::generateTokenRequested,
+            this, &MainWindow::handleGenerateTokenRequested);
+
 
 }
 
@@ -681,6 +696,93 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
     handleBackToElectionList(); // Go back to list after success
 }
 
+
+
+//---------------user-pages---------------
+void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
+
+    // Mock Data for Elections
+    int electionCount = 2;
+    Election* mockElections = new Election[electionCount];
+
+    mockElections[0].setId("ELEC-201");
+    mockElections[0].setTitle("National General Election");
+    mockElections[0].setStartTime(QDateTime::currentDateTime().addDays(-1));
+    mockElections[0].setEndTime(QDateTime::currentDateTime().addDays(1));
+    mockElections[0].setStatus(ElectionState::VotingOpen);
+
+    mockElections[1].setId("ELEC-202");
+    mockElections[1].setTitle("Provincial Assembly");
+    mockElections[1].setStartTime(QDateTime::currentDateTime().addDays(5));
+    mockElections[1].setEndTime(QDateTime::currentDateTime().addDays(6));
+    mockElections[1].setStatus(ElectionState::Published);
+
+    userInnerPage_ActiveElections->loadElections(mockElections, electionCount);
+    delete[] mockElections;
+}
+
+void MainWindow::handleUserElectionSelected(QString electionId)
+{
+    // When the user clicks an election, load the mock candidates for it
+    int candidateCount = 2;
+    Candidate* mockCandidates = new Candidate[candidateCount];
+
+    mockCandidates[0].setUserCnic("42101-111-1");
+    mockCandidates[0].setPartyName("Democratic Front");
+    mockCandidates[0].setStatus(ApprovalStatus::Approved);
+
+    mockCandidates[1].setUserCnic("42101-222-2");
+    mockCandidates[1].setPartyName("Liberty Party");
+    mockCandidates[1].setStatus(ApprovalStatus::Approved);
+
+    userInnerPage_ActiveElections->loadCandidates(mockCandidates, candidateCount);
+    delete [] mockCandidates;
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "Register & Generate Token"
+// ---------------------------------------------------------
+void MainWindow::handleGenerateTokenRequested(QString electionId)
+{
+    // For now, just show a popup to prove the signal works!
+    QMessageBox::information(this, "Token Generation",
+                             "Ready to generate token for Election ID:\n" + electionId +
+                                 "\n\n(Backend logic will be connected here!)"
+                             );
+
+    /*
+     * WHEN BACKEND IS READY, YOU WILL DO SOMETHING LIKE THIS:
+     * QString currentUserId = AuthManager::getInstance().getCurrentUser()->getId();
+     * bool success = TokenController::getInstance().generateAndSaveToken(currentUserId, electionId);
+     * if (success) {
+     *     QMessageBox::information(this, "Success", "Token securely generated! Check your 'My Tokens' tab.");
+     * }
+     */
+}
+
+void MainWindow::on_userSidebarMyTokensBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
+
+    // CHANGED TO 'Token'
+    int tokenCount = 2;
+    Token* mockTokens = new Token[tokenCount];
+
+    mockTokens[0].setElectionId("ELEC-201");
+    mockTokens[0].setAssignedStationId("ST-A (Gulberg Branch)");
+    mockTokens[0].setIssuedAt(QDateTime::currentDateTime());
+    mockTokens[0].setTokenSignature("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+
+    mockTokens[1].setElectionId("ELEC-202");
+    mockTokens[1].setAssignedStationId("ST-B (DHA Branch)");
+    mockTokens[1].setIssuedAt(QDateTime::currentDateTime().addDays(-2));
+    mockTokens[1].setTokenSignature("q8g9q8h24q8hg0284ghq2804hgq08g42qg8hq0248hgq028g408hq208ghq2840hgq0248hGQ=...");
+
+    userInnerPage_MyTokens->loadTokens(mockTokens, tokenCount);
+    delete[] mockTokens;
+}
 
 // Helping Functions
 

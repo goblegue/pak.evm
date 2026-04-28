@@ -353,4 +353,46 @@ public:
         painter->restore();
     }
 };
+
+// ==========================================
+// TOKEN WALLET DELEGATE
+// ==========================================
+class TokenDelegate : public QStyledItemDelegate {
+public:
+    explicit TokenDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
+
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        return QSize(option.rect.width(), 65);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        QRect rect = option.rect;
+        painter->setBrush(Qt::white);
+
+        QColor borderColor = QColor("#3498DB"); // Blue
+        if (option.state & QStyle::State_Selected) {
+            painter->setBrush(QColor("#EAF2F8")); // Light blue
+            borderColor = QColor("#2980B9"); // Darker blue
+        }
+
+        painter->setPen(QPen(borderColor, 2));
+        painter->drawRoundedRect(rect, 8, 8);
+
+        // Draw Text with a Ticket Emoji
+        painter->setPen(QColor("#2C3E50"));
+        QString text = "🎟️ " + index.data(Qt::DisplayRole).toString();
+        QRect textRect = rect.adjusted(15, 0, -15, 0);
+
+        QFont font = option.font;
+        font.setBold(true);
+        font.setPointSize(11);
+        painter->setFont(font);
+        painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, text);
+
+        painter->restore();
+    }
+};
 #endif // DELEGATES_H

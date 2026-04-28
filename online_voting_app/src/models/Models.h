@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include "models/states.h"
 #include "models/entities/admin.h"
+#include "models/entities/voters.h"
 
 // Define custom roles so the Delegate can fetch specific data
 enum CustomRoles
@@ -388,6 +389,43 @@ protected:
         int status = sourceModel()->data(index, ElectionStatusRole).toInt();
 
         return status == m_filterStatus;
+    }
+};
+
+// ==========================================
+// TOKEN LIST MODEL
+// ==========================================
+class TokenListModel : public QAbstractListModel {
+    Q_OBJECT
+private:
+    QList<Token> m_tokens; // CHANGED to Token
+
+public:
+    explicit TokenListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+
+    void setTokens(Token* tokensArray, int size) { // CHANGED to Token*
+        beginResetModel();
+        m_tokens.clear();
+        for(int i = 0; i < size; ++i) m_tokens.append(tokensArray[i]);
+        endResetModel();
+    }
+
+    Token getTokenAt(int index) const { return m_tokens.at(index); } // CHANGED to Token
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
+        if (parent.isValid()) return 0;
+        return m_tokens.count();
+    }
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
+        if (!index.isValid() || index.row() >= m_tokens.count()) return QVariant();
+
+        const Token &token = m_tokens.at(index.row()); // CHANGED to Token
+
+        if (role == Qt::DisplayRole) {
+            return "Election: " + token.getElectionId();
+        }
+        return QVariant();
     }
 };
 #endif // ADMIN_MODELS_H
