@@ -25,9 +25,10 @@ bool adminrepository::insertAdmin(const Admin &admin)
                 << static_cast<int>(admin.getStatus()) // Store Enum as Int
                 << "salt" << bsoncxx::types::b_int64{static_cast<int64_t>(admin.getSalt())};
 
+        QByteArray tempHash = admin.getPasswordHash();
         bsoncxx::types::b_binary binary_hash;
-        binary_hash.bytes = reinterpret_cast<const uint8_t *>(admin.getPasswordHash().data());
-        binary_hash.size = static_cast<uint32_t>(admin.getPasswordHash().size());
+        binary_hash.bytes = reinterpret_cast<const uint8_t *>(tempHash.constData());
+        binary_hash.size = static_cast<uint32_t>(tempHash.size());
         binary_hash.sub_type = bsoncxx::binary_sub_type::k_binary;
 
         builder << "passwordHash" << binary_hash;
@@ -71,7 +72,7 @@ std::optional<Admin> adminrepository::getAdminByEmail(const QString &email)
 
         auto binary = view["passwordHash"].get_binary();
         QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
-        admin.setPassword(hash, view["salt"].get_int32().value);
+        admin.setPassword(hash, view["salt"].get_int64().value);
         return admin;
     }
     return std::nullopt;
@@ -127,7 +128,7 @@ std::optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
         }
         auto binary = view["passwordHash"].get_binary();
         QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
-        admin.setPassword(hash, view["salt"].get_int32().value);
+        admin.setPassword(hash, view["salt"].get_int64().value);
 
         return admin;
     }

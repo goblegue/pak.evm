@@ -2,6 +2,12 @@
 build/
 .build/
 
+node_modules/
+
+*.py
+
+*.json
+
 
 
 # Ignore Qt Creator's default "Shadow Build" folders
