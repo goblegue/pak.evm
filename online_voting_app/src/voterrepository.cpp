@@ -42,7 +42,6 @@ bool voterrepository::insertToken(const Voters &token)
         builder << "id" << token.getId().toStdString()
                 << "userCnic" << token.getUserCnic().toStdString()
                 << "electionId" << token.getElectionId().toStdString()
-                << "assignedStationId" << token.getAssignedStationId().toStdString()
                 << "tokenSignature" << token.getTokenSignature().toStdString()
                 << "issuedAt" << static_cast<int64_t>(token.getIssuedAt().toMSecsSinceEpoch());
 

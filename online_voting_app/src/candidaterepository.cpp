@@ -29,7 +29,8 @@ bool candidaterepository::insertCandidate(const Candidate &candidate)
     {
         auto builder = document{};
         builder << "id" << candidate.getId().toStdString()
-                << "userCnic" << candidate.getUserCnic().toStdString()
+                << "candidateCnic" << candidate.getUserCnic().toStdString()
+                << "candidateName" << candidate.getName().toStdString()
                 << "electionId" << candidate.getElectionId().toStdString()
                 << "partyName" << candidate.getPartyName().toStdString()
                 << "symbolName" << candidate.getSymbolName().toStdString()
@@ -59,10 +60,11 @@ Candidate *candidaterepository::getCandidates(int &candidatesSize, const QString
     for (auto &&doc : cursor)
     {
         candidates[i].setId(QString::fromUtf8(doc["id"].get_string().value.data()));
-        candidates[i].setUserCnic(QString::fromUtf8(doc["userCnic"].get_string().value.data()));
+        candidates[i].setUserCnic(QString::fromUtf8(doc["candidateCnic"].get_string().value.data()));
         candidates[i].setElectionId(QString::fromUtf8(doc["electionId"].get_string().value.data()));
         candidates[i].setPartyName(QString::fromUtf8(doc["partyName"].get_string().value.data()));
         candidates[i].setSymbolName(QString::fromUtf8(doc["symbolName"].get_string().value.data()));
+        candidates[i].setName(QString::fromUtf8(doc["candidateName"].get_string().value.data()));
 
         // For the Status line, ensure you use get_int32() correctly
         candidates[i].setStatus(static_cast<ApprovalStatus>(doc["status"].get_int32().value));
@@ -76,7 +78,7 @@ bool candidaterepository::addStatusChangeRequest(const QString &targetCandidateC
                                                  const QString &requestingAdminId,
                                                  const ApprovalStatus &status)
 {
-    auto filter = document{} << "userCnic" << targetCandidateCnic.toStdString() << finalize;
+    auto filter = document{} << "candidateCnic" << targetCandidateCnic.toStdString() << finalize;
     auto update = document{} << "$push" << open_document
                              << "statusChangeRequests" << open_document
                              << "requestById" << requestingAdminId.toStdString()

@@ -21,13 +21,26 @@ pkg_check_modules(SQLCIPHER REQUIRED IMPORTED_TARGET sqlcipher)
 set(PROJECT_SOURCES
     src/main.cpp
 
+    # Models
+    src/models/entities/tokens.h
+    src/models/entities/voting_record.h
+    src/models/entities/system_config.h
+    src/models/entities/poll_worker.h
+    src/models/entities/candidates.h
+    src/models/entities/audit_log.h
+
 
     # Views (UI)
     src/views/mainwindow.h
     src/views/mainwindow.cpp
     src/views/mainwindow.ui
 
-    # Add your controllers and models here...
+    # Controllers
+
+    # Services
+    src/services/crypto/crypto_engine.h
+    src/services/crypto/crypto_engine.cpp
+
 )
 
 # 4. Create the Executable

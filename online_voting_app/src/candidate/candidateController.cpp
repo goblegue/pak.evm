@@ -190,6 +190,7 @@ QString CandidateController::getCandidatesJsonByElection(const QString &election
         // Set the keys and values (very similar to a Map)
         candidateObj["cnic"] = candidates[i].getUserCnic();
         candidateObj["party"] = candidates[i].getPartyName();
+        candidateObj["name"] = candidates[i].getName();
         candidateObj["symbolName"] = candidates[i].getSymbolName();
         candidateObj["symbolData"] = candidates[i].getSymbolBase64();
         candidateObj["imageData"] = candidates[i].getProfileImageBase64();
