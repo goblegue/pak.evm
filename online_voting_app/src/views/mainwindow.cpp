@@ -15,6 +15,8 @@
 #include "controllers/auth_manager.h"
 #include "models/entities/user.h"
 #include "ui_mainwindow.h"
+#include "votertokenmess.h"
+
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -466,6 +468,24 @@ void MainWindow::on_btnUserLogout_clicked()
     }
 }
 
+void MainWindow::on_btnAdminLogout_clicked()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this,
+                                  "Logout Confirmation",
+                                  "Are you sure you want to log out of the Pak Voting System?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        AuthManager::getInstance().logout();
+
+        ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+        this->setFocus();
+        QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
+    }
+}
+
 void MainWindow::on_adminSidebarCandidatesBtn_clicked()
 {
     // 1. Change the nested stacked widget to show the candidate page
@@ -760,11 +780,6 @@ void MainWindow::handleUserElectionSelected(QString electionId)
 // ---------------------------------------------------------
 void MainWindow::handleGenerateTokenRequested(QString electionId)
 {
-    // For now, just show a popup to prove the signal works!
-    QMessageBox::information(this, "Token Generation",
-                             "Ready to generate token for Election ID:\n" + electionId +
-                                 "\n\n(Backend logic will be connected here!)"
-                             );
 
     /*
      * WHEN BACKEND IS READY, YOU WILL DO SOMETHING LIKE THIS:
@@ -774,6 +789,17 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
      *     QMessageBox::information(this, "Success", "Token securely generated! Check your 'My Tokens' tab.");
      * }
      */
+
+    // 1. Get the data from your Backend/Database
+
+    // Example Base64 string (your backend will provide a real one)
+    QString backendBase64String = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+    // 2. Create the Dialog using the Designer class
+    VoterTokenMess tokenPopup(backendBase64String,electionId , this);
+
+    // 3. Show it modally (blocks the rest of the app until they click OK)
+    tokenPopup.exec();
 }
 
 void MainWindow::on_userSidebarMyTokensBtn_clicked()
@@ -900,6 +926,8 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
     // 3. Send the user back to the Active Elections page so they aren't stuck on the form
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
+
+
 
 // Helping Functions
 

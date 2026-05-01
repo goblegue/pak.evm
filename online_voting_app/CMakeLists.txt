@@ -120,6 +120,7 @@ qt_add_executable(online_voting_app
     src/views/UserActiveElectionsPage.h src/views/UserActiveElectionsPage.cpp
     src/views/UserMyTokensPage.h src/views/UserMyTokensPage.cpp
     src/views/UserCandidacyPage.h src/views/UserCandidacyPage.cpp
+    src/views/votertokenmess.h src/views/votertokenmess.cpp src/views/votertokenmess.ui
 
 )
 
