@@ -39,6 +39,8 @@ public:
 
     std::optional<QByteArray> generateBlockHash(const QString &blockData,
                                                 const QByteArray &previousHash);
+
+    std::optional<QByteArray> hashWorkerPassword(const QString &password, QByteArray &salt);
 };
 
 #endif
