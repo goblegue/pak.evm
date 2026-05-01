@@ -77,6 +77,7 @@ void AdminManagementPage::setupUi()
     // FULL WIDTH LIST VIEW
     // ==========================================
     adminListView = new QListView(this);
+    adminListView->setMouseTracking(true);
     adminListView->setModel(proxyModel);
     adminListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     adminListView->setSpacing(10);

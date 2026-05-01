@@ -15,6 +15,7 @@ void UserMyTokensPage::setupUi() {
     titleLabel->setStyleSheet("font-size: 24px; color: #2C3E50;");
 
     tokenListView = new QListView(this);
+    tokenListView->setMouseTracking(true);
     tokenListView->setModel(tokenModel);
     tokenListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tokenListView->setSpacing(15);

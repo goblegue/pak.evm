@@ -27,6 +27,7 @@ void UserActiveElectionsPage::setupUi() {
     electionLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
 
     electionListView = new QListView(this);
+    electionListView->setMouseTracking(true);
     electionListView->setModel(electionModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     electionListView->setSpacing(10);
@@ -92,6 +93,7 @@ void UserActiveElectionsPage::setupUi() {
     candidateLabel->setStyleSheet("font-size: 18px; color: #2C3E50; margin-top: 10px;");
 
     candidateListView = new QListView(this);
+    candidateListView->setMouseTracking(true);
     candidateListView->setModel(candidateModel);
     candidateListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     candidateListView->setSpacing(10);

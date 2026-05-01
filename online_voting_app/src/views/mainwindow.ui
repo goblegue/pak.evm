@@ -122,16 +122,16 @@ QFrame#userSidebarFrame QPushButton, QFrame#adminSidebarFrame QPushButton {
     border-radius: 0px; /* Removes pill shape for sidebar items */
 }
 
-/* Sidebar Hover Effect */
-QFrame#userSidebarFrame QPushButton:hover, QFrame#adminSidebarFrame QPushButton:hover {
-    background-color: #4b6ea8; /* Boosted hover color so it stands out against the new background */
+/* Sidebar Hover, Pressed, AND Active (Checked) Effects */
+QFrame#userSidebarFrame QPushButton:hover, 
+QFrame#adminSidebarFrame QPushButton:hover,
+QFrame#userSidebarFrame QPushButton:pressed, 
+QFrame#adminSidebarFrame QPushButton:pressed,
+QFrame#userSidebarFrame QPushButton:checked, 
+QFrame#adminSidebarFrame QPushButton:checked {
+    background-color: #4b6ea8; /* Boosted hover color */
     color: white;
-    border-left: 5px solid #ffffff; /* Cool white indicator bar on the left edge */
-}
-
-/* Sidebar Pressed Effect */
-QFrame#userSidebarFrame QPushButton:pressed, QFrame#adminSidebarFrame QPushButton:pressed {
-    background-color: #263a5c; /* Darkens nicely when clicked */
+    border-left: 5px solid #ffffff; /* Cool white indicator bar */
 }
 
 /* =======================================================
@@ -743,12 +743,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Home</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="userSidebarActiveElectionsBtn">
                <property name="text">
                 <string>Active Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -757,6 +769,12 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>My Tokens</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -764,12 +782,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Locate Station</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="userSidebarCandidacyBtn">
                <property name="text">
                 <string>Run for Office</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -790,6 +820,12 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               <widget class="QPushButton" name="btnUserLogout">
                <property name="text">
                 <string>Logout</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -908,12 +944,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Dashboard</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="adminSidebarElectionsBtn">
                <property name="text">
                 <string>Manage Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -922,12 +970,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Candidates</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="adminSidebarAdminsBtn">
                <property name="text">
                 <string>Admins</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -948,6 +1008,12 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               <widget class="QPushButton" name="btnAdminLogout">
                <property name="text">
                 <string>Logout</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>

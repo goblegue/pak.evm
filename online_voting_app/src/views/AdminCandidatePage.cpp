@@ -28,6 +28,7 @@ void AdminCandidatePage::setupUi()
     QLabel *electionLabel = new QLabel("<b>Select Election</b>", this);
     electionLabel->setStyleSheet("font-size: 16px; color: #2C3E50;");
     electionListView = new QListView(this);
+    electionListView->setMouseTracking(true);
     electionListView->setModel(electionModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     electionListView->setSpacing(10);
@@ -100,7 +101,7 @@ void AdminCandidatePage::setupUi()
 
     // 2. CRITICAL CHANGE: Tell the ListView to look at the PROXY model, not the base model!
     candidateListView->setModel(proxyModel);
-
+    candidateListView->setMouseTracking(true);
     candidateListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     candidateListView->setSpacing(10);
     candidateListView->setItemDelegate(new CandidateDelegate(this));

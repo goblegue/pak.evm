@@ -44,6 +44,9 @@ public:
             painter->setBrush(QColor("#EAF2F8")); // Light blue background when selected
             mainColor = QColor("#1A5276");        // Darker blue text/border
         }
+        else if (option.state & QStyle::State_MouseOver) {
+            painter->setBrush(QColor("#F4F6F7"));
+        }
 
         painter->setPen(QPen(mainColor, 2)); // 2px thick border
 
@@ -97,6 +100,8 @@ public:
         }
 
         if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
+        if (option.state & QStyle::State_MouseOver) painter->setBrush(QColor("#F4F6F7"));
+
 
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
@@ -204,6 +209,9 @@ public:
 
         if (option.state & QStyle::State_Selected)
             painter->setBrush(QColor("#F8F9F9"));
+        else if (option.state & QStyle::State_MouseOver)
+            painter->setBrush(QColor("#F4F6F7"));
+
 
         // Draw main border
         painter->setPen(QPen(statusColor, 2));
@@ -312,6 +320,8 @@ public:
         }
 
         if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
+        else if (option.state & QStyle::State_MouseOver) painter->setBrush(QColor("#F4F6F7"));
+
 
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
@@ -403,6 +413,8 @@ public:
         QColor borderColor = QColor("#3498DB");
 
         if (option.state & QStyle::State_Selected && !isExpanded) painter->setBrush(QColor("#EAF2F8"));
+        else if (option.state & QStyle::State_MouseOver && !isExpanded) painter->setBrush(QColor("#F4F6F7"));
+
 
         painter->setPen(QPen(borderColor, 2));
         painter->drawRoundedRect(rect, 8, 8);

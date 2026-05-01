@@ -28,6 +28,7 @@ void UserCandidacyPage::setupUi() {
     electionLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
 
     electionListView = new QListView(this);
+    electionListView->setMouseTracking(true);
     electionListView->setModel(electionModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     electionListView->setSpacing(10);
