@@ -145,8 +145,8 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
     QString names[2] = {"Root Admin One", "Root Admin Two"};
     QString cnics[2] = {"00000-0000000-1", "00000-0000000-2"};
-    QString emails[2] = {"admin1@evm.pk", "admin2@evm.pk"};
-    QString rawPass = "Admin123"; // Initial password for both
+    QString emails[2] = {"pak.evm.project@gmail.com", "admin2@evm.pk"};
+    QString rawPass = "1234";
 
     for (int i = 0; i < 2; ++i)
     {
@@ -169,7 +169,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
             m_userRepo->insertUser(admin);
         }
     }
-    qDebug() << "[Bootstrapper] Bootstrap complete. Use 'Admin123' to log in.";
+    qDebug() << "[Bootstrapper] Bootstrap complete. Use '1234' to log in.";
 }
 
 void SystemBootstrapper::instantiateRepositories()

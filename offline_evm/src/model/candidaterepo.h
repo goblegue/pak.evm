@@ -1,10 +1,11 @@
-#ifndef CANDIDATEREPO_H
-#define CANDIDATEREPO_H
+#ifndef CANDIDATEREPOSITORY_H
+#define CANDIDATEREPOSITORY_H
+#include "../models/entities/candidates.h"
 
-class candidaterepo
-{
+class CandidateRepository : public ICandidateRepository {
 public:
-    candidaterepo();
+    bool insertCandidate(const Candidate &candidate) override;
+    Candidate *getAllCandidates(int &candidatesSize) override;
+    bool clearAllCandidates() override;
 };
-
-#endif // CANDIDATEREPO_H
+#endif

@@ -5,29 +5,29 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
-
-
-struct Candidate { QString id; QString name; };
-struct VoteRecord { QString candidate_id; QString token_id; QString current_hash; };
+#include <QVariant>
+#include <QDebug>
+#include <mutex>
 
 class DatabaseManager {
 public:
     static DatabaseManager& instance();
-    bool init(const QString& dbPath, const QString& password);
+    bool init(const QString& dbPath);
     void close();
 
-    // MVP CRUD Operations
-    bool insertCandidate(const Candidate& cand);
-    bool isTokenUsed(const QString& tokenId);
-    bool insertVoteRecord(const VoteRecord& vote);
-    QString getPreviousHash();
+    // The Lead's special queries
+    bool cleanupForNewElection();
+    bool validateMasterPassword();
+
+    // Global Mutex for thread safety across all repositories
+    std::mutex& getMutex();
 
 private:
     DatabaseManager() = default;
-    ~DatabaseManager();
+    ~DatabaseManager() { close(); }
 
     QSqlDatabase m_db;
-
+    std::mutex m_mutex;
     bool createTables();
 };
 

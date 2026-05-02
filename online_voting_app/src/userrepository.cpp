@@ -5,22 +5,24 @@
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/types.hpp>
 
+using bsoncxx::builder::stream::close_document;
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_document;
-using bsoncxx::builder::stream::close_document;
 
-userrepository::userrepository() {
-    m_collection= DatabaseManager::getInstance().getDatabase()["Users"];
-
+userrepository::userrepository()
+{
+    m_collection = DatabaseManager::getInstance().getDatabase()["Users"];
 }
 bool userrepository::insertUser(const User &user)
 {
-    try {
+    try
+    {
         // 1. Prepare the binary password hash
+        QByteArray tempHash = user.getPasswordHash();
         bsoncxx::types::b_binary binary_hash;
-        binary_hash.bytes = reinterpret_cast<const uint8_t *>(user.getPasswordHash().data());
-        binary_hash.size = static_cast<uint32_t>(user.getPasswordHash().size());
+        binary_hash.bytes = reinterpret_cast<const uint8_t *>(tempHash.constData());
+        binary_hash.size = static_cast<uint32_t>(tempHash.size());
         binary_hash.sub_type = bsoncxx::binary_sub_type::k_binary;
 
         // 2. EXPLICITLY create a BSON 64-bit integer object for the salt
@@ -36,18 +38,21 @@ bool userrepository::insertUser(const User &user)
 
         m_collection.insert_one(final_doc.view());
         return true;
-
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
         qDebug() << "MongoDB Insert Error:" << e.what();
         return false;
     }
 }
 
-std::optional<User> userrepository::getUserByCnic(const QString &cnic) {
+std::optional<User> userrepository::getUserByCnic(const QString &cnic)
+{
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
         User user;
         user.setCnic(QString::fromUtf8(view["cnic"].get_string().value.data()));
@@ -58,7 +63,7 @@ std::optional<User> userrepository::getUserByCnic(const QString &cnic) {
 
         // Extracting binary hash back to QByteArray
         auto binary = view["passwordHash"].get_binary();
-        QByteArray hash(reinterpret_cast<const char*>(binary.bytes), binary.size);
+        QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
         user.setPassword(hash, view["salt"].get_int64().value);
 
         return user;
@@ -66,13 +71,15 @@ std::optional<User> userrepository::getUserByCnic(const QString &cnic) {
     return std::nullopt;
 }
 
-std::optional<User> userrepository::getUserByEmail(const QString &email) {
-    //creating a filter
+std::optional<User> userrepository::getUserByEmail(const QString &email)
+{
+    // creating a filter
     auto filter = document{} << "email" << email.toStdString() << finalize;
-     //searching
+    // searching
     auto result = m_collection.find_one(filter.view());
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
         User user;
         user.setCnic(QString::fromUtf8(view["cnic"].get_string().value.data()));
@@ -82,14 +89,15 @@ std::optional<User> userrepository::getUserByEmail(const QString &email) {
         user.setEmailVerified(view["isEmailVerified"].get_bool().value);
 
         auto binary = view["passwordHash"].get_binary();
-        QByteArray hash(reinterpret_cast<const char*>(binary.bytes), binary.size);
+        QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
         user.setPassword(hash, view["salt"].get_int64().value);
 
         return user;
     }
     return std::nullopt;
 }
-bool userrepository::updateUserEmailVerification(const QString &email, bool status) {
+bool userrepository::updateUserEmailVerification(const QString &email, bool status)
+{
     auto filter = document{} << "email" << email.toStdString() << finalize;
     auto update = document{} << "$set" << open_document
                              << "isEmailVerified" << status
