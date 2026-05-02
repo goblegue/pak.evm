@@ -9,9 +9,13 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("Offline EVM System");
     this->resize(1000, 650);
 
+    scanPage = new EvmScanPage(this);
+    this->setCentralWidget(scanPage);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+

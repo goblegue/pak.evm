@@ -24,7 +24,7 @@ public:
     explicit OfflineSetupWizard(QWidget *parent = nullptr);
 
 signals:
-    void setupFinished();
+    void setupComplete();
 
 private slots:
     // Navigation Logic

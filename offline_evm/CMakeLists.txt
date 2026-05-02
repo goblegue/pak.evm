@@ -10,8 +10,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # 1. Find Qt6 Components
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Sql)
-
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Sql Network Multimedia MultimediaWidgets)
 # 2. Use PkgConfig to find Libsodium and SQLCipher
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
@@ -45,13 +44,18 @@ set(PROJECT_SOURCES
 
 # 4. Create the Executable
 add_executable(OfflineVotingKiosk ${PROJECT_SOURCES}
-    src/views/OfflineSetupWizard.h src/views/OfflineSetupWizard.cpp)
+    src/views/OfflineSetupWizard.h src/views/OfflineSetupWizard.cpp
+    src/views/EvmScanPage.h src/views/EvmScanPage.cpp
+    src/Resource.qrc)
 
 # 5. Link Libraries
 target_link_libraries(OfflineVotingKiosk PRIVATE
     Qt6::Core
     Qt6::Widgets
     Qt6::Sql
+    Qt::Network
+    Qt::Multimedia
+    Qt::MultimediaWidgets
     PkgConfig::SODIUM      # Links Libsodium (Argon2, Ed25519)
     PkgConfig::SQLCIPHER   # Links SQLCipher (Encrypted SQLite)
 )

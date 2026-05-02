@@ -1,5 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+#include "EvmScanPage.h"
 
 #include <QMainWindow>
 #include "OfflineSetupWizard.h"
@@ -21,6 +22,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-
+    EvmScanPage *scanPage;
 };
 #endif // MAINWINDOW_H

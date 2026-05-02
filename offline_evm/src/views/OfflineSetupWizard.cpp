@@ -130,7 +130,7 @@ void OfflineSetupWizard::buildWelcomePage() {
     welcomeNextBtn = new QPushButton("Next: Setup Master Key ➔", welcomePage);
     welcomeNextBtn->setCursor(Qt::PointingHandCursor);
     welcomeNextBtn->setFixedSize(250, 45);
-    welcomeNextBtn->setStyleSheet("QPushButton { background-color: #580000; /* Dark reddish color to match the sidebar bottom */color: #FFFFFF;padding: 12px 24px;border: none;border-radius: 8px;font-weight: bold;position: absolute;bottom: 40px;right: 40px;cursor: pointer;transition: background-color 0.3s ease; }"
+    welcomeNextBtn->setStyleSheet("QPushButton { background-color: #580000; /* Dark reddish color to match the sidebar bottom */color: #FFFFFF;padding: 12px 24px;border: none;border-radius: 8px;font-weight: bold;position: absolute;bottom: 40px;right: 40px; }"
                                   "QPushButton:hover { background-color: #7A1A1A; }");
 
     bottomLayout->addStretch();
@@ -494,6 +494,7 @@ void OfflineSetupWizard::buildLoadElectionPage() {
     connect(browseFileBtn, &QPushButton::clicked, this, &OfflineSetupWizard::onBrowseFileClicked);
     connect(loadBackBtn, &QPushButton::clicked, this, &OfflineSetupWizard::goBackToAdminSetup);
     connect(loadNextBtn, &QPushButton::clicked, this, &OfflineSetupWizard::processLoadElection);
+
 }
 
 // ==========================================
@@ -544,8 +545,7 @@ void OfflineSetupWizard::onBrowseFileClicked() {
 }
 
 void OfflineSetupWizard::processLoadElection() {
-    // For now, just show a placeholder since we haven't built Page 5 yet!
-    QMessageBox::information(this, "Success", "Election data successfully loaded into memory!\n\n(Next page coming soon...)");
+    emit setupComplete();
 }
 /*void OfflineSetupWizard::finishSetup() {
     QMessageBox::information(this, "Setup Complete", "The machine has been successfully configured and local administrators have been registered!\n\nLaunching Kiosk Mode...");
