@@ -1,4 +1,3 @@
---- START OF FILE audit_log.h ---
 #ifndef AUDIT_LOG_H
 #define AUDIT_LOG_H
 

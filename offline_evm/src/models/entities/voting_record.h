@@ -4,6 +4,8 @@
 #include <QString>
 #include <QByteArray>
 
+class Token; // Forward declaration
+
 class VoteRecord
 {
 private:
@@ -57,8 +59,8 @@ class IVoteRepository
 public:
     virtual ~IVoteRepository() = default;
     // VERY IMPORTANT: MUST BE WRAPPED IN SQLite `BEGIN TRANSACTION`
-    virtual bool insertVote(const VoteRecord &vote) = 0; 
-    
+    virtual bool insertVoteTransaction(const VoteRecord &vote, const Token &token) = 0;
+
     // Returns the hash of the last inserted vote. Returns empty if genesis vote.
     virtual QByteArray getLatestVoteHash() = 0;
     

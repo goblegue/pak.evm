@@ -12,7 +12,7 @@
 class AuthManager
 {
 private:
-    IWorkerRepository *m_adminRepo;
+    IWorkerRepository *m_workerRepo;
     ITokenRepository *m_usedTokenRepo;
 
     std::unique_ptr<PollWorker> m_currentWorker;
@@ -42,11 +42,12 @@ public:
     // Called by ElectionController when USB is loaded
     void setSystemPublicKey(const QByteArray &publicKey) { m_systemPublicKey = publicKey; }
 
-    // --- ADMIN MANAGEMENT ---
-    bool loginAdmin(const QString &username, const QString &password);
-    void logoutAdmin();
-    bool isAdminLoggedIn() const { return m_currentWorker != nullptr; }
-    PollWorker *getCurrentAdmin() const { return m_currentWorker.get(); }
+
+    // --- worker MANAGEMENT ---
+    bool loginWorker(const QString &username, const QString &password);
+    void logoutWorker();
+    bool isWorkerLoggedIn() const { return m_currentWorker != nullptr; }
+    PollWorker *getCurrentWorker() const { return m_currentWorker.get(); }
 
     // --- MASTER AUTHORITY ---
     bool unlockMasterAuthority(const QString &masterPassword);

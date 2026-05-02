@@ -5,13 +5,13 @@
 #include <sodium.h>
 
 AuthManager::AuthManager() 
-    : m_adminRepo(nullptr), m_usedTokenRepo(nullptr),
+    : m_workerRepo(nullptr), m_usedTokenRepo(nullptr),
       m_currentWorker(nullptr), m_isMasterUnlocked(false)
 {
 }
 
 AuthManager::~AuthManager() {
-    logoutAdmin();
+    logoutWorker();
     lockMasterAuthority();
 }
 
@@ -20,47 +20,47 @@ AuthManager &AuthManager::getInstance() {
     return instance;
 }
 
-void AuthManager::injectDependencies(IWorkerRepository *adminRepo, ITokenRepository *tokenRepo)
+void AuthManager::injectDependencies(IWorkerRepository *workerRepo, ITokenRepository *tokenRepo)
 {
-    m_adminRepo = adminRepo;
+    m_workerRepo = workerRepo;
     m_usedTokenRepo = tokenRepo;
 }
 
 // ==========================================
-// ADMIN OPERATIONAL LOGIN
+// worker OPERATIONAL LOGIN
 // ==========================================
-bool AuthManager::loginAdmin(const QString &username, const QString &password)
+bool AuthManager::loginWorker(const QString &username, const QString &password)
 {
-    if (!m_adminRepo) return false;
+    if (!m_workerRepo) return false;
 
-    auto adminOpt = m_adminRepo->getWorkerByUsername(username);
-    if (!adminOpt.has_value()) return false;
+    auto workerOpt = m_workerRepo->getWorkerByUsername(username);
+    if (!workerOpt.has_value()) return false;
 
-    PollWorker admin = adminOpt.value();
+    PollWorker worker = workerOpt.value();
 
     QByteArray pwdBytes = password.toUtf8();
-    QByteArray salt = admin.getSalt();
+    QByteArray salt = worker.getSalt();
 
-    // Use CryptoEngine to hash the input with the Admin's stored salt
+    // Use CryptoEngine to hash the input with the worker's stored salt
     auto hashOpt = CryptoEngine::getInstance().hashWorkerPassword(pwdBytes, salt);
     if (!hashOpt.has_value())
         return false;
     QByteArray hashedInput = hashOpt.value();
 
-    sodium_memzero(pwdBytes.data(), pwdBytes.size()); // Secure wipe
+    sodium_memzero(pwdBytes.data(), pwdBytes.size()); 
 
     if (hashedInput.isEmpty()) return false;
 
     // Constant-time comparison
-    if (sodium_memcmp(hashedInput.constData(), admin.getPasswordHash().constData(), hashedInput.size()) == 0) {
-        m_currentWorker = std::make_unique<PollWorker>(admin);
+    if (sodium_memcmp(hashedInput.constData(), worker.getPasswordHash().constData(), hashedInput.size()) == 0) {
+        m_currentWorker = std::make_unique<PollWorker>(worker);
         return true;
     }
     
     return false;
 }
 
-void AuthManager::logoutAdmin() {
+void AuthManager::logoutWorker() {
     m_currentWorker.reset();
 }
 

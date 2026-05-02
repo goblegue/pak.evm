@@ -38,6 +38,8 @@ set(PROJECT_SOURCES
     # Controllers
     src/controllers/auth_manager.h
     src/controllers/auth_manager.cpp
+    src/controllers/election_controller.h
+    src/controllers/election_controller.cpp
 
 
     # Services

@@ -33,7 +33,6 @@ QByteArray CryptoEngine::generateAndStoreRandomSalt()
     QSettings settings;
     settings.setValue("encryptionSalt", saltHex);
     settings.sync();
-
     return salt;
 }
 std::optional<QByteArray> CryptoEngine::hashWorkerPassword(const QString &password, QByteArray &salt)
