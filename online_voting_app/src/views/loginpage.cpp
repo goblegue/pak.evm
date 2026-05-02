@@ -1,11 +1,14 @@
 #include "loginpage.h"
-#include "ui_loginpage.h"
-#include <QMessageBox>
+#include <QFuture>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QRegularExpression>
+#include <QtConcurrent>
+#include "ui_loginpage.h"
 
 LoginPage::LoginPage(QWidget *parent)
-    : QWidget(parent), ui(new Ui::LoginPage)
+    : QWidget(parent)
+    , ui(new Ui::LoginPage)
 {
     ui->setupUi(this);
 }
@@ -23,13 +26,11 @@ int LoginPage::identifyInputType(const QString &input)
     QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
 
-    if (emailRegex.match(input).hasMatch())
-    {
+    if (emailRegex.match(input).hasMatch()) {
         return 1; // Email
     }
 
-    if (cnicRegex.match(input).hasMatch())
-    {
+    if (cnicRegex.match(input).hasMatch()) {
         return 2; // CNIC
     }
 
@@ -47,20 +48,55 @@ void LoginPage::on_loginSubmitBtn_clicked()
     QString password = ui->passwordInput->text();
 
     if (username.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, "Error", "Please enter your Voter ID and Password.");
+        QMessageBox::warning(this, "Error", "Please enter your CNIC or Email and Password.");
         return;
     }
+
     int inputType = identifyInputType(username);
     AuthManager::LoginResult loginResult;
-    if (inputType == 1) {
-        loginResult = AuthManager::getInstance().login(password, "", username);
-    } else if (inputType == 2) {
-        loginResult = AuthManager::getInstance().login(password, username, "");
-    } else {
+    if (inputType == 0) {
         QMessageBox::warning(this, "Error", "Please enter Correct Format!");
         return;
     }
 
+    // ... validation code above ...
+
+    ui->loginSubmitBtn->setEnabled(false);
+    ui->goToSignupBtn->setEnabled(false);
+    ui->loginSubmitBtn->setText("Logging in...");
+
+    // 1. Clear previous connections
+    disconnect(&m_loginWatcher,
+               &QFutureWatcher<AuthManager::LoginResult>::finished,
+               nullptr,
+               nullptr);
+
+    // 2. THE FIX: ADD THE SEMICOLON HERE (Line 80ish)
+    connect(&m_loginWatcher,
+            &QFutureWatcher<AuthManager::LoginResult>::finished,
+            this,
+            &LoginPage::handleLoginFinished);
+
+    // 3. Launch the thread (Use 'auto' to let the compiler handle the template)
+    auto future = QtConcurrent::run([=]() {
+        if (inputType == 1) {
+            return AuthManager::getInstance().login(password, "", username);
+        } else {
+            return AuthManager::getInstance().login(password, username, "");
+        }
+    });
+
+    // 4. Connect the future to the watcher
+    m_loginWatcher.setFuture(future);
+}
+
+void LoginPage::handleLoginFinished()
+{
+    ui->loginSubmitBtn->setEnabled(true);
+    ui->goToSignupBtn->setEnabled(true);
+    ui->loginSubmitBtn->setText("Login");
+
+    AuthManager::LoginResult loginResult = m_loginWatcher.result();
     if (loginResult == AuthManager::LoginResult::InvalidCnicOrEmail) {
         QMessageBox::warning(this, "Error", "Incorrect CNIC or Email!");
         return;

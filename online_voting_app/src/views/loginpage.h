@@ -2,6 +2,7 @@
 #define LOGINPAGE_H
 
 #include <QWidget>
+#include <QFutureWatcher>
 #include "controllers/auth_manager.h" // For LoginResult etc
 
 namespace Ui
@@ -26,10 +27,12 @@ signals:
 private slots:
     void on_loginSubmitBtn_clicked();
     void on_goToSignupBtn_clicked();
+    void handleLoginFinished();
 
 private:
     Ui::LoginPage *ui;
     int identifyInputType(const QString &input);
+    QFutureWatcher<AuthManager::LoginResult> m_loginWatcher;
 };
 
 #endif // LOGINPAGE_H
