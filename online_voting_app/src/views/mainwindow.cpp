@@ -1,4 +1,5 @@
 #include "views/mainwindow.h"
+#include <QDateTime>
 #include <QFile>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -6,16 +7,16 @@
 #include <QPainterPath>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include <QDateTime>
 #include <QUuid>
-#include "views/AdminCandidatePage.h"
+#include "controllers/auth_manager.h"
+#include "controllers/candidateController.h"
+#include "controllers/electionController.h"
 #include "models/Models.h"
 #include "models/entities/election.h"
-#include "controllers/electionController.h"
-#include "services/email/emailservice.h"
-#include "controllers/auth_manager.h"
 #include "models/entities/user.h"
+#include "services/email/emailservice.h"
 #include "ui_mainwindow.h"
+#include "views/AdminCandidatePage.h"
 #include "votertokenmess.h"
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
@@ -203,31 +204,45 @@ void MainWindow::on_adminSidebarCandidatesBtn_clicked()
     // 1. Change the nested stacked widget to show the candidate page
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 
-    // 2. Fetch all Elections from Database (Using Mock Data for now)
-    int electionCount = 3;
-    Election *mockElections = new Election[electionCount];
+    int electionCount = 0;
+    Election *electionList = ElectionController::getInstance().getAllElections(electionCount);
 
-    mockElections[0].setId("ELEC-001");
-    mockElections[0].setTitle("Presidential Election 2026");
+    Election *approvedElections = new Election[0];
+    int approvedCount = 0;
 
-    mockElections[1].setId("ELEC-002");
-    mockElections[1].setTitle("Karachi Mayoral Election");
-
-    mockElections[2].setId("ELEC-003");
-    mockElections[2].setTitle("Punjab Provincial Assembly");
+    for (int i = 0; i < electionCount; i++)
+    {
+        if (electionList[i].getStatus() != ElectionState::Rejected &&
+            electionList[i].getStatus() != ElectionState::Pending)
+        {
+            Election *temp = new Election[approvedCount + 1];
+            for (int j = 0; j < approvedCount; j++)
+            {
+                temp[j] = approvedElections[j];
+            }
+            delete[] approvedElections;
+            approvedElections = temp;
+            approvedElections[approvedCount] = electionList[i];
+            approvedCount++;
+        }
+    }
 
     // 3. Load them into the UI
-    m_adminInnerPage_Candidates->loadElections(mockElections, electionCount);
+    m_adminInnerPage_Candidates->loadElections(approvedElections, approvedCount);
 
     // 4. Cleanup memory to prevent leaks!
-    delete[] mockElections;
+    delete[] electionList;
+    delete[] approvedElections;
 }
 void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 {
-    // Normally: candidateRepo->getCandidatesByElection(electionId, size);
+    int candidateCount = 0;
+    Candidate *candidatesForElection = CandidateController::getInstance()
+                                           .getCandidatesByElection(electionId,
+                                                                    candidateCount,
+                                                                    true);
 
     // Mock Data for now (so the Frontend Engineer can test the UI colors)
-    int candidateCount = 3;
     Candidate *mockCandidates = new Candidate[candidateCount];
 
     mockCandidates[0].setUserCnic("42101-1234567-1");
@@ -381,8 +396,7 @@ void MainWindow::handleBackToCandidateList()
 // ---------------------------------------------------------
 void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus)
 {
-    // 1. Get current Admin ID (Using a fake one for testing if AuthManager isn't hooked up yet)
-    // QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+
     QString currentAdminCnic = "42101-ADMIN-1";
 
     QString statusText = (newStatus == ApprovalStatus::Approved) ? "APPROVE" : "REJECT";
@@ -394,7 +408,7 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
                                      "Action: %2\n"
                                      "Requested By: Admin %3")
                                  .arg(targetCnic, statusText, currentAdminCnic));
-
+    // TODO
     /*
      * WHEN YOUR BACKEND IS READY, THIS IS ALL YOU WRITE HERE:
      *
@@ -425,12 +439,6 @@ void MainWindow::handleBackToElectionList()
 // ---------------------------------------------------------
 void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime, QDateTime startTime, QDateTime endTime)
 {
-    QMessageBox::information(this, "Simulation",
-                             QString("Ready to send to ElectionController!\n\nTitle: %1\nPublish: %2\nStart: %3\nEnd: %4")
-                                 .arg(title,
-                                      publishTime.toString("dd MMM yyyy"),
-                                      startTime.toString("dd MMM yyyy"),
-                                      endTime.toString("dd MMM yyyy")));
     QString id = "ELEC-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper();
     Election newElection;
     newElection.setId(id);
@@ -441,7 +449,7 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
     bool success = ElectionController::getInstance().createElection(newElection);
     if (success)
     {
-        QMessageBox::information(this, "Success", "Election created as Draft.");
+        QMessageBox::information(this, "Success", "Election created as Pending  \nWaiting for other admins to approve.");
     }
     else
     {

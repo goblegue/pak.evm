@@ -144,8 +144,9 @@ Candidate *CandidateController::getCandidatesByElection(const QString &electionI
         return nullptr; // Election not found
     }
     Election election = electionOpt.value();
-    if (!isAdminRequesting && (election.getStatus() == ElectionState::Drafted || election.getStatus() == ElectionState::Rejected))
-    {
+    if (!isAdminRequesting
+        && (election.getStatus() == ElectionState::Pending
+            || election.getStatus() == ElectionState::Rejected)) {
         candidatesSize = 0;
         return nullptr; // Voters cannot see candidates for elections that are not active
     }
