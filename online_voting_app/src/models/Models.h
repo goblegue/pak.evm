@@ -311,7 +311,7 @@ private:
 
     QString statusToString(ElectionState status) const {
         switch(status) {
-        case ElectionState::Draft: return "Draft";
+        case ElectionState::Drafted: return "Draft";
         case ElectionState::Rejected: return "Rejected";
         case ElectionState::Published: return "Published";
         case ElectionState::VotingOpen: return "Voting Open";

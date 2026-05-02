@@ -21,6 +21,7 @@ bool electionrepository::insertElection(const Election &election)
         auto builder = document{};
         builder << "id" << election.getId().toStdString()
                 << "title" << election.getTitle().toStdString()
+                << "publishTime" << static_cast<int64_t>(election.getPublishTime().toMSecsSinceEpoch())
                 << "startTime" << static_cast<int64_t>(election.getStartTime().toMSecsSinceEpoch())
                 << "endTime" << static_cast<int64_t>(election.getEndTime().toMSecsSinceEpoch())
                 << "status" << static_cast<int>(election.getStatus());
@@ -69,6 +70,7 @@ std::optional<Election> electionrepository::getElectionById(const QString &id)
     election.setTitle(QString::fromUtf8(view["title"].get_string().value.data()));
     election.setStartTime(QDateTime::fromMSecsSinceEpoch(view["startTime"].get_int64().value));
     election.setEndTime(QDateTime::fromMSecsSinceEpoch(view["endTime"].get_int64().value));
+    election.setPublishTime(QDateTime::fromMSecsSinceEpoch(view["publishTime"].get_int64().value));
     election.setStatus(static_cast<ElectionState>(view["status"].get_int32().value));
 
     if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
@@ -100,6 +102,7 @@ Election *electionrepository::getAllElections(int &electionsSize)
     {
         electionArray[i].setId(QString::fromUtf8(doc["id"].get_string().value.data()));
         electionArray[i].setTitle(QString::fromUtf8(doc["title"].get_string().value.data()));
+        electionArray[i].setPublishTime(QDateTime::fromMSecsSinceEpoch(doc["publishTime"].get_int64().value));
         electionArray[i].setStartTime(QDateTime::fromMSecsSinceEpoch(doc["startTime"].get_int64().value));
         electionArray[i].setEndTime(QDateTime::fromMSecsSinceEpoch(doc["endTime"].get_int64().value));
         electionArray[i].setStatus(static_cast<ElectionState>(doc["status"].get_int32().value));

@@ -58,7 +58,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(4);
 
     connect(m_loginPage, &LoginPage::goToSignupRequested, this, &MainWindow::handleGoToSignupRequested);
     connect(m_loginPage, &LoginPage::loginSuccessUser, this, &MainWindow::handleLoginSuccessUser);
@@ -445,7 +445,7 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
     mockElections[2].setTitle("Karachi Medical Board Draft");
     mockElections[2].setStartTime(QDateTime::currentDateTime().addDays(20));
     mockElections[2].setEndTime(QDateTime::currentDateTime().addDays(21));
-    mockElections[2].setStatus(ElectionState::Draft);
+    mockElections[2].setStatus(ElectionState::Drafted);
 
     // Status: Rejected (Red)
     mockElections[3].setId("ELEC-104");
@@ -564,16 +564,17 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
                                       startTime.toString("dd MMM yyyy"),
                                       endTime.toString("dd MMM yyyy")));
 
-    /* WHEN BACKEND IS READY:
-     * Election newElection;
-     * newElection.setTitle(title);
-     * newElection.setStartTime(startTime);
-     * newElection.setEndTime(endTime);
-     * // ... handle publishing time ...
-     * ElectionController::getInstance().createElection(newElection);
-     * QMessageBox::information(this, "Success", "Election created as Draft.");
-     */
-
+    Election newElection;
+    newElection.setTitle(title);
+    newElection.setPublishTime(publishTime);
+    newElection.setStartTime(startTime);
+    newElection.setEndTime(endTime);
+    bool success = ElectionController::getInstance().createElection(newElection);
+    if (success) {
+        QMessageBox::information(this, "Success", "Election created as Draft.");
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to create election.");
+    }
     handleBackToElectionList(); // Go back to list after success
 }
 
