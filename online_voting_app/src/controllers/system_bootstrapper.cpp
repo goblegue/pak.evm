@@ -135,8 +135,7 @@ void SystemBootstrapper::loadOrGenerateEnv()
 void SystemBootstrapper::bootstrapFirstAdmins()
 {
     // Check if we already have admins to avoid duplicate insertion errors
-    if (m_adminRepo->getAdminCount() >= 2)
-    {
+    if (m_adminRepo->getAdminCount() >= 2) {
         qDebug() << "[Bootstrapper] System already has bootstrapped admins.";
         return;
     }
@@ -145,11 +144,10 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
     QString names[2] = {"Root Admin One", "Root Admin Two"};
     QString cnics[2] = {"00000-0000000-1", "00000-0000000-2"};
-    QString emails[2] = {"am7862760@gmail.com", "pak.evm.project@gmail.com"};
-    QByteArray rawPass = "Admin123"; // Initial password for both
+    QString emails[2] = {"pak.evm.project@gmail.com", "admin2@evm.pk"};
+    QString rawPass = "1234";
 
-    for (int i = 0; i < 2; ++i)
-    {
+    for (int i = 0; i < 2; ++i) {
         Admin admin;
         admin.setId(QString("ROOT_00%1").arg(i + 1));
         admin.setName(names[i]);
@@ -159,9 +157,8 @@ void SystemBootstrapper::bootstrapFirstAdmins()
         admin.setStatus(ApprovalStatus::Approved); // Direct approval
 
         // Securely hash the bootstrap password
-        auto hashRes = CryptoEngine::getInstance().hashData(rawPass);
-        if (hashRes)
-        {
+        auto hashRes = CryptoEngine::getInstance().hashData(rawPass.toUtf8());
+        if (hashRes) {
             admin.setPassword(hashRes->hash, hashRes->salt);
             m_adminRepo->insertAdmin(admin);
 
@@ -169,7 +166,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
             m_userRepo->insertUser(admin);
         }
     }
-    qDebug() << "[Bootstrapper] Bootstrap complete. Use 'Admin123' to log in.";
+    qDebug() << "[Bootstrapper] Bootstrap complete. Use '1234' to log in.";
 }
 
 void SystemBootstrapper::instantiateRepositories()

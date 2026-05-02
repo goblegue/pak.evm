@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(online_voting_app LANGUAGES CXX)
 
 # 1. Require Qt and PkgConfig
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Network)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Network Concurrent)
 find_package(PkgConfig REQUIRED)
 
 # Automatically handles C++17/C++20, AUTOMOC, AUTORCC, and AUTOUIC
@@ -121,6 +121,7 @@ qt_add_executable(online_voting_app
     src/views/UserMyTokensPage.h src/views/UserMyTokensPage.cpp
     src/views/UserCandidacyPage.h src/views/UserCandidacyPage.cpp
     src/views/votertokenmess.h src/views/votertokenmess.cpp src/views/votertokenmess.ui
+    src/views/loginpage.h src/views/loginpage.cpp src/views/loginpage.ui
 
 )
 
@@ -158,6 +159,7 @@ target_link_libraries(online_voting_app
         Qt::Core
         Qt::Widgets
         Qt::Network
+        Qt::Concurrent
         PkgConfig::MONGOCXX
         PkgConfig::BSONCXX
         ${OS_SPECIFIC_MONGO_C_DRIVERS}  # <-- This variable holds the correct OS files!
