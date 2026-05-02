@@ -7,8 +7,7 @@
 #include "ui_loginpage.h"
 
 LoginPage::LoginPage(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::LoginPage)
+    : QWidget(parent), ui(new Ui::LoginPage)
 {
     ui->setupUi(this);
 }
@@ -26,11 +25,13 @@ int LoginPage::identifyInputType(const QString &input)
     QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
 
-    if (emailRegex.match(input).hasMatch()) {
+    if (emailRegex.match(input).hasMatch())
+    {
         return 1; // Email
     }
 
-    if (cnicRegex.match(input).hasMatch()) {
+    if (cnicRegex.match(input).hasMatch())
+    {
         return 2; // CNIC
     }
 
@@ -47,14 +48,16 @@ void LoginPage::on_loginSubmitBtn_clicked()
     QString username = ui->usernameInput->text();
     QString password = ui->passwordInput->text();
 
-    if (username.isEmpty() || password.isEmpty()) {
+    if (username.isEmpty() || password.isEmpty())
+    {
         QMessageBox::warning(this, "Error", "Please enter your CNIC or Email and Password.");
         return;
     }
 
     int inputType = identifyInputType(username);
     AuthManager::LoginResult loginResult;
-    if (inputType == 0) {
+    if (inputType == 0)
+    {
         QMessageBox::warning(this, "Error", "Please enter Correct Format!");
         return;
     }
@@ -78,13 +81,13 @@ void LoginPage::on_loginSubmitBtn_clicked()
             &LoginPage::handleLoginFinished);
 
     // 3. Launch the thread (Use 'auto' to let the compiler handle the template)
-    auto future = QtConcurrent::run([=]() {
+    auto future = QtConcurrent::run([=]()
+                                    {
         if (inputType == 1) {
             return AuthManager::getInstance().login(password, "", username);
         } else {
             return AuthManager::getInstance().login(password, username, "");
-        }
-    });
+        } });
 
     // 4. Connect the future to the watcher
     m_loginWatcher.setFuture(future);
@@ -92,36 +95,39 @@ void LoginPage::on_loginSubmitBtn_clicked()
 
 void LoginPage::handleLoginFinished()
 {
-    ui->loginSubmitBtn->setEnabled(true);
-    ui->goToSignupBtn->setEnabled(true);
-    ui->loginSubmitBtn->setText("Login");
 
     AuthManager::LoginResult loginResult = m_loginWatcher.result();
-    if (loginResult == AuthManager::LoginResult::InvalidCnicOrEmail) {
+    if (loginResult == AuthManager::LoginResult::InvalidCnicOrEmail)
+    {
         QMessageBox::warning(this, "Error", "Incorrect CNIC or Email!");
         return;
-    } else if (loginResult == AuthManager::LoginResult::InvalidPassword) {
+    }
+    else if (loginResult == AuthManager::LoginResult::InvalidPassword)
+    {
         QMessageBox::warning(this, "Error", "Incorrect Password!");
         return;
-    } else if (loginResult == AuthManager::LoginResult::SystemError) {
+    }
+    else if (loginResult == AuthManager::LoginResult::SystemError)
+    {
         QMessageBox::warning(this, "Error", "System Error!");
         return;
     }
 
     QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
 
-    if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn
-        || loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn
-        || loginResult == AuthManager::LoginResult::SuccessAdminPending) {
+    if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn || loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn || loginResult == AuthManager::LoginResult::SuccessAdminPending)
+    {
         bool otpSendSuccess = AuthManager::getInstance().requestOtp(userEmail);
-        if (!otpSendSuccess) {
+        if (!otpSendSuccess)
+        {
             QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
             return;
         }
 
         bool verified = false;
 
-        while (!verified) {
+        while (!verified)
+        {
             bool ok;
             QString otp = QInputDialog::getText(
                 this,
@@ -131,47 +137,61 @@ void LoginPage::handleLoginFinished()
                 "",
                 &ok);
 
-            if (!ok) {
+            if (!ok)
+            {
                 QMessageBox::information(this,
                                          "Cancelled",
                                          "Verification cancelled. Please login again.");
                 return;
             }
 
-            if (otp.trimmed().isEmpty()) {
+            if (otp.trimmed().isEmpty())
+            {
                 QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
                 continue;
             }
 
-            if (AuthManager::getInstance().verifyOtp(userEmail, otp)) {
+            if (AuthManager::getInstance().verifyOtp(userEmail, otp))
+            {
                 verified = true;
-            } else {
+            }
+            else
+            {
                 QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
             }
         }
 
-        if (loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn) {
+        if (loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn)
+        {
             QMessageBox::information(this, "Admin Verified", "Accessing Admin Portal...");
             emit loginSuccessAdmin();
-        } else if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn) {
+        }
+        else if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn)
+        {
             QMessageBox::information(this, "Voter Verified", "Welcome to the Voting Booth.");
             emit loginSuccessUser();
-        } else if (loginResult == AuthManager::LoginResult::SuccessAdminPending) {
+        }
+        else if (loginResult == AuthManager::LoginResult::SuccessAdminPending)
+        {
             emit loginSuccessAdminPending();
         }
-    } else if (AuthManager::LoginResult::EmailNotVerified == loginResult) {
+    }
+    else if (AuthManager::LoginResult::EmailNotVerified == loginResult)
+    {
         QMessageBox::information(this,
                                  "Email Not Verified",
                                  "Your email is not verified. Please verify to continue.");
         bool otpSendSuccess = AuthManager::getInstance().requestOtp(userEmail);
-        if (!otpSendSuccess) {
+        if (!otpSendSuccess)
+        {
             QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
             return;
         }
 
         bool verified = false;
 
-        while (!verified) {
+        while (!verified)
+        {
             bool ok;
             QString otp = QInputDialog::getText(
                 this,
@@ -181,28 +201,36 @@ void LoginPage::handleLoginFinished()
                 "",
                 &ok);
 
-            if (!ok) {
+            if (!ok)
+            {
                 QMessageBox::information(this,
                                          "Cancelled",
                                          "Verification cancelled. Please login again.");
                 return;
             }
 
-            if (otp.trimmed().isEmpty()) {
+            if (otp.trimmed().isEmpty())
+            {
                 QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
                 continue;
             }
 
-            if (AuthManager::getInstance().verifyOtp(userEmail, otp)) {
+            if (AuthManager::getInstance().verifyOtp(userEmail, otp))
+            {
                 verified = true;
                 QMessageBox::information(
                     this,
                     "Verification Successful",
                     "Email verified successfully! Redirecting to dashboard...");
                 emit loginSuccessUser();
-            } else {
+            }
+            else
+            {
                 QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
             }
         }
     }
+    ui->loginSubmitBtn->setEnabled(true);
+    ui->goToSignupBtn->setEnabled(true);
+    ui->loginSubmitBtn->setText("Login");
 }

@@ -31,7 +31,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 
     // 1. Create the custom page purely in C++
     m_loginPage = new LoginPage(this);
-    // admin
+    m_signupPage = new SignupPage(this); // admin
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
@@ -46,7 +46,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 
     // 2. Add it to the Stacked Widget manually
     ui->MainStack->insertWidget(0, m_loginPage);
-    // admin
+    ui->MainStack->insertWidget(1, m_signupPage); // admin
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
@@ -64,7 +64,9 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     connect(m_loginPage, &LoginPage::loginSuccessUser, this, &MainWindow::handleLoginSuccessUser);
     connect(m_loginPage, &LoginPage::loginSuccessAdmin, this, &MainWindow::handleLoginSuccessAdmin);
     connect(m_loginPage, &LoginPage::loginSuccessAdminPending, this, &MainWindow::handleLoginSuccessAdminPending);
-
+    connect(m_signupPage, &SignupPage::goToLoginRequested, this, &MainWindow::handleGoToLoginRequested);
+    connect(m_signupPage, &SignupPage::signupSuccessUser, this, &MainWindow::handleSignupSuccessUser);
+    connect(m_signupPage, &SignupPage::signupSuccessAdminPending, this, &MainWindow::handleSignupSuccessAdminPending);
     // admin
     connect(m_adminInnerPage_Candidates, &AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
@@ -104,14 +106,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleGoToSignupRequested()
 {
-    ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
+    ui->MainStack->setCurrentIndex(1); // SignupPageEnum is at index 1
     this->setFocus();
 }
 
-void MainWindow::on_goToLoginBtn_clicked()
+void MainWindow::handleGoToLoginRequested()
 {
-    // Switch to Login Page(Index 0)
-    ui->MainStack->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(0); // LoginPage is at index 0
     this->setFocus();
 }
 
@@ -132,158 +133,19 @@ void MainWindow::handleLoginSuccessAdminPending()
     ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
 }
 
-void MainWindow::on_signupSubmitBtn_clicked()
+void MainWindow::handleSignupSuccessUser()
 {
-    // 1. Grab text from UI and use .trimmed() to remove accidental spacebars
-    QString newUsername = ui->newUsernameInput->text().trimmed();
-    QString newEmail = ui->emailInput->text().trimmed();
-    QString newCnic = ui->cnicInput->text().trimmed();
+    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+}
 
-    // Passwords should NOT be trimmed
-    QString newPassword = ui->newPasswordInput->text();
-    QString confirmPassword = ui->confirmPasswordInput->text();
-
-    // 2. Validation Level 1: Check for Empty Fields
-    if (newUsername.isEmpty() || newEmail.isEmpty() || newCnic.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty())
-    {
-        QMessageBox::warning(this, "Validation Error", "All fields must be filled out.");
-        return;
-    }
-
-    // 3. Validation Level 2: Password Match Check
-    if (newPassword != confirmPassword)
-    {
-        QMessageBox::warning(this,
-                             "Security Error",
-                             "Passwords do not match. Please type them carefully.");
-        ui->newPasswordInput->clear();
-        ui->confirmPasswordInput->clear();
-        ui->newPasswordInput->setFocus();
-        return;
-    }
-
-    // 4. Validation Level 3: Email Format Check
-    QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    if (!emailRegex.match(newEmail).hasMatch())
-    {
-        QMessageBox::warning(this, "Format Error", "Please enter a valid email address.");
-        ui->emailInput->setFocus();
-        return;
-    }
-
-    // 5. Validation Level 4: CNIC Format Check (Pakistani Standard)
-    QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
-    if (!cnicRegex.match(newCnic).hasMatch())
-    {
-        QMessageBox::warning(this, "Format Error", "Please enter a valid 13-digit CNIC.");
-        ui->cnicInput->setFocus();
-        return;
-    }
-    User newUser{};
-
-    newUser.setCnic(newCnic);
-    newUser.setEmail(newEmail);
-    newUser.setName(newUsername);
-
-    bool isAdminRegistration = ui->adminCheckBox->isChecked();
-    AuthManager::SignUpResult signupResult = AuthManager::getInstance().signUp(newUser,
-                                                                               newPassword,
-                                                                               isAdminRegistration);
-    if (signupResult == AuthManager::SignUpResult::SuccessUserCreated || signupResult == AuthManager::SignUpResult::SuccessAdminCreated)
-    {
-        bool otpSendSuccess = AuthManager::getInstance().requestOtp(newEmail);
-        if (!otpSendSuccess)
-        {
-            QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
-            return;
-        }
-        bool verified = false;
-        while (!verified)
-        {
-            bool ok = false;
-            QString otp = QInputDialog::getText(
-                this,
-                tr("2FA Verification"),
-                tr("A 4-digit code has been sent to your Email.\n\nEnter OTP:"),
-                QLineEdit::Password,
-                "",
-                &ok);
-            ;
-
-            if (!ok)
-            {
-                QMessageBox::information(
-                    this,
-                    "Cancelled",
-                    "Verification cancelled. You can verify your email later by logging in.");
-                ui->newUsernameInput->clear();
-                ui->emailInput->clear();
-                ui->cnicInput->clear();
-                ui->newPasswordInput->clear();
-                ui->confirmPasswordInput->clear();
-                ui->adminCheckBox->setChecked(false);
-                ui->MainStack->setCurrentIndex(StackedPages::Login_Page);
-                return;
-            }
-
-            if (otp.trimmed().isEmpty())
-            {
-                QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
-                continue; // Skips the rest and asks again
-            }
-
-            // Condition 3: Verify the OTP
-            if (AuthManager::getInstance().verifyOtp(newEmail, otp))
-            {
-                verified = true; // Breaks the loop naturally
-                if (signupResult == AuthManager::SignUpResult::SuccessUserCreated)
-                {
-                    QMessageBox::information(
-                        this,
-                        "Registration Successful",
-                        "Account created successfully! Welcome to the dashboard.");
-                    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
-                }
-                else if (signupResult == AuthManager::SignUpResult::SuccessAdminCreated)
-                {
-                    QMessageBox::information(
-                        this,
-                        "Pending Authorization",
-                        "Admin request submitted. Please wait for Two-Person authorization.");
-                    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
-                }
-            }
-            else
-            {
-                QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
-            }
-        }
-    }
-
-    else if (AuthManager::SignUpResult::UserAlreadyExists == signupResult)
-    {
-        QMessageBox::warning(this, "Error", "User Already Exists");
-        // --- NORMAL VOTER FLOW ---
-    }
-    else if (AuthManager::SignUpResult::SystemError == signupResult)
-    {
-        QMessageBox::warning(this, "Error", "System Error");
-    }
-
-    // 7. Security Cleanup: Clear all inputs so the next person can't see them
-    ui->newUsernameInput->clear();
-    ui->emailInput->clear();
-    ui->cnicInput->clear();
-    ui->newPasswordInput->clear();
-    ui->confirmPasswordInput->clear();
-
-    // CRITICAL: Uncheck the box so it doesn't stay checked for the next user!
-    ui->adminCheckBox->setChecked(false);
+void MainWindow::handleSignupSuccessAdminPending()
+{
+    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
 }
 
 void MainWindow::on_adminWaitBackBtn_clicked()
 {
-    ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
+    ui->MainStack->setCurrentIndex(StackedPages::SignupPageEnum);
     this->setFocus();
 }
 

@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include "controllers/system_bootstrapper.h"
-#include "views/loginpage.h"
+#include "loginpage.h"
+#include "signuppage.h"
 #include "views/AdminCandidatePage.h"
 #include "views/AdminManagementPage.h"
 #include "views/AdminElectionsPage.h"
@@ -13,7 +14,14 @@
 #include "views/UserMyTokensPage.h"
 #include "views/UserCandidacyPage.h"
 
-enum StackedPages { Login_Page, SignupPage, AdminWaitingPage, UserDashPage, AdminDashPage };
+enum StackedPages
+{
+    Login_Page,
+    SignupPageEnum,
+    AdminWaitingPage,
+    UserDashPage,
+    AdminDashPage
+};
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -36,9 +44,9 @@ private slots:
     void handleLoginSuccessAdmin();
     void handleLoginSuccessAdminPending();
     void handleGoToSignupRequested();
-
-    void on_goToLoginBtn_clicked();
-    void on_signupSubmitBtn_clicked();
+    void handleGoToLoginRequested();
+    void handleSignupSuccessUser();
+    void handleSignupSuccessAdminPending();
 
     void on_adminWaitBackBtn_clicked();
 
@@ -74,6 +82,7 @@ private:
     AppConfig m_config;
     // admin
     LoginPage *m_loginPage;
+    SignupPage *m_signupPage;
     AdminCandidatePage *m_adminInnerPage_Candidates;
     AdminManagementPage *m_adminInnerPage_Admins;
     AdminElectionsPage *m_adminInnerPage_Elections;
