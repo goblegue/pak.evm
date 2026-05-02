@@ -27,6 +27,7 @@ qt_add_executable(online_voting_app
     src/controllers/system_bootstrapper.cpp
     src/controllers/system_bootstrapper.h
     src/controllers/voterController.cpp
+    src/controllers/adminController.cpp
     src/controllers/voterController.h
     src/models/Models.h
     src/models/databasemanager.cpp

@@ -268,6 +268,8 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
 
+
+
     // Mock Data for the Admins
     int adminCount = 3;
     Admin *mockAdmins = new Admin[adminCount];
