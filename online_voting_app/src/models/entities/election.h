@@ -86,7 +86,6 @@ public:
         m_statusChangeRequests = newStatusChangeRequests;
         m_statusChangeCount++;
     }
-
     void setId(const QString &id) { m_id = id; }
     void setTitle(const QString &title) { m_title = title; }
     void setStartTime(const QDateTime &time) { m_startTime = time; }
@@ -137,7 +136,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetElectionId,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus status) = 0;
-    virtual Election *getAllElections(int & electionsSize) = 0;
+    virtual Election *getAllElections(int &electionsSize) = 0;
     virtual std::optional<Election> getElectionById(const QString &id) = 0;
 };
 
