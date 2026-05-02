@@ -122,16 +122,16 @@ QFrame#userSidebarFrame QPushButton, QFrame#adminSidebarFrame QPushButton {
     border-radius: 0px; /* Removes pill shape for sidebar items */
 }
 
-/* Sidebar Hover Effect */
-QFrame#userSidebarFrame QPushButton:hover, QFrame#adminSidebarFrame QPushButton:hover {
-    background-color: #4b6ea8; /* Boosted hover color so it stands out against the new background */
+/* Sidebar Hover, Pressed, AND Active (Checked) Effects */
+QFrame#userSidebarFrame QPushButton:hover, 
+QFrame#adminSidebarFrame QPushButton:hover,
+QFrame#userSidebarFrame QPushButton:pressed, 
+QFrame#adminSidebarFrame QPushButton:pressed,
+QFrame#userSidebarFrame QPushButton:checked, 
+QFrame#adminSidebarFrame QPushButton:checked {
+    background-color: #4b6ea8; /* Boosted hover color */
     color: white;
-    border-left: 5px solid #ffffff; /* Cool white indicator bar on the left edge */
-}
-
-/* Sidebar Pressed Effect */
-QFrame#userSidebarFrame QPushButton:pressed, QFrame#adminSidebarFrame QPushButton:pressed {
-    background-color: #263a5c; /* Darkens nicely when clicked */
+    border-left: 5px solid #ffffff; /* Cool white indicator bar */
 }
 
 /* =======================================================
@@ -613,54 +613,32 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="adminWaitBackBtn">
-             <property name="text">
-              <string>&lt;- back</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <spacer name="verticalSpacer_8">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>1011</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;Waiting for other Admin's Approval&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <spacer name="verticalSpacer_9">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>1011</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>396</x>
+             <y>340</y>
+             <width>332</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;Waiting for other Admin's Approval&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="adminWaitBackBtn">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>101</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>&lt;- back</string>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -765,19 +743,63 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Home</string>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btnUserElections">
-               <property name="text">
-                <string>Active Elections</string>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btnUserResults">
+              <widget class="QPushButton" name="userSidebarActiveElectionsBtn">
                <property name="text">
-                <string>Election Results</string>
+                <string>Active Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarMyTokensBtn">
+               <property name="text">
+                <string>My Tokens</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarLocateStationBtn">
+               <property name="text">
+                <string>Locate Station</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarCandidacyBtn">
+               <property name="text">
+                <string>Run for Office</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -799,6 +821,12 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Logout</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
             </layout>
@@ -807,45 +835,9 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
           <item>
            <widget class="QStackedWidget" name="userContentStack">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
-            <widget class="QWidget" name="userInnerPage_Home">
-             <widget class="QLabel" name="label_6">
-              <property name="geometry">
-               <rect>
-                <x>330</x>
-                <y>90</y>
-                <width>231</width>
-                <height>41</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Welcome Voter&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </widget>
-            <widget class="QWidget" name="userInnerPage_Elections">
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <widget class="QListView" name="electionsListView"/>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="userInnerPage_Results">
-             <widget class="QLabel" name="label_7">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>120</y>
-                <width>131</width>
-                <height>41</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#000000;&quot;&gt;Results!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </widget>
+            <widget class="QWidget" name="userInnerPage_Home"/>
            </widget>
           </item>
          </layout>
@@ -952,12 +944,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Dashboard</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="adminSidebarElectionsBtn">
                <property name="text">
                 <string>Manage Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -966,12 +970,24 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
                <property name="text">
                 <string>Candidates</string>
                </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="adminSidebarAdminsBtn">
                <property name="text">
                 <string>Admins</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -992,6 +1008,12 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
               <widget class="QPushButton" name="btnAdminLogout">
                <property name="text">
                 <string>Logout</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
                </property>
               </widget>
              </item>

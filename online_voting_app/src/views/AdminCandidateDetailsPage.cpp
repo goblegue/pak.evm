@@ -220,6 +220,20 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
         approveBtn->show();
         rejectBtn->show();
     }
+
+    if (m_isUserMode) {
+        approveBtn->hide();
+        rejectBtn->hide();
+        approvalCountLabel->hide();
+    } else {
+        if (candidate.getStatus() == ApprovalStatus::Approved || candidate.getStatus() == ApprovalStatus::Rejected) {
+            approveBtn->hide();
+            rejectBtn->hide();
+        } else {
+            approveBtn->show();
+            rejectBtn->show();
+        }
+    }
 }
 
 
@@ -242,4 +256,13 @@ void AdminCandidateDetailsPage::onApproveClicked() {
 
 void AdminCandidateDetailsPage::onRejectClicked() {
     emit candidateStatusChangeRequested(currentCandidateCnic, ApprovalStatus::Rejected);
+}
+
+void AdminCandidateDetailsPage::setUserMode(bool isUserMode) {
+    m_isUserMode = isUserMode;
+    if (m_isUserMode) {
+        approveBtn->hide();
+        rejectBtn->hide();
+        approvalCountLabel->hide();
+    }
 }

@@ -65,6 +65,7 @@ void AdminElectionsPage::setupUi() {
     // ACCORDION LIST VIEW
     // ==========================================
     electionListView = new QListView(this);
+    electionListView->setMouseTracking(true);
     electionListView->setModel(proxyModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     electionListView->setSpacing(10);

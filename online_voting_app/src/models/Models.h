@@ -8,14 +8,16 @@
 #include "models/entities/candidate.h"
 #include <QSet>
 #include <QDateTime>
+#include <QImage>
 #include "models/states.h"
 #include "models/entities/admin.h"
+#include "models/entities/voters.h"
 
 // Define custom roles so the Delegate can fetch specific data
-enum CustomRoles
-{
+enum CustomRoles {
     CandidateStatusRole = Qt::UserRole + 1,
-    CandidateNameRole = Qt::UserRole + 2
+    CandidateSymbolNameRole = Qt::UserRole + 2,
+    CandidateSymbolImageRole = Qt::UserRole + 3
 };
 
 // Add a specific role for Admin Status
@@ -33,6 +35,14 @@ enum ElectionCustomRoles {
     ElectionEndTimeRole = Qt::UserRole + 23
 };
 
+// Custom roles for the Token Delegate
+enum TokenCustomRoles {
+    TokenExpandedRole = Qt::UserRole + 30,
+    TokenSignatureRole = Qt::UserRole + 31,
+    TokenIssueDateRole = Qt::UserRole + 32,
+    TokenStationRole = Qt::UserRole + 33,
+    TokenQRCodeRole = Qt::UserRole + 34
+};
 // ==========================================
 // ELECTION LIST MODEL
 // ==========================================
@@ -111,24 +121,22 @@ public:
             return 0;
         return m_candidates.count();
     }
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
-    {
-        if (!index.isValid() || index.row() >= m_candidates.count())
-            return QVariant();
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
+        if (!index.isValid() || index.row() >= m_candidates.count()) return QVariant();
         const Candidate &candidate = m_candidates.at(index.row());
 
-        if (role == Qt::DisplayRole)
-        {
-            return QString("%1 - %2\nStatus: %3")
+        if (role == Qt::DisplayRole) {
+            return QString("%1\nParty: %2\nSymbol: %3\nStatus: %4")
                 .arg(candidate.getUserCnic())
                 .arg(candidate.getPartyName())
+                .arg(candidate.getSymbolName())
                 .arg(statusToString(candidate.getStatus()));
         }
-        // Return the raw status integer for the Delegate to read
-        if (role == CandidateStatusRole)
-        {
-            return static_cast<int>(candidate.getStatus());
-        }
+        if (role == CandidateStatusRole) return static_cast<int>(candidate.getStatus());
+
+        // Pass the Base64 Image to the Delegate
+        if (role == CandidateSymbolImageRole) return candidate.getSymbolBase64();
+
         return QVariant();
     }
 };
@@ -388,6 +396,73 @@ protected:
         int status = sourceModel()->data(index, ElectionStatusRole).toInt();
 
         return status == m_filterStatus;
+    }
+};
+
+// ==========================================
+// TOKEN LIST MODEL (ACCORDION STYLE)
+// ==========================================
+class TokenListModel : public QAbstractListModel {
+    Q_OBJECT
+private:
+    QList<Token> m_tokens;
+    QSet<QString> m_expandedItems; // Remembers expanded tokens
+
+public:
+    explicit TokenListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+
+    void setTokens(Token* tokensArray, int size) {
+        beginResetModel();
+        m_tokens.clear();
+        m_expandedItems.clear(); // Collapse all on load
+        for(int i = 0; i < size; ++i) m_tokens.append(tokensArray[i]);
+        endResetModel();
+    }
+
+    Token getTokenAt(int index) const { return m_tokens.at(index); }
+
+    void toggleExpanded(QString tokenId) {
+        if (m_expandedItems.contains(tokenId)) m_expandedItems.remove(tokenId);
+        else m_expandedItems.insert(tokenId);
+
+        for(int i = 0; i < m_tokens.count(); ++i) {
+            if(m_tokens[i].getId() == tokenId) {
+                QModelIndex idx = index(i);
+                emit dataChanged(idx, idx, {TokenExpandedRole});
+                break;
+            }
+        }
+    }
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
+        if (parent.isValid()) return 0;
+        return m_tokens.count();
+    }
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
+        if (!index.isValid() || index.row() >= m_tokens.count()) return QVariant();
+
+        const Token &token = m_tokens.at(index.row());
+
+        if (role == Qt::DisplayRole) return "Election: " + token.getElectionId();
+        if (role == TokenExpandedRole) return m_expandedItems.contains(token.getId());
+        if (role == TokenSignatureRole) return token.getTokenSignature();
+        if (role == TokenIssueDateRole) return token.getIssuedAt().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == TokenStationRole) return token.getAssignedStationId();
+
+        // ==========================================
+        // CALL YOUR BACKEND DEVELOPER's FUNCTION HERE
+        // ==========================================
+        if (role == TokenQRCodeRole) {
+            // Example: Ask the backend to generate the QR code using the Token's Signature
+            // QImage generatedQr = BackendDeveloperClass::generateQRCode(token.getTokenSignature());
+            // return generatedQr;
+
+            // (Replace the lines above with the actual function call your backend dev gave you)
+            return QImage(); // Temporary fallback until you plug their function in
+        }
+
+        return QVariant();
     }
 };
 #endif // ADMIN_MODELS_H

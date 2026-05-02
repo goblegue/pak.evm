@@ -15,13 +15,15 @@
 #include "controllers/auth_manager.h"
 #include "models/entities/user.h"
 #include "ui_mainwindow.h"
+#include "votertokenmess.h"
+
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
     ui->setupUi(this);
 
-    ui->MainStack->setCurrentIndex(4);
+    ui->MainStack->setCurrentIndex(3);
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com",
@@ -30,19 +32,34 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
                                           "dtgn pptc jspd vjnk");
 
     // 1. Create the custom page purely in C++
+    //admin
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
+    //user
+    userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
+    userInnerPage_MyTokens = new UserMyTokensPage(this);
+    userInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
+    userInnerPage_CandidateDetails->setUserMode(true); // <--- HIDES THE ADMIN BUTTONS
+    userInnerPage_Candidacy = new UserCandidacyPage(this);
+
 
     // 2. Add it to the Stacked Widget manually
+    //admin
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
     ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
     ui->adminContentStack->addWidget(m_adminInnerPage_CreateElection);
+    //user
+    ui->userContentStack->addWidget(userInnerPage_ActiveElections);
+    ui->userContentStack->addWidget(userInnerPage_MyTokens);
+    ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
+    ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
+    //admin
     connect(m_adminInnerPage_Candidates,&AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
@@ -57,6 +74,20 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleBackToElectionList);
     connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::createElectionRequested,
             this, &MainWindow::handleCreateElectionSubmit);
+    //user
+    connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
+            this, &MainWindow::handleUserElectionSelected);
+    connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::generateTokenRequested,
+            this, &MainWindow::handleGenerateTokenRequested);
+    connect(userInnerPage_MyTokens, &UserMyTokensPage::emailTokenRequested,
+            this, &MainWindow::handleEmailTokenRequested);
+    connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::navigateToCandidateDetails,
+            this, &MainWindow::handleUserNavigateToCandidateDetails);
+    connect(userInnerPage_CandidateDetails, &AdminCandidateDetailsPage::backBtnClicked,
+            this, &MainWindow::handleUserBackToActiveElections);
+    connect(userInnerPage_Candidacy, &UserCandidacyPage::submitApplicationRequested,
+            this, &MainWindow::handleCandidacyApplicationSubmit);
+
 
 }
 
@@ -437,6 +468,24 @@ void MainWindow::on_btnUserLogout_clicked()
     }
 }
 
+void MainWindow::on_btnAdminLogout_clicked()
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this,
+                                  "Logout Confirmation",
+                                  "Are you sure you want to log out of the Pak Voting System?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        AuthManager::getInstance().logout();
+
+        ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+        this->setFocus();
+        QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
+    }
+}
+
 void MainWindow::on_adminSidebarCandidatesBtn_clicked()
 {
     // 1. Change the nested stacked widget to show the candidate page
@@ -680,6 +729,204 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
 
     handleBackToElectionList(); // Go back to list after success
 }
+
+
+
+//---------------user-pages---------------
+void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
+
+    // Mock Data for Elections
+    int electionCount = 2;
+    Election* mockElections = new Election[electionCount];
+
+    mockElections[0].setId("ELEC-201");
+    mockElections[0].setTitle("National General Election");
+    mockElections[0].setStartTime(QDateTime::currentDateTime().addDays(-1));
+    mockElections[0].setEndTime(QDateTime::currentDateTime().addDays(1));
+    mockElections[0].setStatus(ElectionState::VotingOpen);
+
+    mockElections[1].setId("ELEC-202");
+    mockElections[1].setTitle("Provincial Assembly");
+    mockElections[1].setStartTime(QDateTime::currentDateTime().addDays(5));
+    mockElections[1].setEndTime(QDateTime::currentDateTime().addDays(6));
+    mockElections[1].setStatus(ElectionState::Published);
+
+    userInnerPage_ActiveElections->loadElections(mockElections, electionCount);
+    delete[] mockElections;
+}
+
+void MainWindow::handleUserElectionSelected(QString electionId)
+{
+    // When the user clicks an election, load the mock candidates for it
+    int candidateCount = 2;
+    Candidate* mockCandidates = new Candidate[candidateCount];
+
+    mockCandidates[0].setUserCnic("42101-111-1");
+    mockCandidates[0].setPartyName("Democratic Front");
+    mockCandidates[0].setStatus(ApprovalStatus::Approved);
+
+    mockCandidates[1].setUserCnic("42101-222-2");
+    mockCandidates[1].setPartyName("Liberty Party");
+    mockCandidates[1].setStatus(ApprovalStatus::Approved);
+
+    userInnerPage_ActiveElections->loadCandidates(mockCandidates, candidateCount);
+    delete [] mockCandidates;
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "Register & Generate Token"
+// ---------------------------------------------------------
+void MainWindow::handleGenerateTokenRequested(QString electionId)
+{
+
+    /*
+     * WHEN BACKEND IS READY, YOU WILL DO SOMETHING LIKE THIS:
+     * QString currentUserId = AuthManager::getInstance().getCurrentUser()->getId();
+     * bool success = TokenController::getInstance().generateAndSaveToken(currentUserId, electionId);
+     * if (success) {
+     *     QMessageBox::information(this, "Success", "Token securely generated! Check your 'My Tokens' tab.");
+     * }
+     */
+
+    // 1. Get the data from your Backend/Database
+
+    // Example Base64 string (your backend will provide a real one)
+    QString backendBase64String = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+
+    // 2. Create the Dialog using the Designer class
+    VoterTokenMess tokenPopup(backendBase64String,electionId , this);
+
+    // 3. Show it modally (blocks the rest of the app until they click OK)
+    tokenPopup.exec();
+}
+
+void MainWindow::on_userSidebarMyTokensBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
+
+    int tokenCount = 2;
+    Token* mockTokens = new Token[tokenCount];
+
+    mockTokens[0].setId("TKN-9991"); // Must have an ID for accordion to work!
+    mockTokens[0].setElectionId("ELEC-201");
+    mockTokens[0].setAssignedStationId("ST-A (Gulberg Branch)");
+    mockTokens[0].setIssuedAt(QDateTime::currentDateTime());
+    mockTokens[0].setTokenSignature("eyJhbGciOiJIUzI1NiIs...");
+
+    mockTokens[1].setId("TKN-9992");
+    mockTokens[1].setElectionId("ELEC-202");
+    mockTokens[1].setAssignedStationId("ST-B (DHA Branch)");
+    mockTokens[1].setIssuedAt(QDateTime::currentDateTime().addDays(-2));
+    mockTokens[1].setTokenSignature("q8g9q8h24q8hg0284ghq...");
+
+    userInnerPage_MyTokens->loadTokens(mockTokens, tokenCount);
+    delete[] mockTokens;
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "✉ Send to Email" on a Token
+// ---------------------------------------------------------
+void MainWindow::handleEmailTokenRequested(Token selectedToken)
+{
+    // For now, just show a popup to prove the button works!
+    QMessageBox::information(this, "Email Token",
+                             "Ready to email token for Election:\n" + selectedToken.getElectionId() +
+                                 "\n\n(Your Lead's EmailService will be connected here!)"
+                             );
+
+    /*
+     * WHEN READY, YOU WILL USE YOUR LEAD'S EMAIL CLASS LIKE THIS:
+     *
+     * QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
+     * QString body = "Your secure token hash is: " + selectedToken.getTokenSignature();
+     *
+     * EmailService::getInstance().sendEmail(userEmail, "Your Voting Token", body);
+     * QMessageBox::information(this, "Success", "Token sent to your email!");
+     */
+}
+// Note: When you load your mock candidates in handleUserElectionSelected,
+// you can now add mockBase64 strings if you want to test the symbol images!
+
+void MainWindow::handleUserNavigateToCandidateDetails(Candidate selectedCandidate)
+{
+    // Pass data to the UI
+    userInnerPage_CandidateDetails->setCandidate(selectedCandidate);
+
+    // Change the USER stacked widget screen
+    ui->userContentStack->setCurrentWidget(userInnerPage_CandidateDetails);
+}
+
+void MainWindow::handleUserBackToActiveElections()
+{
+    // Go back to the active elections list
+    ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "Locate Station"
+// ---------------------------------------------------------
+void MainWindow::on_userSidebarLocateStationBtn_clicked()
+{
+    QMessageBox::information(this, "Coming Soon",
+                             "📍 The Locate Station feature is currently under development and will be available soon!");
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "Run for Office" on Sidebar
+// ---------------------------------------------------------
+void MainWindow::on_userSidebarCandidacyBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_Candidacy);
+
+    // Only fetch PUBLISHED elections for the candidacy form
+    int electionCount = 2;
+    Election* mockElections = new Election[electionCount];
+
+    mockElections[0].setId("ELEC-201");
+    mockElections[0].setTitle("National General Election");
+    mockElections[0].setStatus(ElectionState::Published);
+
+    mockElections[1].setId("ELEC-202");
+    mockElections[1].setTitle("Provincial Assembly");
+    mockElections[1].setStatus(ElectionState::Published);
+
+    userInnerPage_Candidacy->loadPublishedElections(mockElections, electionCount);
+    delete[] mockElections;
+}
+
+// ---------------------------------------------------------
+// Triggered when User clicks "Submit Application" on Candidacy Page
+// ---------------------------------------------------------
+void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
+{
+    // 1. Get the current user's CNIC and add it to the application
+    // QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    QString currentUserCnic = "42101-TEST-CNIC"; // Mock CNIC for testing
+    newCandidate.setUserCnic(currentUserCnic);
+
+    // 2. Show Success Message
+    QMessageBox::information(this, "Application Submitted",
+                             "Your candidacy application for '" + newCandidate.getPartyName() + "' has been successfully submitted!\n\n"
+                                                                                                "Please wait for admin approval. You will see your status update in the Active Elections tab once approved."
+                             );
+
+    /*
+     * WHEN YOUR BACKEND IS READY, YOU WILL UNCOMMENT THIS:
+     *
+     * bool success = CandidateController::getInstance().createCandidate(newCandidate);
+     * if(success) {
+     *     QMessageBox::information(this, "Success", "Application Submitted!");
+     * } else {
+     *     QMessageBox::warning(this, "Error", "Failed to submit application.");
+     * }
+     */
+
+    // 3. Send the user back to the Active Elections page so they aren't stuck on the form
+    ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
+}
+
 
 
 // Helping Functions
