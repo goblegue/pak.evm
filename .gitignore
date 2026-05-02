@@ -1,0 +1,20 @@
+# Ignore standard CMake build folder
+build/
+.build/
+
+node_modules/
+
+*.py
+
+*.json
+
+
+
+# Ignore Qt Creator's default "Shadow Build" folders
+build-*/
+
+# Ignore CMake cache and auto-generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+*.cbp
