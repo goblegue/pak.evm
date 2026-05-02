@@ -48,7 +48,7 @@ bool CandidateController::createCandidate(Candidate &candidate)
         return false; // Election not found
     }
     Election election = electionOpt.value();
-    if (election.getStatus() == ElectionState::Draft ||
+    if (election.getStatus() == ElectionState::Drafted ||
         election.getStatus() == ElectionState::Rejected ||
         election.getStatus() == ElectionState::ResultsAnnounced ||
         election.getStatus() == ElectionState::VotingOpen ||
@@ -100,7 +100,7 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
     }
 
     Election election = electionOpt.value();
-    if (election.getStatus() == ElectionState::Draft ||
+    if (election.getStatus() == ElectionState::Drafted ||
         election.getStatus() == ElectionState::Rejected ||
         election.getStatus() == ElectionState::ResultsAnnounced ||
         election.getStatus() == ElectionState::VotingOpen ||
@@ -144,7 +144,7 @@ Candidate *CandidateController::getCandidatesByElection(const QString &electionI
         return nullptr; // Election not found
     }
     Election election = electionOpt.value();
-    if (!isAdminRequesting && (election.getStatus() == ElectionState::Draft || election.getStatus() == ElectionState::Rejected))
+    if (!isAdminRequesting && (election.getStatus() == ElectionState::Drafted || election.getStatus() == ElectionState::Rejected))
     {
         candidatesSize = 0;
         return nullptr; // Voters cannot see candidates for elections that are not active
@@ -166,7 +166,7 @@ Candidate *CandidateController::getCandidatesByElectionAndStatus(const QString &
         return nullptr; // Election not found
     }
     Election election = electionOpt.value();
-    if (election.getStatus() == ElectionState::Draft || election.getStatus() == ElectionState::Rejected)
+    if (election.getStatus() == ElectionState::Drafted || election.getStatus() == ElectionState::Rejected)
     {
         candidatesSize = 0;
         return nullptr; // Cannot see candidates for elections that are not active

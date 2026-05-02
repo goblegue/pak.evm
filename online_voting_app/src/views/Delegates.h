@@ -310,7 +310,7 @@ public:
         QColor statusColor;
         QString statusText;
         switch(status) {
-        case ElectionState::Draft: statusColor = QColor("#95A5A6"); statusText = "Draft"; break; // Gray
+        case ElectionState::Drafted: statusColor = QColor("#95A5A6"); statusText = "Draft"; break; // Gray
         case ElectionState::Rejected: statusColor = QColor("#E74C3C"); statusText = "Rejected"; break; // Red
         case ElectionState::Published: statusColor = QColor("#3498DB"); statusText = "Published"; break; // Blue
         case ElectionState::VotingOpen: statusColor = QColor("#2ECC71"); statusText = "Voting Open"; break; // Green

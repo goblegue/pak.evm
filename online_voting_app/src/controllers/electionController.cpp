@@ -83,7 +83,7 @@ bool ElectionController::requestElectionStatusChange(const QString &electionId, 
     int totalAdmins = m_adminRepo->getAdminCount();
     if (approvedCount > (totalAdmins / ELECTION_APPROVAL_THRESHOLD))
     {
-        return m_electionRepo->updateElectionState(electionId, ElectionState::Published);
+        return m_electionRepo->updateElectionState(electionId, ElectionState::Drafted);
     }
     if (rejectedCount > (totalAdmins / ELECTION_REJECTION_THRESHOLD))
     {

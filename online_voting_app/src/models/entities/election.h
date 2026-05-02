@@ -13,13 +13,14 @@ private:
     QString m_title;
     QDateTime m_startTime;
     QDateTime m_endTime;
+    QDateTime m_publishTime;
     ElectionState m_status;
     StatusChangeRequest *m_statusChangeRequests;
     int m_statusChangeCount;
 
 public:
     Election()
-        : m_status(ElectionState::Draft), m_statusChangeCount(0), m_statusChangeRequests(nullptr)
+        : m_status(ElectionState::Pending), m_statusChangeCount(0), m_statusChangeRequests(nullptr)
     {
     }
     Election(const Election &other)
@@ -27,6 +28,7 @@ public:
           m_title(other.m_title),
           m_startTime(other.m_startTime),
           m_endTime(other.m_endTime),
+          m_publishTime(other.m_publishTime),
           m_status(other.m_status),
           m_statusChangeCount(other.m_statusChangeCount)
     {
@@ -48,6 +50,7 @@ public:
     QString getTitle() const { return m_title; }
     QDateTime getStartTime() const { return m_startTime; }
     QDateTime getEndTime() const { return m_endTime; }
+    QDateTime getPublishTime() const { return m_publishTime; }
     ElectionState getStatus() const { return m_status; }
     int getStatusCount(ApprovalStatus status)
     {
@@ -88,6 +91,7 @@ public:
     void setTitle(const QString &title) { m_title = title; }
     void setStartTime(const QDateTime &time) { m_startTime = time; }
     void setEndTime(const QDateTime &time) { m_endTime = time; }
+    void setPublishTime(const QDateTime &time) { m_publishTime = time; }
     void setStatus(ElectionState status) { m_status = status; }
 
     Election &operator=(const Election &other)
@@ -98,6 +102,7 @@ public:
             m_title = other.m_title;
             m_startTime = other.m_startTime;
             m_endTime = other.m_endTime;
+            m_publishTime = other.m_publishTime;
             m_status = other.m_status;
 
             // Delete old memory before making new memory!

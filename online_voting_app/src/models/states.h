@@ -5,7 +5,8 @@
 
 enum class ElectionState
 {
-    Draft,
+    Pending,
+    Drafted,
     Rejected,
     Published,
     VotingOpen,

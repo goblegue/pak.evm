@@ -46,7 +46,7 @@ void AdminElectionsPage::setupUi() {
     QAction *actResults = new QAction(createColorIcon(QColor("#9B59B6")), "Results Announced", this);
 
     connect(actAll, &QAction::triggered, this, [this](){ applyFilter(-1, "Filter Status"); });
-    connect(actDraft, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Draft), "Draft"); });
+    connect(actDraft, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Drafted), "Draft"); });
     connect(actRejected, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Rejected), "Rejected"); });
     connect(actPublished, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Published), "Published"); });
     connect(actOpen, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::VotingOpen), "Voting Open"); });

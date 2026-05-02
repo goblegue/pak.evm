@@ -130,12 +130,12 @@ void AdminCreateElectionPage::resetForm() {
     publishTimeEdit->setDateTime(minPublish);
 
     // 2. Set Start Rules (Must be after publish)
-    QDateTime minStart = minPublish.addSecs(3600); // 1 hour after publish default
+    QDateTime minStart = minPublish.addDays(5); // 1 hour after publish default
     startTimeEdit->setMinimumDateTime(minStart);
     startTimeEdit->setDateTime(minStart);
 
     // 3. Set End Rules (Must be after start)
-    QDateTime minEnd = minStart.addDays(1); // 1 day after start default
+    QDateTime minEnd = minStart.addDays(2); // 1 day after start default
     endTimeEdit->setMinimumDateTime(minEnd);
     endTimeEdit->setDateTime(minEnd);
 }
