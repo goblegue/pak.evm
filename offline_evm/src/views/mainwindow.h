@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "OfflineSetupWizard.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -20,5 +21,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
 };
 #endif // MAINWINDOW_H

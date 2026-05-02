@@ -49,7 +49,8 @@ set(PROJECT_SOURCES
 )
 
 # 4. Create the Executable
-add_executable(OfflineVotingKiosk ${PROJECT_SOURCES})
+add_executable(OfflineVotingKiosk ${PROJECT_SOURCES}
+    src/views/OfflineSetupWizard.h src/views/OfflineSetupWizard.cpp)
 
 # 5. Link Libraries
 target_link_libraries(OfflineVotingKiosk PRIVATE
