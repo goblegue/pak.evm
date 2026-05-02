@@ -33,8 +33,32 @@ QByteArray CryptoEngine::generateAndStoreRandomSalt()
     QSettings settings;
     settings.setValue("encryptionSalt", saltHex);
     settings.sync();
-
     return salt;
+}
+std::optional<QByteArray> CryptoEngine::hashWorkerPassword(const QString &password, QByteArray &salt)
+{
+    QByteArray hash(64, Qt::Uninitialized);
+    QByteArray pwdBytes = password.toUtf8();
+
+    if (salt.isEmpty()) {
+        salt = generateAndStoreRandomSalt();
+    }
+
+    int result = crypto_pwhash(
+        reinterpret_cast<unsigned char *>(hash.data()),
+        static_cast<unsigned long long>(hash.size()),
+        pwdBytes.constData(),
+        static_cast<unsigned long long>(pwdBytes.size()),
+        reinterpret_cast<const unsigned char *>(salt.constData()),
+        crypto_pwhash_OPSLIMIT_INTERACTIVE,
+        crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        crypto_pwhash_ALG_ARGON2ID13);
+    if (result != 0)
+    {
+        qWarning() << "CryptoEngine Warning: Password hashing failed!";
+        return std::nullopt;
+    }
+    return hash;
 }
 
 std::optional<CryptoEngine::KeyPair> CryptoEngine::keyDerivationFunc(const QString &masterKey)
@@ -199,15 +223,15 @@ bool CryptoEngine::verifyTokenSignature(const QString &payload, const QString &s
         reinterpret_cast<const unsigned char *>(signature.constData()),
         reinterpret_cast<const unsigned char *>(message.constData()),
         static_cast<unsigned long long>(message.size()),
-        reinterpret_cast<const unsigned char *>(publicKey.constData())
-    );
+        reinterpret_cast<const unsigned char *>(publicKey.constData()));
 
     return (result == 0);
 }
 
 std::optional<QByteArray> CryptoEngine::generateBlockHash(const QString &blockData, const QByteArray &previousHash)
 {
-    if (m_auditKey.isEmpty() || m_auditKey.size() > crypto_generichash_KEYBYTES_MAX) {
+    if (m_auditKey.isEmpty() || m_auditKey.size() > crypto_generichash_KEYBYTES_MAX)
+    {
         qCritical() << "CryptoEngine Error: Invalid audit key for block hash generation!";
         return std::nullopt;
     }
@@ -216,16 +240,13 @@ std::optional<QByteArray> CryptoEngine::generateBlockHash(const QString &blockDa
 
     QByteArray blockHash(crypto_generichash_BYTES, Qt::Uninitialized);
 
-        
     int result = crypto_generichash(
-        reinterpret_cast<unsigned char *>(blockHash.data()), 
+        reinterpret_cast<unsigned char *>(blockHash.data()),
         blockHash.size(),
-        reinterpret_cast<const unsigned char *>(inputData.constData()), 
+        reinterpret_cast<const unsigned char *>(inputData.constData()),
         inputData.size(),
-        reinterpret_cast<const unsigned char *>(m_auditKey.constData()), 
-        m_auditKey.size()
-    );
-
+        reinterpret_cast<const unsigned char *>(m_auditKey.constData()),
+        m_auditKey.size());
 
     if (result != 0)
     {
@@ -235,4 +256,3 @@ std::optional<QByteArray> CryptoEngine::generateBlockHash(const QString &blockDa
 
     return blockHash;
 }
-

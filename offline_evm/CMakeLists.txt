@@ -35,6 +35,11 @@ set(PROJECT_SOURCES
     src/views/mainwindow.ui
 
     # Controllers
+    src/controllers/auth_manager.h
+    src/controllers/auth_manager.cpp
+    src/controllers/election_controller.h
+    src/controllers/election_controller.cpp
+
 
     # Services
     src/services/crypto/crypto_engine.h

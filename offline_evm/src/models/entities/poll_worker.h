@@ -10,7 +10,7 @@ class PollWorker
 private:
     QString m_username;
     QByteArray m_passwordHash;
-    long long m_salt;
+    QByteArray m_salt;
 
 public:
     PollWorker() : m_salt(0) {}
@@ -35,11 +35,11 @@ public:
     // Getters
     QString getUsername() const { return m_username; }
     QByteArray getPasswordHash() const { return m_passwordHash; }
-    long long getSalt() const { return m_salt; }
+    QByteArray getSalt() const { return m_salt; }
 
     // Setters
     void setUsername(const QString &username) { m_username = username; }
-    void setPassword(const QByteArray &hash, const long long &salt)
+    void setPassword(const QByteArray &hash, const QByteArray &salt)
     {
         m_passwordHash = hash;
         m_salt = salt;
