@@ -17,13 +17,11 @@
 #include "ui_mainwindow.h"
 #include "votertokenmess.h"
 
-
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
     ui->setupUi(this);
 
-    ui->MainStack->setCurrentIndex(3);
     this->setFocus();
 
     EmailService::getInstance().configure("smtp.gmail.com",
@@ -32,35 +30,43 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
                                           "dtgn pptc jspd vjnk");
 
     // 1. Create the custom page purely in C++
-    //admin
+    m_loginPage = new LoginPage(this);
+    // admin
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
     m_adminInnerPage_Admins = new AdminManagementPage(this);
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
-    //user
+    // user
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);
     userInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     userInnerPage_CandidateDetails->setUserMode(true); // <--- HIDES THE ADMIN BUTTONS
     userInnerPage_Candidacy = new UserCandidacyPage(this);
 
-
     // 2. Add it to the Stacked Widget manually
-    //admin
+    ui->MainStack->insertWidget(0, m_loginPage);
+    // admin
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
     ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
     ui->adminContentStack->addWidget(m_adminInnerPage_CreateElection);
-    //user
+    // user
     ui->userContentStack->addWidget(userInnerPage_ActiveElections);
     ui->userContentStack->addWidget(userInnerPage_MyTokens);
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    //admin
-    connect(m_adminInnerPage_Candidates,&AdminCandidatePage::electionSelected,
+    ui->MainStack->setCurrentIndex(0);
+
+    connect(m_loginPage, &LoginPage::goToSignupRequested, this, &MainWindow::handleGoToSignupRequested);
+    connect(m_loginPage, &LoginPage::loginSuccessUser, this, &MainWindow::handleLoginSuccessUser);
+    connect(m_loginPage, &LoginPage::loginSuccessAdmin, this, &MainWindow::handleLoginSuccessAdmin);
+    connect(m_loginPage, &LoginPage::loginSuccessAdminPending, this, &MainWindow::handleLoginSuccessAdminPending);
+
+    // admin
+    connect(m_adminInnerPage_Candidates, &AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
             this, &MainWindow::handleNavigateToCreateElection);
@@ -74,7 +80,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleBackToElectionList);
     connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::createElectionRequested,
             this, &MainWindow::handleCreateElectionSubmit);
-    //user
+    // user
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
             this, &MainWindow::handleUserElectionSelected);
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::generateTokenRequested,
@@ -87,8 +93,6 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleUserBackToActiveElections);
     connect(userInnerPage_Candidacy, &UserCandidacyPage::submitApplicationRequested,
             this, &MainWindow::handleCandidacyApplicationSubmit);
-
-
 }
 
 MainWindow::~MainWindow()
@@ -98,10 +102,9 @@ MainWindow::~MainWindow()
 
 // Navigation
 
-void MainWindow::on_goToSignupBtn_clicked()
+void MainWindow::handleGoToSignupRequested()
 {
-    // Switch to Signup Page(Index 1)
-    ui->MainStack->setCurrentIndex(1);
+    ui->MainStack->setCurrentIndex(StackedPages::SignupPage);
     this->setFocus();
 }
 
@@ -114,173 +117,19 @@ void MainWindow::on_goToLoginBtn_clicked()
 
 // Authentication
 
-void MainWindow::on_loginSubmitBtn_clicked()
+void MainWindow::handleLoginSuccessUser()
 {
-    // 1. Grab the text from the UI
-    QString username = ui->usernameInput->text();
-    QString password = ui->passwordInput->text();
+    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+}
 
-    // 2. Basic Validation to ensure fields aren't empty
-    if (username.isEmpty() || password.isEmpty())
-    {
-        QMessageBox::warning(this, "Error", "Please enter your Voter ID and Password.");
-        return;
-    }
-    int inputType = identifyInputType(username);
-    AuthManager ::LoginResult loginResult;
-    if (inputType == 1)
-    {
-        loginResult = AuthManager::getInstance().login(password, "", username);
-    }
-    else if (inputType == 2)
-    {
-        loginResult = AuthManager::getInstance().login(password, username, "");
-    }
-    else
-    {
-        QMessageBox::warning(this, "Error", "Please enter Correct Format!");
-        return;
-    }
+void MainWindow::handleLoginSuccessAdmin()
+{
+    ui->MainStack->setCurrentIndex(StackedPages::AdminDashPage);
+}
 
-    // Handle Errors first to keep code clean
-    if (loginResult == AuthManager::LoginResult::InvalidCnicOrEmail)
-    {
-        QMessageBox::warning(this, "Error", "Incorrect CNIC or Email!");
-        return;
-    }
-    else if (loginResult == AuthManager::LoginResult::InvalidPassword)
-    {
-        QMessageBox::warning(this, "Error", "Incorrect Password!");
-        return;
-    }
-    else if (loginResult == AuthManager::LoginResult::SystemError)
-    {
-        QMessageBox::warning(this, "Error", "System Error!");
-        return;
-    }
-
-    QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
-
-    // swapping pages for user on login result
-    if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn || loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn || loginResult == AuthManager::LoginResult::SuccessAdminPending)
-    {
-        bool otpSendSuccess = AuthManager::getInstance().requestOtp(userEmail);
-        if (!otpSendSuccess)
-        {
-            QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
-            return;
-        }
-
-        bool verified = false;
-
-        while (!verified)
-        {
-            bool ok;
-            QString otp = QInputDialog::getText(
-                this,
-                tr("2FA Verification"),
-                tr("A 4-digit code has been sent to your Email.\n\nEnter OTP:"),
-                QLineEdit::Password,
-                "",
-                &ok);
-
-            if (!ok)
-            {
-                QMessageBox::information(this,
-                                         "Cancelled",
-                                         "Verification cancelled. Returning to login page.");
-                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
-                return;
-            }
-
-            if (otp.trimmed().isEmpty())
-            {
-                QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
-                continue;
-            }
-
-            if (AuthManager::getInstance().verifyOtp(userEmail, otp))
-            {
-                verified = true;
-            }
-            else
-            {
-                QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
-            }
-        }
-
-        if (loginResult == AuthManager::LoginResult::SuccessAdminLoggedIn)
-        {
-            // Send to Admin Dashboard
-            QMessageBox::information(this, "Admin Verified", "Accessing Admin Portal...");
-            ui->MainStack->setCurrentIndex(StackedPages::AdminDashPage);
-        }
-        else if (loginResult == AuthManager::LoginResult::SuccessUserLoggedIn)
-        {
-            // Send to Voter Dashboard
-            QMessageBox::information(this, "Voter Verified", "Welcome to the Voting Booth.");
-            ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
-        }
-        else if (loginResult == AuthManager::LoginResult::SuccessAdminPending)
-        {
-            ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
-        }
-    }
-    else if (AuthManager::LoginResult::EmailNotVerified == loginResult)
-    {
-        QMessageBox::information(this,
-                                 "Email Not Verified",
-                                 "Your email is not verified. Please verify to continue.");
-        bool otpSendSuccess = AuthManager::getInstance().requestOtp(userEmail);
-        if (!otpSendSuccess)
-        {
-            QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
-            return;
-        }
-
-        bool verified = false;
-
-        while (!verified)
-        {
-            bool ok;
-            QString otp = QInputDialog::getText(
-                this,
-                tr("Email Verification"),
-                tr("A 4-digit code has been sent to your Email.\n\nEnter OTP:"),
-                QLineEdit::Password,
-                "",
-                &ok);
-
-            if (!ok)
-            {
-                QMessageBox::information(this,
-                                         "Cancelled",
-                                         "Verification cancelled. Returning to login page.");
-                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
-                return;
-            }
-
-            if (otp.trimmed().isEmpty())
-            {
-                QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
-                continue;
-            }
-
-            if (AuthManager::getInstance().verifyOtp(userEmail, otp))
-            {
-                verified = true;
-                QMessageBox::information(
-                    this,
-                    "Verification Successful",
-                    "Email verified successfully! Redirecting to dashboard...");
-                ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
-            }
-            else
-            {
-                QMessageBox::warning(this, "Error", "Incorrect OTP. Please try again.");
-            }
-        }
-    }
+void MainWindow::handleLoginSuccessAdminPending()
+{
+    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
 }
 
 void MainWindow::on_signupSubmitBtn_clicked()
@@ -373,7 +222,7 @@ void MainWindow::on_signupSubmitBtn_clicked()
                 ui->newPasswordInput->clear();
                 ui->confirmPasswordInput->clear();
                 ui->adminCheckBox->setChecked(false);
-                ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+                ui->MainStack->setCurrentIndex(StackedPages::Login_Page);
                 return;
             }
 
@@ -462,7 +311,7 @@ void MainWindow::on_btnUserLogout_clicked()
     {
         AuthManager::getInstance().logout();
 
-        ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+        ui->MainStack->setCurrentIndex(StackedPages::Login_Page);
         this->setFocus();
         QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
     }
@@ -480,7 +329,7 @@ void MainWindow::on_btnAdminLogout_clicked()
     {
         AuthManager::getInstance().logout();
 
-        ui->MainStack->setCurrentIndex(StackedPages::LoginPage);
+        ui->MainStack->setCurrentIndex(StackedPages::Login_Page);
         this->setFocus();
         QMessageBox::information(this, "Logged Out", "You have been securely logged out.");
     }
@@ -575,7 +424,7 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
 
     // 2. Generate Mock Elections with various states to test the UI
     int electionCount = 5;
-    Election* mockElections = new Election[electionCount];
+    Election *mockElections = new Election[electionCount];
 
     // Status: Published (Blue)
     mockElections[0].setId("ELEC-101");
@@ -626,7 +475,8 @@ void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
 {
     // For testing purposes, let's inject a HUGE manifesto into the selected
     // candidate right before we show it, just to ensure the QScrollArea works perfectly.
-    if (selectedCandidate.getManifesto().isEmpty()) {
+    if (selectedCandidate.getManifesto().isEmpty())
+    {
         selectedCandidate.setManifesto(
             "1. Economic Reform: We will introduce a comprehensive tax relief plan...\n\n"
             "2. Healthcare: Free access to primary care facilities across the province.\n\n"
@@ -637,8 +487,7 @@ void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
             "7. Youth Empowerment: Paid internships for 100,000 graduates.\n\n"
             "(Keep scrolling...) \n\n"
             "8. Foreign Policy: Enhancing trade with neighboring regions.\n\n"
-            "9. Agriculture: Subsidies for solar-powered tube wells."
-            );
+            "9. Agriculture: Subsidies for solar-powered tube wells.");
         selectedCandidate.setPreviousHistory("Served as MPA from 2018-2023. Member of Finance Committee.");
         selectedCandidate.setEducationLevel("Ph.D. in Economics from LUMS");
     }
@@ -676,8 +525,7 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
                                      "Target Candidate: %1\n"
                                      "Action: %2\n"
                                      "Requested By: Admin %3")
-                                 .arg(targetCnic, statusText, currentAdminCnic)
-                             );
+                                 .arg(targetCnic, statusText, currentAdminCnic));
 
     /*
      * WHEN YOUR BACKEND IS READY, THIS IS ALL YOU WRITE HERE:
@@ -714,8 +562,7 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
                                  .arg(title,
                                       publishTime.toString("dd MMM yyyy"),
                                       startTime.toString("dd MMM yyyy"),
-                                      endTime.toString("dd MMM yyyy"))
-                             );
+                                      endTime.toString("dd MMM yyyy")));
 
     /* WHEN BACKEND IS READY:
      * Election newElection;
@@ -730,8 +577,6 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
     handleBackToElectionList(); // Go back to list after success
 }
 
-
-
 //---------------user-pages---------------
 void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 {
@@ -739,7 +584,7 @@ void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 
     // Mock Data for Elections
     int electionCount = 2;
-    Election* mockElections = new Election[electionCount];
+    Election *mockElections = new Election[electionCount];
 
     mockElections[0].setId("ELEC-201");
     mockElections[0].setTitle("National General Election");
@@ -761,7 +606,7 @@ void MainWindow::handleUserElectionSelected(QString electionId)
 {
     // When the user clicks an election, load the mock candidates for it
     int candidateCount = 2;
-    Candidate* mockCandidates = new Candidate[candidateCount];
+    Candidate *mockCandidates = new Candidate[candidateCount];
 
     mockCandidates[0].setUserCnic("42101-111-1");
     mockCandidates[0].setPartyName("Democratic Front");
@@ -772,7 +617,7 @@ void MainWindow::handleUserElectionSelected(QString electionId)
     mockCandidates[1].setStatus(ApprovalStatus::Approved);
 
     userInnerPage_ActiveElections->loadCandidates(mockCandidates, candidateCount);
-    delete [] mockCandidates;
+    delete[] mockCandidates;
 }
 
 // ---------------------------------------------------------
@@ -796,7 +641,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     QString backendBase64String = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 
     // 2. Create the Dialog using the Designer class
-    VoterTokenMess tokenPopup(backendBase64String,electionId , this);
+    VoterTokenMess tokenPopup(backendBase64String, electionId, this);
 
     // 3. Show it modally (blocks the rest of the app until they click OK)
     tokenPopup.exec();
@@ -807,7 +652,7 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
     ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
 
     int tokenCount = 2;
-    Token* mockTokens = new Token[tokenCount];
+    Token *mockTokens = new Token[tokenCount];
 
     mockTokens[0].setId("TKN-9991"); // Must have an ID for accordion to work!
     mockTokens[0].setElectionId("ELEC-201");
@@ -833,8 +678,7 @@ void MainWindow::handleEmailTokenRequested(Token selectedToken)
     // For now, just show a popup to prove the button works!
     QMessageBox::information(this, "Email Token",
                              "Ready to email token for Election:\n" + selectedToken.getElectionId() +
-                                 "\n\n(Your Lead's EmailService will be connected here!)"
-                             );
+                                 "\n\n(Your Lead's EmailService will be connected here!)");
 
     /*
      * WHEN READY, YOU WILL USE YOUR LEAD'S EMAIL CLASS LIKE THIS:
@@ -882,7 +726,7 @@ void MainWindow::on_userSidebarCandidacyBtn_clicked()
 
     // Only fetch PUBLISHED elections for the candidacy form
     int electionCount = 2;
-    Election* mockElections = new Election[electionCount];
+    Election *mockElections = new Election[electionCount];
 
     mockElections[0].setId("ELEC-201");
     mockElections[0].setTitle("National General Election");
@@ -909,8 +753,7 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
     // 2. Show Success Message
     QMessageBox::information(this, "Application Submitted",
                              "Your candidacy application for '" + newCandidate.getPartyName() + "' has been successfully submitted!\n\n"
-                                                                                                "Please wait for admin approval. You will see your status update in the Active Elections tab once approved."
-                             );
+                                                                                                "Please wait for admin approval. You will see your status update in the Active Elections tab once approved.");
 
     /*
      * WHEN YOUR BACKEND IS READY, YOU WILL UNCOMMENT THIS:
@@ -927,31 +770,7 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
 
-
-
 // Helping Functions
-
-int MainWindow::identifyInputType(const QString &input)
-{
-    if (input.isEmpty())
-        return 0;
-
-    // Define Regex patterns
-    QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
-
-    if (emailRegex.match(input).hasMatch())
-    {
-        return 1; // It's an Email
-    }
-
-    if (cnicRegex.match(input).hasMatch())
-    {
-        return 2; // It's a CNIC
-    }
-
-    return 0;
-}
 
 void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePath)
 {
