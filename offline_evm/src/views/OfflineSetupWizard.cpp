@@ -3,6 +3,12 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 
+#include "controllers/auth_manager.h"
+#include "controllers/election_controller.h"
+#include "controllers/system_controller.h"
+#include "models/repos/configrepo.h"
+#include "services/crypto/crypto_engine.h"
+
 // ==========================================
 // CUSTOM DELEGATE TO DRAW THE ADMIN BOXES
 // ==========================================
@@ -368,22 +374,36 @@ void OfflineSetupWizard::buildAdminSetupPage() {
 // ---------------------------------------------------------
 
 // Change processMasterSetup() to swap to the new page instead of ending!
-void OfflineSetupWizard::processMasterSetup() {
+void OfflineSetupWizard::processMasterSetup()
+{
     QString pass = passInput->text();
     QString confirm = confirmPassInput->text();
     QString pubKey = publicKeyInput->text().trimmed();
 
-    if(pass.isEmpty() || confirm.isEmpty() || pubKey.isEmpty()) {
-        QMessageBox::warning(this, "Validation Error", "Password fields cannot be empty.");
+    if (pass.isEmpty() || confirm.isEmpty() || pubKey.isEmpty()) {
+        QMessageBox::warning(this, "Validation Error", "Fields cannot be empty.");
         return;
     }
-    if(pass != confirm) {
+    if (pass != confirm) {
         QMessageBox::critical(this, "Security Error", "Passwords do not match!");
-        passInput->clear(); confirmPassInput->clear(); passInput->setFocus();
+        passInput->clear();
+        confirmPassInput->clear();
+        passInput->setFocus();
         return;
     }
 
-    // Passwords verified! Move to Page 3!
+    // [BACKEND INTEGRATION: CRYPTOGRAPHY]
+    if (!CryptoEngine::getInstance().generateAndStoreKeyPair(pass)) {
+        QMessageBox::critical(this, "Crypto Error", "Failed to generate local security keys!");
+        return;
+    }
+
+    // [BACKEND INTEGRATION: SAVE PUBLIC KEY]
+    SystemConfig config;
+    config.setPublicKeyBase64(pubKey);
+    ConfigRepository configRepo;
+    configRepo.saveConfig(config);
+
     wizardStack->setCurrentIndex(2);
     step3Btn->setChecked(true);
     this->setFocus();
@@ -394,35 +414,41 @@ void OfflineSetupWizard::goBackToMasterSetup() {
     step2Btn->setChecked(true);
     this->setFocus();
 }
-
-void OfflineSetupWizard::onAddAdminClicked() {
+void OfflineSetupWizard::onAddAdminClicked()
+{
     QString user = adminUserIn->text().trimmed();
     QString cnic = adminCnicIn->text().trimmed();
     QString pass = adminPassIn->text();
     QString conf = adminConfirmIn->text();
 
-    // 1. Validation
     if (user.isEmpty() || cnic.isEmpty() || pass.isEmpty() || conf.isEmpty()) {
         QMessageBox::warning(this, "Error", "All fields must be filled out.");
         return;
     }
     if (pass != conf) {
         QMessageBox::warning(this, "Error", "Passwords do not match.");
-        adminPassIn->clear(); adminConfirmIn->clear(); adminPassIn->setFocus();
         return;
     }
 
-    // 2. Add to ListWidget (The Custom Delegate will draw the box!)
-    adminListWidget->addItem(user);
+    // [BACKEND INTEGRATION: CREATE WORKER]
+    bool success = AuthManager::getInstance().createOperationalWorker(user, pass);
+    if (!success) {
+        QMessageBox::critical(this, "Database Error", "Failed to save the Poll Worker.");
+        return;
+    }
 
-    // 3. Clear the form for the next admin
+    // [CRITICAL FIX: LOGIN THE FIRST WORKER AUTOMATICALLY]
+    // The ElectionController requires a logged-in worker to load the USB data!
+    if (!AuthManager::getInstance().isWorkerLoggedIn()) {
+        AuthManager::getInstance().loginWorker(user, pass);
+    }
+
+    adminListWidget->addItem(user);
     adminUserIn->clear();
     adminCnicIn->clear();
     adminPassIn->clear();
     adminConfirmIn->clear();
     adminUserIn->setFocus();
-
-    // 4. Enable the "Finish Setup" button now that we have at least 1 admin!
     adminNextBtn->setEnabled(true);
 }
 
@@ -513,38 +539,53 @@ void OfflineSetupWizard::goBackToAdminSetup() {
     step3Btn->setChecked(true);
 }
 
-void OfflineSetupWizard::onBrowseFileClicked() {
-    // 1. Open File Explorer asking specifically for JSON files
-    QString filePath = QFileDialog::getOpenFileName(this, "Select Election Configuration File", "", "JSON Files (*.json);;All Files (*.*)");
+void OfflineSetupWizard::onBrowseFileClicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this,
+                                                    "Select Election Configuration File",
+                                                    "",
+                                                    "JSON Files (*.json);;All Files (*.*)");
+    if (filePath.isEmpty())
+        return;
 
-    if (filePath.isEmpty()) {
-        return; // User clicked cancel
-    }
+    // [NEW] Save the path for processLoadElection()
+    loadedFilePath = filePath;
 
-    // 2. Open the actual file
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::critical(this, "File Error", "Could not read the selected file. Please ensure it is not corrupted or locked.");
+        QMessageBox::critical(this, "File Error", "Could not read the selected file.");
         return;
     }
 
-    // 3. Read the contents
     QTextStream in(&file);
-    QString fileContent = in.readAll();
+    fileDataDisplay->setText(in.readAll());
     file.close();
 
-    // 4. Update the UI
     QFileInfo fileInfo(filePath);
     fileNameLabel->setText("Loaded: " + fileInfo.fileName());
-    fileNameLabel->setStyleSheet("font-size: 14px; color: #27AE60; font-weight: bold;"); // Turn green to show success
+    fileNameLabel->setStyleSheet("font-size: 14px; color: #27AE60; font-weight: bold;");
 
-    fileDataDisplay->setText(fileContent);
-
-    // 5. ENABLE THE NEXT BUTTON!
     loadNextBtn->setEnabled(true);
 }
 
-void OfflineSetupWizard::processLoadElection() {
+void OfflineSetupWizard::processLoadElection()
+{
+    if (loadedFilePath.isEmpty())
+        return;
+
+    //[BACKEND INTEGRATION: LOAD USB JSON]
+    bool success = ElectionController::getInstance().loadElectionDataFromUSB(loadedFilePath);
+
+    if (!success) {
+        QMessageBox::critical(this,
+                              "Parsing Error",
+                              "Failed to parse JSON or save Candidates to Database.");
+        return;
+    }
+
+    QMessageBox::information(this,
+                             "Success",
+                             "Terminal Configured Successfully!\n\nEntering Kiosk Mode...");
     emit setupComplete();
 }
 /*void OfflineSetupWizard::finishSetup() {

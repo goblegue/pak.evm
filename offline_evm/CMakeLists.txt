@@ -50,6 +50,9 @@ set(PROJECT_SOURCES
     src/controllers/audit_controller.cpp
     src/controllers/system_controller.h
     src/controllers/system_controller.cpp
+    src/controllers/system_bootloader.h
+    src/controllers/system_bootloader.cpp
+
 
     # --- LEAD'S SERVICES ---
     src/services/crypto/crypto_engine.h
