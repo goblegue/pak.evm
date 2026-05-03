@@ -1,0 +1,14 @@
+#ifndef TOKENREPO_H
+#define TOKENREPO_H
+
+#include "../entities/tokens.h"
+
+class TokenRepository : public ITokenRepository {
+public:
+    bool markTokenAsUsed(const Token &token) override;
+    bool isTokenUsed(const QString &tokenId) override;
+
+    int getTotalTokensUsedCount() override;
+};
+
+#endif

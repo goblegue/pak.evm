@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QDateTime>
-
+#include <cstddef>
 class AuditLog
 {
 private:

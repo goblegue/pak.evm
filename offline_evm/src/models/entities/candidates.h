@@ -2,7 +2,7 @@
 #define CANDIDATE_H
 
 #include <QString>
-
+#include <cstddef>
 class Candidate
 {
 private:

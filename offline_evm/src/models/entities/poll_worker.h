@@ -4,7 +4,7 @@
 #include <QString>
 #include <QByteArray>
 #include <optional>
-
+#include <cstddef>
 class PollWorker
 {
 private:

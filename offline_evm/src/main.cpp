@@ -1,5 +1,5 @@
 #define prod
-
+#include "models/repos/DatabaseManager.h"
 #include "views/mainwindow.h"
 #include  "views/OfflineSetupWizard.h"
 
@@ -25,5 +25,6 @@ int main(int argc, char *argv[])
 #ifdef deve
     w.show();
 #endif
+    DatabaseManager::instance().init("voting_systemdb");
     return a.exec();
 }

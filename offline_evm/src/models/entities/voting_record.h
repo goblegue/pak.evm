@@ -3,9 +3,10 @@
 
 #include <QString>
 #include <QByteArray>
+#include <cstddef>
+#include "tokens.h"
 
 class Token; // Forward declaration
-
 class VoteRecord
 {
 private:
@@ -49,6 +50,9 @@ public:
     void setCandidateCnic(const QString &cnic) { m_candidateCnic = cnic; }
     void setTimestamp(const QString &timestamp) { m_timestamp = timestamp; }
     void setCurrentHash(const QByteArray &hash) { m_currentHash = hash; }
+
+    QByteArray getPreviousHash() const { return m_previousHash; }
+    void setPreviousHash(const QByteArray &hash) { m_previousHash = hash; }
 };
 
 struct candidateVotes
@@ -74,8 +78,16 @@ public:
     // Runs the GROUP BY SQL query and returns the results
     virtual candidateVotes *getElectionTally(int &tallySize) = 0;
 
+<<<<<<< HEAD
     // [NEW] Extremely fast O(1) query: SELECT COUNT(*) FROM Votes;
     virtual int getTotalVotesCount() = 0;
+=======
+
+    virtual int getTotalVotesCount() = 0;
+
+
+    virtual bool insertVoteTransaction(const VoteRecord &vote, const Token &token) = 0;
+>>>>>>> s2/feature/offline_database_setup
 };
 
 #endif // VOTE_RECORD_H

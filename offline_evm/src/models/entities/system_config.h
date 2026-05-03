@@ -2,6 +2,9 @@
 #define SYSTEM_CONFIG_H
 
 #include <QString>
+#include <QDateTime>
+#include <cstddef>
+#include <optional>
 
 // [NEW] Strict Enum for Election State
 enum class ElectionState {
@@ -11,7 +14,6 @@ enum class ElectionState {
     Paused,         // 3: Emergency pause by Poll Worker
     Closed          // 4: Election over, waiting for Master Key to tally
 };
-
 class SystemConfig
 {
 private:
