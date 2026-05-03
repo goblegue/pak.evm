@@ -1,4 +1,4 @@
-#define prod
+#define deve
 #include "models/repos/DatabaseManager.h"
 #include "views/mainwindow.h"
 #include  "views/OfflineSetupWizard.h"

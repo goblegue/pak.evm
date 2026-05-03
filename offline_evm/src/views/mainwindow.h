@@ -9,6 +9,7 @@
 #include "PostElectionPage.h"
 #include "EvmScanPage.h"
 #include "EvmVotingPage.h"
+#include "OfflineAdminDashboard.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -30,6 +31,11 @@ private slots:
     void onHeartbeatTick();
     void handleProceedToVoting();
 
+    void openSecretAdminDashboard();
+    void handleEmergencyPause(bool pause);
+    void handleTimeExtension(int minutesToAdd);
+    void handleEmergencyForceClose();
+    void handleCloseAdminDashboard();
 
 private:
     Ui::MainWindow *ui;
@@ -42,6 +48,9 @@ private:
     PreElectionPage *preElectionPage;
     PostElectionPage *postElectionPage;
     EvmVotingPage *votingPage;
+    OfflineAdminDashboard *adminDashboard;
+
+    bool m_systemIsPaused;
 
     void verifyScannedToken(QString cnic, QString qrPayload);
     QString formatTime(qint64 totalSeconds);
