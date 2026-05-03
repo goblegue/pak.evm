@@ -78,16 +78,8 @@ public:
     // Runs the GROUP BY SQL query and returns the results
     virtual candidateVotes *getElectionTally(int &tallySize) = 0;
 
-<<<<<<< HEAD
     // [NEW] Extremely fast O(1) query: SELECT COUNT(*) FROM Votes;
     virtual int getTotalVotesCount() = 0;
-=======
-
-    virtual int getTotalVotesCount() = 0;
-
-
-    virtual bool insertVoteTransaction(const VoteRecord &vote, const Token &token) = 0;
->>>>>>> s2/feature/offline_database_setup
 };
 
 #endif // VOTE_RECORD_H

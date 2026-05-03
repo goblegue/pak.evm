@@ -5,19 +5,24 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QBuffer>
+#include <QTimer>
 
-EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent) {
+EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent)
+{
     lastProcessTime = 0;
     scanAlreadySuccessful = false;
     setupUi();
     startCamera();
 }
 
-EvmScanPage::~EvmScanPage() {
-    if (camera) camera->stop();
+EvmScanPage::~EvmScanPage()
+{
+    if (camera)
+        camera->stop();
 }
 
-void EvmScanPage::setupUi() {
+void EvmScanPage::setupUi()
+{
     this->setObjectName("ScanPageBG");
     this->setStyleSheet("#ScanPageBG { background-color: #f5f7fb; }");
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -41,7 +46,8 @@ void EvmScanPage::setupUi() {
 
     // Load and mask the image into a circle
     QPixmap originalLogo(":/resource/pak.evm-logo.png"); // CHANGE THIS TO YOUR RESOURCE PATH!
-    if (!originalLogo.isNull()) {
+    if (!originalLogo.isNull())
+    {
         QPixmap circularLogo(50, 50);
         circularLogo.fill(Qt::transparent);
         QPainter painter(&circularLogo);
@@ -51,7 +57,9 @@ void EvmScanPage::setupUi() {
         painter.setClipPath(path);
         painter.drawPixmap(0, 0, 50, 50, originalLogo);
         logoLabel->setPixmap(circularLogo);
-    } else {
+    }
+    else
+    {
         // Fallback if image fails to load
         logoLabel->setStyleSheet("background-color: white; border-radius: 25px;");
     }
@@ -89,18 +97,19 @@ void EvmScanPage::setupUi() {
         "1. Open the PAK.EVM app on your mobile device.\n"
         "2. Navigate to 'My Tokens' and open today's Election Token.\n"
         "3. Hold your phone screen up to the camera on the right.\n"
-        "4. Keep the QR code steady inside the rectangular frame.", this);
+        "4. Keep the QR code steady inside the rectangular frame.",
+        this);
     instructionDesc->setWordWrap(true);
     instructionDesc->setStyleSheet(
-        "font-size: 20px; "             /* Restores your large font */
-        "color: #34495E; "              /* Dark grey text */
-        "line-height: 1.8; "            /* Spacing between lines */
-        "margin-top: 20px; "            /* Pushes it down from the title */
-        "background: transparent; "     /* Lets the grey page background show through */
-        "border: 2px solid #580000; "   /* Your dark red theme border! */
-        "border-radius: 12px; "         /* Rounded corners */
-        "padding: 20px;"                /* CRITICAL: Keeps text away from the red border */
-        );
+        "font-size: 20px; "           /* Restores your large font */
+        "color: #34495E; "            /* Dark grey text */
+        "line-height: 1.8; "          /* Spacing between lines */
+        "margin-top: 20px; "          /* Pushes it down from the title */
+        "background: transparent; "   /* Lets the grey page background show through */
+        "border: 2px solid #580000; " /* Your dark red theme border! */
+        "border-radius: 12px; "       /* Rounded corners */
+        "padding: 20px;"              /* CRITICAL: Keeps text away from the red border */
+    );
     QLabel *cnicLabel = new QLabel("Enter your CNIC:", this);
     cnicLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #2C3E50; margin-top: 30px;");
 
@@ -144,8 +153,7 @@ void EvmScanPage::setupUi() {
     proceedBtn->setEnabled(false);
     proceedBtn->setStyleSheet(
         "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
-        "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }"
-        );
+        "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }");
     connect(proceedBtn, &QPushButton::clicked, this, &EvmScanPage::onProceedClicked);
 
     // Simulate Scan Button (For development testing)
@@ -169,10 +177,12 @@ void EvmScanPage::setupUi() {
 // ==========================================
 // 3. CAMERA LOGIC
 // ==========================================
-void EvmScanPage::startCamera() {
+void EvmScanPage::startCamera()
+{
     // Check if a camera is attached to the computer
     const QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
-    if (cameras.isEmpty()) {
+    if (cameras.isEmpty())
+    {
         scanStatusLabel->setText("Error: No camera detected.");
         scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;");
         return;
@@ -188,22 +198,44 @@ void EvmScanPage::startCamera() {
     connect(sink, &QVideoSink::videoFrameChanged, this,
             &EvmScanPage::onVideoFrameChanged);
 
+    // Monitor camera errors
+    connect(camera, &QCamera::errorOccurred, this, [this](QCamera::Error error, const QString &errorString)
+            {
+        Q_UNUSED(error);
+        scanStatusLabel->setText("Camera Error: " + errorString);
+        scanStatusLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;"); });
+
     // Start streaming!
     camera->start();
+
+    // Verify camera started (small delay to allow initialization)
+    QTimer::singleShot(500, this, [this]()
+                       {
+        if (camera->isActive()) {
+            scanStatusLabel->setText("Camera ready. Waiting for QR Code...");
+            scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #27AE60; margin-top: 15px; background: transparent;");
+        } else {
+            scanStatusLabel->setText("Error: Camera failed to start. Check permissions or drivers.");
+            scanStatusLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;");
+        } });
 }
 
-void EvmScanPage::stopCamera() {
-    if (camera && camera->isActive()) {
+void EvmScanPage::stopCamera()
+{
+    if (camera && camera->isActive())
+    {
         camera->stop();
     }
 }
 
-void EvmScanPage::resetScanner() {
+void EvmScanPage::resetScanner()
+{
     // 1. Reset the logic flags
     scanAlreadySuccessful = false;
 
     // 2. Clear the inputs
-    if (cnicInput) cnicInput->clear();
+    if (cnicInput)
+        cnicInput->clear();
 
     // 3. Reset the labels and borders back to Blue/Waiting
     scanStatusLabel->setText("Waiting for QR Code...");
@@ -214,32 +246,36 @@ void EvmScanPage::resetScanner() {
     proceedBtn->setEnabled(false);
     proceedBtn->setStyleSheet(
         "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
-        "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }"
-        );
+        "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }");
 
     // 5. Turn the camera back on!
     startCamera();
 }
 
-void EvmScanPage::onVideoFrameChanged(const QVideoFrame &frame) {
-    if (scanAlreadySuccessful) return;
+void EvmScanPage::onVideoFrameChanged(const QVideoFrame &frame)
+{
+    if (scanAlreadySuccessful)
+        return;
 
     QString cnic = cnicInput->text().trimmed();
 
-    if (cnic.isEmpty()) {
+    if (cnic.isEmpty())
+    {
         return;
     }
 
     // Throttle to 2 frames per second
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    if (currentTime - lastProcessTime < 500) {
+    if (currentTime - lastProcessTime < 500)
+    {
         return;
     }
     lastProcessTime = currentTime;
 
     QImage image = frame.toImage();
 
-    if (!image.isNull()) {
+    if (!image.isNull())
+    {
         // ==========================================
         // CONVERT QIMAGE TO BASE64 QSTRING
         // ==========================================
@@ -258,7 +294,8 @@ void EvmScanPage::onVideoFrameChanged(const QVideoFrame &frame) {
 }
 
 // The Backend Developer calls this when their decryption succeeds!
-void EvmScanPage::markScanSuccessful(const QString &decryptedTokenData) {
+void EvmScanPage::markScanSuccessful(const QString &decryptedTokenData)
+{
     scanAlreadySuccessful = true; // Stops the camera from sending more images
 
     // Update the UI
@@ -275,14 +312,17 @@ void EvmScanPage::markScanSuccessful(const QString &decryptedTokenData) {
 }
 
 // (Keep your simulateSuccessfulScan() function. Change its body to just call markScanSuccessful("mock-data"); )
-void EvmScanPage::simulateSuccessfulScan() {
+void EvmScanPage::simulateSuccessfulScan()
+{
     markScanSuccessful("MOCK_SIMULATED_TOKEN_123");
 }
 
-void EvmScanPage::updateTimeRemaining(const QString &timeString) {
+void EvmScanPage::updateTimeRemaining(const QString &timeString)
+{
     timeRemainingLabel->setText("Time Remaining: " + timeString);
 }
 
-void EvmScanPage::onProceedClicked() {
+void EvmScanPage::onProceedClicked()
+{
     emit proceedToVotingClicked();
 }

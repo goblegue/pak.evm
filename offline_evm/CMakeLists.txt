@@ -81,7 +81,7 @@ target_link_libraries(OfflineVotingKiosk PRIVATE
     Qt::Multimedia
     Qt::MultimediaWidgets
     PkgConfig::SODIUM      # Links Libsodium (Argon2, Ed25519)
-    PkgConfig::SQLCIPHER   # Links SQLCipher (Encrypted SQLite)
+#[[    PkgConfig::SQLCIPHER ]]  # Links SQLCipher (Encrypted SQLite)
 )
 
 # 6. Include Paths (So you can #include "models/Candidate.h" easily)
