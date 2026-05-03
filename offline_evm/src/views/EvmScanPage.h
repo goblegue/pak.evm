@@ -9,6 +9,7 @@
 #include <QFrame>
 #include <QLineEdit>
 #include <QImage>
+#include <QTimer>
 
 // Qt6 Multimedia Headers
 #include <QCamera>
@@ -34,12 +35,15 @@ signals:
 
     void frameReadyForBackend(QString base64ImageString, QString enteredCnic);
     void proceedToVotingClicked();
+    void secretAdminDashboardRequested();
 
 private slots:
 
     void simulateSuccessfulScan(); // For testing
     void onVideoFrameChanged(const QVideoFrame &frame);
     void onProceedClicked();
+    void onSecretButtonClicked();
+    void resetSecretClickCount();
 
 private:
     // UI Elements
@@ -49,6 +53,9 @@ private:
     QPushButton *proceedBtn;
     QLineEdit *cnicInput;
     QLabel *timeRemainingLabel;
+    QPushButton *secretBtn;
+    int m_secretClickCount;
+    QTimer *m_secretClickTimer;
 
     // Camera backend
     QCamera *camera;

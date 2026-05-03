@@ -29,11 +29,15 @@ void MainWindow::setupKioskUi() {
     this->setWindowTitle("Offline EVM System");
     this->resize(1000, 650);
 
+    m_systemIsPaused = false;
+
+
     // 2. Initialize Pages
     preElectionPage = new PreElectionPage(this);
     postElectionPage = new PostElectionPage(this);
     scanPage = new EvmScanPage(this);
     votingPage = new EvmVotingPage(this);
+    adminDashboard = new OfflineAdminDashboard(this);
 
     // 3. Setup the Master Stacked Widget
     mainKioskStack = new QStackedWidget(this);
@@ -43,6 +47,7 @@ void MainWindow::setupKioskUi() {
     mainKioskStack->addWidget(scanPage);
     mainKioskStack->addWidget(votingPage);
     mainKioskStack->addWidget(postElectionPage);
+    mainKioskStack->addWidget(adminDashboard);
 
     // 4. Set Election Times (Mock data for testing)
     currentElectionStartTime = QDateTime::currentDateTime().addSecs(5); // Starts in 5 seconds
@@ -57,7 +62,10 @@ void MainWindow::setupKioskUi() {
             this, &MainWindow::processCameraString);
     connect(scanPage, &EvmScanPage::proceedToVotingClicked,
             this, &MainWindow::handleProceedToVoting);
-    connect(votingPage, &EvmVotingPage::candidateVoted, this,[this](Candidate selected) {
+    connect(scanPage, &EvmScanPage::secretAdminDashboardRequested,
+            this, &MainWindow::openSecretAdminDashboard);
+    connect(votingPage, &EvmVotingPage::candidateVoted,
+            this,[this](Candidate selected) {
 
         QMessageBox::information(this, "Vote Cast", "You successfully voted for: " + selected.getPartyName());
 
@@ -67,6 +75,14 @@ void MainWindow::setupKioskUi() {
         // 2. Send the screen back to the scanner
         mainKioskStack->setCurrentWidget(scanPage);
     });
+    connect(adminDashboard, &OfflineAdminDashboard::pauseVotingRequested,
+            this, &MainWindow::handleEmergencyPause);
+    connect(adminDashboard, &OfflineAdminDashboard::extendTimeRequested,
+            this, &MainWindow::handleTimeExtension);
+    connect(adminDashboard, &OfflineAdminDashboard::forceCloseRequested,
+            this, &MainWindow::handleEmergencyForceClose);
+    connect(adminDashboard, &OfflineAdminDashboard::closeDashboardRequested,
+            this, &MainWindow::handleCloseAdminDashboard);
 }
 
 // ==========================================
@@ -140,7 +156,7 @@ void MainWindow::onHeartbeatTick() {
 
         // ONLY force the screen to the scan page if we are coming from the Pre-Election page.
         // If the user is currently on the Voting Page, leave them alone!
-        if (currentScreen != scanPage && currentScreen != votingPage) {
+        if (currentScreen != scanPage && currentScreen != votingPage && currentScreen != adminDashboard) {
             mainKioskStack->setCurrentWidget(scanPage);
         }
 
@@ -160,7 +176,7 @@ void MainWindow::onHeartbeatTick() {
             mainKioskStack->setCurrentWidget(postElectionPage);
 
             // Lock down the app, stop the camera, stop the timer
-            scanPage->stopCamera();
+            //scanPage->stopCamera();
             kioskHeartbeat->stop();
         }
     }
@@ -209,4 +225,58 @@ void MainWindow::handleProceedToVoting() {
 
     // 2. Switch the screen to the voting page!
     mainKioskStack->setCurrentWidget(votingPage);
+}
+
+void MainWindow::openSecretAdminDashboard() {
+    // Inject the latest data into the dashboard before showing it
+    adminDashboard->setCurrentEndTime(currentElectionEndTime);
+    adminDashboard->setPausedState(m_systemIsPaused);
+    // adminDashboard->updateStats( VoteController::getInstance().getTotalVotes() );
+
+    // Stop the camera temporarily to save CPU while admin is working
+    //scanPage->stopCamera();
+    mainKioskStack->setCurrentWidget(adminDashboard);
+}
+
+void MainWindow::handleCloseAdminDashboard() {
+    // Send them back to the scanner
+    scanPage->resetScanner();
+    mainKioskStack->setCurrentWidget(scanPage);
+}
+
+void MainWindow::handleEmergencyPause(bool pause) {
+    m_systemIsPaused = pause;
+    adminDashboard->setPausedState(pause);
+
+    if (pause) {
+        // Mute the heartbeat UI updates or switch to a "PAUSED" screen
+        // AuditLogRepo->insertLog({"EMERGENCY_PAUSE", "Poll worker paused the terminal."});
+    } else {
+        // AuditLogRepo->insertLog({"EMERGENCY_RESUME", "Poll worker resumed the terminal."});
+    }
+}
+
+void MainWindow::handleTimeExtension(int minutesToAdd) {
+
+    // 1. Mathematically add the minutes to the current end time
+    currentElectionEndTime = currentElectionEndTime.addSecs(minutesToAdd * 60);
+
+    // 2. Instantly update the dashboard UI so the Admin sees the new time
+    adminDashboard->setCurrentEndTime(currentElectionEndTime);
+
+    // 3. Show Success Message
+    QMessageBox::information(this, "Extension Applied",
+                             QString("Success! The election has been extended by %1 minutes.\nNew End Time: %2")
+                                 .arg(minutesToAdd)
+                                 .arg(currentElectionEndTime.toString("hh:mm AP")));
+
+    // WHEN READY: AuditLogRepo->insertLog({"TIME_EXTENSION", QString("Extended by %1 mins").arg(minutesToAdd)});
+}
+
+void MainWindow::handleEmergencyForceClose() {
+    // Instantly force the End Time to right now!
+    // The Heartbeat timer will catch this 1 second later and automatically lock down the machine!
+    currentElectionEndTime = QDateTime::currentDateTime();
+
+    // AuditLogRepo->insertLog({"FORCE_CLOSE", "Poll worker triggered emergency shutdown."});
 }

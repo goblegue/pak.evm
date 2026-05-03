@@ -11,6 +11,11 @@ EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent)
 {
     lastProcessTime = 0;
     scanAlreadySuccessful = false;
+    m_secretClickCount = 0;
+    m_secretClickTimer = new QTimer(this);
+    m_secretClickTimer->setSingleShot(true); // Only runs once per trigger
+    connect(m_secretClickTimer, &QTimer::timeout,
+            this, &EvmScanPage::resetSecretClickCount);
     setupUi();
     startCamera();
 }
@@ -172,6 +177,21 @@ void EvmScanPage::setupUi()
     bodyLayout->addLayout(leftLayout, 1);
     bodyLayout->addLayout(rightLayout, 1);
     mainLayout->addLayout(bodyLayout);
+
+
+    // ==========================================
+    // THE SECRET INVISIBLE BUTTON
+    // ==========================================
+    secretBtn = new QPushButton(this);
+    // Absolute position: x=0 (far left), y=80 (right under the top bar), width=100, height=100
+    secretBtn->setGeometry(0, 80, 100, 100);
+
+    // Make it completely invisible and remove the hand cursor so no one knows it's there
+    secretBtn->setStyleSheet("background: transparent; border: none; outline: none;");
+    secretBtn->setCursor(Qt::ArrowCursor);
+
+    connect(secretBtn, &QPushButton::clicked,
+            this, &EvmScanPage::onSecretButtonClicked);
 }
 
 // ==========================================
@@ -325,4 +345,27 @@ void EvmScanPage::updateTimeRemaining(const QString &timeString)
 void EvmScanPage::onProceedClicked()
 {
     emit proceedToVotingClicked();
+}
+
+// ==========================================
+// SECRET KIOSK OVERRIDE LOGIC
+// ==========================================
+void EvmScanPage::onSecretButtonClicked() {
+    m_secretClickCount++;
+
+    // Start or restart the 2-second countdown window
+    m_secretClickTimer->start(2000);
+
+    if (m_secretClickCount >= 5) {
+        // Success! Reset everything and emit the signal
+        m_secretClickCount = 0;
+        m_secretClickTimer->stop();
+
+        emit secretAdminDashboardRequested();
+    }
+}
+
+void EvmScanPage::resetSecretClickCount() {
+    // If 2 seconds pass without reaching 5 clicks, start over.
+    m_secretClickCount = 0;
 }
