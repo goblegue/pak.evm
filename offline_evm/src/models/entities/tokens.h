@@ -10,7 +10,6 @@ private:
     QString m_tokenId;
     QDateTime m_usedAt;
 
-
 public:
     Token() {}
 
@@ -26,8 +25,10 @@ class ITokenRepository
 public:
     virtual ~ITokenRepository() = default;
     virtual bool markTokenAsUsed(const Token &token) = 0;
-    virtual bool isTokenUsed(const QString &tokenId) = 0; 
-    
+    virtual bool isTokenUsed(const QString &tokenId) = 0;
+
+    // [NEW] Extremely fast query: SELECT COUNT(*) FROM UsedTokens;
+    virtual int getTotalTokensUsedCount() = 0;
 };
 
 #endif // TOKEN_H

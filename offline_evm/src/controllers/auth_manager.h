@@ -1,3 +1,4 @@
+
 #ifndef AUTH_MANAGER_H
 #define AUTH_MANAGER_H
 
@@ -6,8 +7,8 @@
 #include <memory>
 #include <optional>
 
-#include "../models/entities/poll_worker.h"
-#include "../models/entities/tokens.h"
+#include "models/entities/poll_worker.h" // Contains PollWorker
+#include "models/entities/tokens.h"
 
 class AuthManager
 {
@@ -17,7 +18,7 @@ private:
 
     std::unique_ptr<PollWorker> m_currentWorker;
     bool m_isMasterUnlocked;
-    QByteArray m_systemPublicKey; // Loaded from USB, needed for token verification
+    QByteArray m_systemPublicKey; // Loaded from SystemConfig 
 
     AuthManager();
     ~AuthManager();
@@ -36,14 +37,11 @@ public:
 
     static AuthManager &getInstance();
     
-    // CryptoEngine is a Singleton now, so we only inject Repositories
     void injectDependencies(IWorkerRepository *workerRepo, ITokenRepository *tokenRepo);
-
-    // Called by ElectionController when USB is loaded
     void setSystemPublicKey(const QByteArray &publicKey) { m_systemPublicKey = publicKey; }
 
-
-    // --- worker MANAGEMENT ---
+    // --- WORKER MANAGEMENT ---
+    bool createOperationalWorker(const QString &username, const QString &password); // [NEW]
     bool loginWorker(const QString &username, const QString &password);
     void logoutWorker();
     bool isWorkerLoggedIn() const { return m_currentWorker != nullptr; }

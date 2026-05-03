@@ -1,7 +1,9 @@
-#include "controllers/auth_manager.h"
+
+
+#include "auth_manager.h"
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "../services/crypto/crypto_engine.h"
+#include "services/crypto/crypto_engine.h"
 #include <sodium.h>
 
 AuthManager::AuthManager() 
@@ -27,8 +29,32 @@ void AuthManager::injectDependencies(IWorkerRepository *workerRepo, ITokenReposi
 }
 
 // ==========================================
-// worker OPERATIONAL LOGIN
+// WORKER CREATION & LOGIN
 // ==========================================
+bool AuthManager::createOperationalWorker(const QString &username, const QString &password)
+{
+    if (!m_workerRepo) return false;
+
+    // Generate a secure 16-byte salt for this worker
+    QByteArray salt(crypto_pwhash_SALTBYTES, Qt::Uninitialized);
+    randombytes_buf(salt.data(), salt.size());
+
+    QByteArray pwdBytes = password.toUtf8();
+    
+    // Assumes CryptoEngine::hashWorkerPassword is implemented in your codebase
+    auto hashOpt = CryptoEngine::getInstance().hashWorkerPassword(pwdBytes, salt);
+    
+    sodium_memzero(pwdBytes.data(), pwdBytes.size()); // Wipe immediately
+
+    if (!hashOpt.has_value()) return false;
+
+    PollWorker worker;
+    worker.setUsername(username);
+    worker.setPassword(hashOpt.value(), salt);
+
+    return m_workerRepo->insertWorker(worker);
+}
+
 bool AuthManager::loginWorker(const QString &username, const QString &password)
 {
     if (!m_workerRepo) return false;
@@ -41,15 +67,12 @@ bool AuthManager::loginWorker(const QString &username, const QString &password)
     QByteArray pwdBytes = password.toUtf8();
     QByteArray salt = worker.getSalt();
 
-    // Use CryptoEngine to hash the input with the worker's stored salt
     auto hashOpt = CryptoEngine::getInstance().hashWorkerPassword(pwdBytes, salt);
+    sodium_memzero(pwdBytes.data(), pwdBytes.size()); 
+
     if (!hashOpt.has_value())
         return false;
     QByteArray hashedInput = hashOpt.value();
-
-    sodium_memzero(pwdBytes.data(), pwdBytes.size()); 
-
-    if (hashedInput.isEmpty()) return false;
 
     // Constant-time comparison
     if (sodium_memcmp(hashedInput.constData(), worker.getPasswordHash().constData(), hashedInput.size()) == 0) {
@@ -69,15 +92,12 @@ void AuthManager::logoutWorker() {
 // ==========================================
 bool AuthManager::unlockMasterAuthority(const QString &masterPassword)
 {
-    // 1. Load the true AuditKey from the OS Vault
     auto storedAuditKeyOpt = CryptoEngine::getInstance().loadAuditKeyFromVault();
     if (!storedAuditKeyOpt.has_value()) return false;
 
-    // 2. Re-derive the keys using the provided Master Password
     auto derivedKeysOpt = CryptoEngine::getInstance().keyDerivationFunc(masterPassword);
     if (!derivedKeysOpt.has_value()) return false;
 
-    // 3. Compare the derived AuditKey with the stored one. If they match, the password is correct!
     if (sodium_memcmp(derivedKeysOpt->AuditKey.constData(), 
                       storedAuditKeyOpt->constData(), 
                       storedAuditKeyOpt->size()) == 0) 
@@ -112,16 +132,13 @@ AuthManager::TokenResult AuthManager::verifyVoterToken(QString &cnic, const QStr
     QString issuedAt = obj["issuedAt"].toString();
     QString signatureBase64 = obj["signature"].toString();
 
-    // Double-vote prevention
     if (m_usedTokenRepo->isTokenUsed(out_tokenId)) {
         sodium_memzero(cnic.data(), cnic.capacity() * sizeof(QChar));
         return TokenResult::AlreadyUsed;
     }
 
-    // Reconstruct data string exactly as System 1 built it
     QString dataToVerify = cnic + electionId + issuedAt;
 
-    // Verify signature using the new CryptoEngine
     bool isValid = CryptoEngine::getInstance().verifyTokenSignature(dataToVerify, signatureBase64, m_systemPublicKey);
 
     // CRITICAL: SECURE WIPE OF TRANSIENT VARIABLES

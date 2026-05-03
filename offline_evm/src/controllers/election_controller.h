@@ -3,10 +3,10 @@
 
 #include <QString>
 #include "models/entities/audit_log.h"
-#include "models/entities/candidates.h"
+#include "models/entities/candidates.h" // Fixed spelling
 #include "models/entities/system_config.h"
-#include "models/entities/tokens.h"
-#include "models/entities/voting_record.h"
+#include "models/entities/tokens.h"        // Fixed spelling
+#include "models/entities/voting_record.h" // Fixed spelling
 #include <memory>
 
 // Forward Declarations of Interfaces
@@ -14,7 +14,7 @@ class IConfigRepository;
 class ICandidateRepository;
 class IVoteRepository;
 class IAuditLogRepository;
-class IUsedTokenRepository;
+class ITokenRepository;
 
 class ElectionController
 {
@@ -23,7 +23,7 @@ private:
     ICandidateRepository *m_candidateRepo;
     IVoteRepository *m_voteRepo;
     IAuditLogRepository *m_auditRepo;
-    IUsedTokenRepository *m_tokenRepo;
+    ITokenRepository *m_tokenRepo;
 
     ElectionController();
     ~ElectionController() = default;
@@ -40,19 +40,28 @@ public:
                             ICandidateRepository *candidate,
                             IVoteRepository *vote, 
                             IAuditLogRepository *audit,
-                            IUsedTokenRepository *token);
+                            ITokenRepository *token);
 
-    // --- ELECTION LIFECYCLE ---
+    // --- SETUP FLOW ---
     bool loadElectionDataFromUSB(const QString &jsonFilePath);
-    bool startElection();
+
+    // --- AUTOMATED FLOW HELPERS (Called by UI QTimer) ---
+    qint64 getSecondsUntilStart();
+    qint64 getSecondsUntilEnd();
+    bool autoOpenElection();
+    bool autoCloseElection();
+
+    // --- POLL WORKER EMERGENCY CONTROLS ---
     bool pauseElection();
-    bool closeElection(const QString &masterPassword);
+    bool resumeElection(); // [NEW] Needed to un-pause
+    bool extendElectionTime(int addedMinutes); // [NEW]
+    bool closeElection(const QString &masterPassword); // Emergency force close
 
     // --- VOTING LOGIC ---
     bool castVote(const QString &candidateCnic, const QString &tokenId, QByteArray &out_receiptHash);
     
     // --- UTILITY ---
-    QString getCurrentState();
+    ElectionState getCurrentState(); // [CHANGED] Returns Enum
 };
 
 #endif // ELECTION_CONTROLLER_H

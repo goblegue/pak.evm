@@ -34,6 +34,7 @@ set(PROJECT_SOURCES
     src/views/mainwindow.cpp
     src/views/mainwindow.ui
 
+
     # Controllers
     src/controllers/auth_manager.h
     src/controllers/auth_manager.cpp

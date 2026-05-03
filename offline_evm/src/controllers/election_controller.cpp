@@ -5,7 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "auth_manager.h"
-#include "services//crypto/crypto_engine.h"
+#include "services/crypto/crypto_engine.h"
 
 ElectionController::ElectionController()
     : m_configRepo(nullptr)
@@ -25,7 +25,7 @@ void ElectionController::injectDependencies(IConfigRepository *config,
                                             ICandidateRepository *candidate,
                                             IVoteRepository *vote,
                                             IAuditLogRepository *audit,
-                                            IUsedTokenRepository *token)
+                                            ITokenRepository *token)
 {
     m_configRepo = config;
     m_candidateRepo = candidate;
@@ -45,14 +45,14 @@ void ElectionController::logEvent(const QString &eventType, const QString &descr
     m_auditRepo->insertLog(log);
 }
 
-QString ElectionController::getCurrentState()
+ElectionState ElectionController::getCurrentState()
 {
     auto config = m_configRepo->getConfig();
-    return config.has_value() ? config->getCurrentState() : "SETUP";
+    return config.has_value() ? config->getCurrentState() : ElectionState::Setup;
 }
 
 // ==========================================
-// ELECTION LIFECYCLE
+// SETUP FLOW
 // ==========================================
 bool ElectionController::loadElectionDataFromUSB(const QString &jsonFilePath)
 {
@@ -71,21 +71,24 @@ bool ElectionController::loadElectionDataFromUSB(const QString &jsonFilePath)
     QJsonObject root = doc.object();
     QJsonObject electionData = root["election"].toObject();
 
-    // 1. Wipe old election data (but keep admins/logs)
     m_candidateRepo->clearAllCandidates();
 
-    // 2. Load System Config
     SystemConfig config = m_configRepo->getConfig().value_or(SystemConfig());
     config.setElectionId(electionData["id"].toString());
-    config.setStationId("LOCAL-STATION-1"); // Should be assigned during setup
-    config.setCurrentState("LOADED");
+    config.setStationId("LOCAL-STATION-1"); 
+    
+    // [CHANGED] Parse MSecSinceEpoch correctly
+    config.setScheduledStartTime(electionData["startTime"].toVariant().toLongLong());
+    config.setScheduledEndTime(electionData["endTime"].toVariant().toLongLong());
+    
+    // [CHANGED] State changes to ReadyWaiting
+    config.setCurrentState(ElectionState::ReadyWaiting);
     m_configRepo->saveConfig(config);
 
-    // 3. Load Public Key into AuthManager
-    QByteArray pubKey = QByteArray::fromBase64(root["public_key"].toString().toUtf8());
+    // Load Public Key from Config (Set during Step 2 of UI) into AuthManager
+    QByteArray pubKey = QByteArray::fromBase64(config.getPublicKeyBase64().toUtf8());
     AuthManager::getInstance().setSystemPublicKey(pubKey);
 
-    // 4. Load Candidates
     QJsonArray candidatesArray = root["candidates"].toArray();
     for (const QJsonValue &val : candidatesArray) {
         QJsonObject candObj = val.toObject();
@@ -99,93 +102,132 @@ bool ElectionController::loadElectionDataFromUSB(const QString &jsonFilePath)
         m_candidateRepo->insertCandidate(c);
     }
 
-    logEvent("USB_LOAD",
-             "Election configuration loaded from USB by "
-                 + AuthManager::getInstance().getCurrentWorker()->getUsername() + ".");
+    logEvent("USB_LOAD", "Election configuration loaded from USB by " + AuthManager::getInstance().getCurrentWorker()->getUsername() + ".");
     return true;
 }
 
-bool ElectionController::startElection()
-{
-    if (!AuthManager::getInstance().getCurrentWorker())
-        return false;
-
+// ==========================================
+// AUTOMATED TIMER FLOW
+// ==========================================
+qint64 ElectionController::getSecondsUntilStart() {
     auto configOpt = m_configRepo->getConfig();
-    if (!configOpt)
-        return false;
+    if (!configOpt) return 0;
+    qint64 diffMSec = configOpt->getScheduledStartTime() - QDateTime::currentMSecsSinceEpoch();
+    return (diffMSec > 0) ? (diffMSec / 1000) : 0;
+}
 
+qint64 ElectionController::getSecondsUntilEnd() {
+    auto configOpt = m_configRepo->getConfig();
+    if (!configOpt) return 0;
+    qint64 diffMSec = configOpt->getScheduledEndTime() - QDateTime::currentMSecsSinceEpoch();
+    return (diffMSec > 0) ? (diffMSec / 1000) : 0;
+}
+
+bool ElectionController::autoOpenElection() {
+    auto configOpt = m_configRepo->getConfig();
+    if (!configOpt) return false;
     SystemConfig config = configOpt.value();
-    config.setCurrentState("OPEN");
+    config.setCurrentState(ElectionState::Open);
     config.setPollOpenedAt(QDateTime::currentDateTime().toString(Qt::ISODate));
     m_configRepo->saveConfig(config);
-
-    logEvent("POLLS_OPENED",
-             "Voting has officially commenced under the supervision of "
-                 + AuthManager::getInstance().getCurrentWorker()->getUsername() + ".");
+    logEvent("POLLS_OPENED", "Voting automatically commenced via timer.");
     return true;
 }
 
+bool ElectionController::autoCloseElection() {
+    auto configOpt = m_configRepo->getConfig();
+    if (!configOpt) return false;
+    SystemConfig config = configOpt.value();
+    config.setCurrentState(ElectionState::Closed);
+    config.setPollClosedAt(QDateTime::currentDateTime().toString(Qt::ISODate));
+    m_configRepo->saveConfig(config);
+    logEvent("POLLS_CLOSED", "Voting automatically closed via timer.");
+    return true;
+}
+
+// ==========================================
+// POLL WORKER EMERGENCY CONTROLS
+// ==========================================
 bool ElectionController::pauseElection()
 {
-    if (!AuthManager::getInstance().getCurrentWorker())
-        return false;
+    if (!AuthManager::getInstance().getCurrentWorker()) return false;
     auto configOpt = m_configRepo->getConfig();
-    if (!configOpt)
-        return false;
+    if (!configOpt) return false;
 
     SystemConfig config = configOpt.value();
-    config.setCurrentState("PAUSED");
+    config.setCurrentState(ElectionState::Paused);
     m_configRepo->saveConfig(config);
 
-    logEvent("POLLS_PAUSED",
-             "Voting temporarily suspended by Admin "
-                 + AuthManager::getInstance().getCurrentWorker()->getUsername() + ".");
+    logEvent("POLLS_PAUSED", "Voting suspended by Worker " + AuthManager::getInstance().getCurrentWorker()->getUsername() + ".");
+    return true;
+}
+
+bool ElectionController::resumeElection()
+{
+    if (!AuthManager::getInstance().getCurrentWorker()) return false;
+    auto configOpt = m_configRepo->getConfig();
+    if (!configOpt) return false;
+
+    SystemConfig config = configOpt.value();
+    config.setCurrentState(ElectionState::Open);
+    m_configRepo->saveConfig(config);
+
+    logEvent("POLLS_RESUMED", "Voting resumed by Worker.");
+    return true;
+}
+
+bool ElectionController::extendElectionTime(int addedMinutes)
+{
+    if (!AuthManager::getInstance().getCurrentWorker()) return false;
+    auto configOpt = m_configRepo->getConfig();
+    if (!configOpt) return false;
+    
+    SystemConfig config = configOpt.value();
+    qint64 extraMSec = addedMinutes * 60 * 1000;
+    config.setScheduledEndTime(config.getScheduledEndTime() + extraMSec);
+    
+    m_configRepo->saveConfig(config);
+    logEvent("ELECTION_EXTENDED", QString("Voting extended by %1 minutes.").arg(addedMinutes));
     return true;
 }
 
 bool ElectionController::closeElection(const QString &masterPassword)
 {
-    // Requires Cryptographic Master Password
     if (!AuthManager::getInstance().unlockMasterAuthority(masterPassword)) {
-        logEvent("UNAUTHORIZED_CLOSE_ATTEMPT",
-                 "Failed attempt to close polls with invalid master password.");
+        logEvent("UNAUTHORIZED_CLOSE_ATTEMPT", "Failed attempt to force-close polls with invalid master password.");
         return false;
     }
 
     auto configOpt = m_configRepo->getConfig();
     SystemConfig config = configOpt.value();
-    config.setCurrentState("CLOSED");
+    config.setCurrentState(ElectionState::Closed);
     config.setPollClosedAt(QDateTime::currentDateTime().toString(Qt::ISODate));
     m_configRepo->saveConfig(config);
 
-    logEvent("POLLS_CLOSED", "Voting permanently closed by Chief Officer.");
+    logEvent("POLLS_FORCE_CLOSED", "Voting permanently closed by Chief Officer.");
     return true;
 }
 
 // ==========================================
-// VOTING LOGIC`
+// VOTING LOGIC
 // ==========================================
 bool ElectionController::castVote(const QString &candidateCnic,
                                   const QString &tokenId,
                                   QByteArray &out_receiptHash)
 {
-    if (getCurrentState() != "OPEN")
+    if (getCurrentState() != ElectionState::Open)
         return false;
 
     QString timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
-
-    // 1. Get previous hash (if genesis block, returns empty)
     QByteArray prevHash = m_voteRepo->getLatestVoteHash();
 
-    // 2. Generate new cryptographic hash for the chain
     QString dataToHash = candidateCnic + tokenId + timestamp;
     auto newHashOpt = CryptoEngine::getInstance().generateBlockHash(dataToHash, prevHash);
 
     if (!newHashOpt.has_value())
         return false;
-    out_receiptHash = newHashOpt.value().toHex(); // Give to voter as receipt
+    out_receiptHash = newHashOpt.value().toHex(); 
 
-    // 3. Prepare the records
     VoteRecord vote;
     vote.setCandidateCnic(candidateCnic);
     vote.setTimestamp(timestamp);
@@ -195,8 +237,6 @@ bool ElectionController::castVote(const QString &candidateCnic,
     usedToken.setTokenId(tokenId);
     usedToken.setUsedAt(QDateTime::currentDateTime());
 
-    // 4. Save to Database (DB Engineer MUST wrap this in a single SQLite Transaction)
-    // We assume m_voteRepo->insertVoteTransaction takes both to ensure atomicity
     bool success = m_voteRepo->insertVoteTransaction(vote, usedToken);
 
     if (success) {

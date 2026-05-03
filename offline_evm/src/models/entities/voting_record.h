@@ -9,11 +9,12 @@ class Token; // Forward declaration
 class VoteRecord
 {
 private:
-    int m_id; // Chronological DB Row ID
+    int m_id;
     QString m_candidateCnic;
-    QString m_timestamp; 
-    QByteArray m_currentHash; 
+    QString m_timestamp;
+    QByteArray m_currentHash;
     QByteArray m_previousHash;
+
 public:
     VoteRecord() : m_id(-1) {}
 
@@ -23,7 +24,8 @@ public:
           m_timestamp(other.m_timestamp),
           m_currentHash(other.m_currentHash),
           m_previousHash(other.m_previousHash)
-    {}
+    {
+    }
 
     VoteRecord &operator=(const VoteRecord &other)
     {
@@ -49,7 +51,8 @@ public:
     void setCurrentHash(const QByteArray &hash) { m_currentHash = hash; }
 };
 
-struct candidateVotes {
+struct candidateVotes
+{
     QString candidateCnic;
     int totalVotes;
 };
@@ -58,17 +61,21 @@ class IVoteRepository
 {
 public:
     virtual ~IVoteRepository() = default;
+
     // VERY IMPORTANT: MUST BE WRAPPED IN SQLite `BEGIN TRANSACTION`
     virtual bool insertVoteTransaction(const VoteRecord &vote, const Token &token) = 0;
 
     // Returns the hash of the last inserted vote. Returns empty if genesis vote.
     virtual QByteArray getLatestVoteHash() = 0;
-    
+
     // Returns all votes ordered strictly by m_id ASC for the forensic audit loop
     virtual VoteRecord *getAllVotesForAudit(int &votesSize) = 0;
-    
+
     // Runs the GROUP BY SQL query and returns the results
-    virtual candidateVotes *getElectionTally(int &tallySize) = 0; 
+    virtual candidateVotes *getElectionTally(int &tallySize) = 0;
+
+    // [NEW] Extremely fast O(1) query: SELECT COUNT(*) FROM Votes;
+    virtual int getTotalVotesCount() = 0;
 };
 
 #endif // VOTE_RECORD_H
