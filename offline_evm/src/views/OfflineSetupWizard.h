@@ -80,6 +80,7 @@ private:
     QPushButton *loadBackBtn;
     QPushButton *loadNextBtn;
 
+    QString loadedFilePath; // [NEW] Stores the path of the JSON file
 
     // UI Setup Functions
     void setupUi();
