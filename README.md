@@ -45,8 +45,10 @@ The project follows a branch-based collaborative development workflow, allowing 
 
 ### Identity Verification 
 <img width="1600" height="847" alt="image" src="https://github.com/user-attachments/assets/29e73459-5cb7-4ac5-9943-8c2b5a2caec3" />
+
 ### Login Page
 <img width="1600" height="856" alt="image" src="https://github.com/user-attachments/assets/9fb80f70-1fe7-4341-971c-5b37f0711c7f" />
+
 ### Creating ADMINS
 <img width="1600" height="844" alt="image" src="https://github.com/user-attachments/assets/f9026013-0157-41a7-a7b8-4dedea8423c4" />
 
