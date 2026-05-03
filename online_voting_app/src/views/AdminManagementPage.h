@@ -19,7 +19,7 @@ class AdminManagementPage : public QWidget
 
 public:
     explicit AdminManagementPage(QWidget *parent = nullptr);
-    void loadAdmins(Admin *admins, int size);
+    void loadAdmins(Admin* admins, int size, const QString &currentAdminId);
 
 signals:
     // Future-proofing: When you click an admin to approve/reject them

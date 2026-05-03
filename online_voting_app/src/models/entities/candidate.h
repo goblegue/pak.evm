@@ -154,6 +154,15 @@ public:
         }
         return *this;
     }
+
+    bool hasAdminVoted(const QString &requestingAdminId) const {
+        for (int i = 0; i < m_statusChangeCount; ++i) {
+            if (m_statusChangeRequests[i].requestById == requestingAdminId) {
+                return true; // Found them!
+            }
+        }
+        return false; // They haven't voted yet
+    }
     ~Candidate() { delete[] m_statusChangeRequests; }
 };
 

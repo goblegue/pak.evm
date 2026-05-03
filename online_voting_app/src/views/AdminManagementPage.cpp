@@ -95,8 +95,8 @@ void AdminManagementPage::setupUi()
     connect(adminDelegate, &AdminDelegate::actionButtonClicked, this, &AdminManagementPage::showActionMenu);
 }
 
-void AdminManagementPage::loadAdmins(Admin *admins, int size)
-{
+void AdminManagementPage::loadAdmins(Admin* admins, int size, const QString &currentAdminId) {
+    adminModel->setCurrentAdminId(currentAdminId); // Pass it to the model!
     adminModel->setAdmins(admins, size);
 }
 
@@ -119,39 +119,34 @@ void AdminManagementPage::applyFilter(int status, QString filterName)
     proxyModel->setFilterStatus(status);
 }
 
-void AdminManagementPage::showActionMenu(const QModelIndex &proxyIndex, QPoint globalPos)
-{
-    // 1. Map proxy index to real index
+void AdminManagementPage::showActionMenu(const QModelIndex &proxyIndex, QPoint globalPos) {
     QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
     Admin selected = adminModel->getAdminAt(realIndex.row());
 
-    // 2. Build the Dropdown Menu
     QMenu menu(this);
     menu.setStyleSheet("QMenu { background-color: white; border: 1px solid #BDC3C7; }"
                        "QMenu::item { padding: 6px 20px; color: #2C3E50; font-weight: bold; }"
                        "QMenu::item:selected { background-color: #ECF0F1; }");
 
     QAction *approveAct = menu.addAction("Approve");
-    QAction *rejectAct = menu.addAction("Reject");
+    QAction *rejectAct  = menu.addAction("Reject");
 
-    // 3. Show the menu exactly where the mouse clicked
     QAction *selectedAct = menu.exec(globalPos);
 
-    // 4. Handle the choice
-    if (selectedAct == approveAct || selectedAct == rejectAct)
-    {
-
-        // Determine the new status
+    if (selectedAct == approveAct || selectedAct == rejectAct) {
         ApprovalStatus newStatus = (selectedAct == approveAct) ? ApprovalStatus::Approved : ApprovalStatus::Rejected;
-        int voteCode = (selectedAct == approveAct) ? 1 : 2;
 
-        // A. Update the Model to LOCK the UI button and change its color instantly
-        adminModel->setLocalVote(selected.getCnic(), voteCode);
+        // ==========================================
+        // THIS LINE PREVENTS THE MENU FROM OPENING AGAIN!
+        // ==========================================
+        adminModel->setLocalVote(selected.getCnic(), 1);
 
-        // B. Get the Current Logged In Admin's ID
-        QString currentUserId = AuthManager::getInstance().getCurrentUser()->getCnic();
+        QString currentUserId = "TEST-ADMIN";
+        if (AuthManager::getInstance().isLoggedIn() && AuthManager::getInstance().getCurrentUser() != nullptr) {
+            currentUserId = AuthManager::getInstance().getCurrentUser()->getId();
+        }
 
-        // C. EMIT THE SIGNAL WITH ALL 3 REQUIRED PIECES OF DATA!
+        // Send message to controller
         emit adminStatusChangeRequested(currentUserId, selected.getCnic(), newStatus);
     }
 }

@@ -123,7 +123,14 @@ public:
         }
         return *this;
     }
-
+    bool hasAdminVoted(const QString &requestingAdminId) const {
+        for (int i = 0; i < m_statusChangeCount; ++i) {
+            if (m_statusChangeRequests[i].requestById == requestingAdminId) {
+                return true;
+            }
+        }
+        return false;
+    }
     ~Election() { delete[] m_statusChangeRequests; }
 };
 

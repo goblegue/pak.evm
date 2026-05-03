@@ -1,4 +1,5 @@
 #include "auth_manager.h"
+#include <QUuid>
 
 const int OTP_EXPIRATION_SECONDS = 5 * 60; // 5 minutes
 
@@ -76,6 +77,7 @@ bool AuthManager::requestOtp(const QString &email)
 
     QString otpCode = QString::number(CryptoEngine::getInstance().generateRandomInt(100000, 999999));
     OTP otp{};
+    otp.setId("OTP-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());
     otp.setEmail(email);
     otp.setOtpCode(otpCode);
     otp.setExpiresAt(QDateTime::currentDateTime().addSecs(OTP_EXPIRATION_SECONDS));

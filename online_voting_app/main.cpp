@@ -3,12 +3,14 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QDebug>
-
+#include "./services/email/emailservice.h"
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    
+
     SystemBootstrapper bootstrapper;
-    AppConfig config; // Declare outside/above
+    AppConfig config; // Declare outside
 
     try
     {
@@ -19,6 +21,10 @@ int main(int argc, char *argv[])
     {
         return -1;
     }
+    // bool success = EmailService::getInstance().sendEmail("am7862760@gmail.com", "Test Subject", "Test Message");
+
+    // QString message = (success)?"success":"failure";
+    // qInfo(message.toStdString().c_str());
 
     MainWindow w(config);
     // You could pass it to the window if needed:

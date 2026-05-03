@@ -30,10 +30,10 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 
     this->setFocus();
 
-    EmailService::getInstance().configure("smtp.gmail.com",
-                                          465,
-                                          "pak.evm.project@gmail.com",
-                                          "dtgn pptc jspd vjnk");
+    // EmailService::getInstance().configure("smtp.gmail.com",
+    //                                       465,
+    //                                       "pak.evm.project@gmail.com",
+    //                                       "dtgn pptc jspd vjnk");
 
     // 1. Create the custom page purely in C++
     m_loginPage = new LoginPage(this);
@@ -91,6 +91,8 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleBackToElectionList);
     connect(m_adminInnerPage_CreateElection, &AdminCreateElectionPage::createElectionRequested,
             this, &MainWindow::handleCreateElectionSubmit);
+    connect(m_adminInnerPage_Elections, &AdminElectionsPage::electionStatusChangeRequested,
+            this, &MainWindow::handleElectionStatusChangeRequested);
     // user
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
             this, &MainWindow::handleUserElectionSelected);
@@ -260,32 +262,47 @@ void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 void MainWindow::on_adminSidebarAdminsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
-    QString currUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser()) {
+        QMessageBox::critical(this, "Authentication Error", "No authenticated admin found. Please log in again.");
+        return;
+    }
+    QString currentAdminId = AuthManager::getInstance().getCurrentUser()->getId();
+    QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+
     int adminCount = 0;
-    auto adminOpt = AdminController::getInstance().getAllAdminsExcept(currUserCnic, adminCount);
-    if (!adminOpt.has_value()) {
+    auto adminOpt = AdminController::getInstance().getAllAdminsExcept(currentUserCnic, adminCount);
+
+    if (!adminOpt) {
         QMessageBox::critical(this, "Error", "Failed to load admins.");
         return;
     }
+
     Admin *adminList = adminOpt.value();
-    m_adminInnerPage_Admins->loadAdmins(adminList, adminCount);
+    m_adminInnerPage_Admins->loadAdmins(adminList, adminCount, currentAdminId);
 
     delete[] adminList;
 }
-
 // ---------------------------------------------------------
 // Triggered when the Admin clicks "Elections" on Left Sidebar
 // ---------------------------------------------------------
 void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
-    // 1. Show the Elections page
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
+    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser()) {
+        QMessageBox::critical(this, "Authentication Error", "No authenticated admin found. Please log in again.");
+        return;
+    }
+    QString currentAdminId = AuthManager::getInstance().getCurrentUser()->getId();
 
-    int electionCount{};
-
+    int electionCount = 0;
     Election *electionList = ElectionController::getInstance().getAllElections(electionCount);
 
-    m_adminInnerPage_Elections->loadElections(electionList, electionCount);
+    if (!electionList) {
+        QMessageBox::critical(this, "Error", "Failed to load elections.");
+        return;
+    }
+
+    m_adminInnerPage_Elections->loadElections(electionList, electionCount, currentAdminId);
 
     delete[] electionList;
 }
@@ -331,6 +348,21 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
                               "Error",
                               "Failed to log status change request. Please try again.");
     }
+}
+
+void MainWindow::handleElectionStatusChangeRequested(QString electionId, ApprovalStatus newStatus)
+{
+    QString statusText = (newStatus == ApprovalStatus::Approved) ? "APPROVE" : "REJECT";
+
+    QMessageBox::information(this, "Controller Simulation",
+                             QString("Ready to send to ElectionController:\n\n"
+                                     "Target Election ID: %1\n"
+                                     "Requested Action: %2")
+                                 .arg(electionId, statusText)
+                             );
+
+    // WHEN BACKEND IS READY, YOU WILL UNCOMMENT THIS:
+    // bool success = ElectionController::getInstance().requestElectionStatusChange(electionId, AuthManager::getInstance().getCurrentUser()->getId(), newStatus);
 }
 
 void MainWindow::handleNavigateToCreateElection()

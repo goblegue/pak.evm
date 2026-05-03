@@ -8,6 +8,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include "models/Models.h"
+#include <QApplication>
 #include "views/AdminCandidatePage.h"
 
 // ==========================================
@@ -141,46 +142,41 @@ public:
 // ==========================================
 class AdminDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT // Required for custom signals!
-
-        signals :
-        // Emitted when the user clicks the "Change Status" button
-        void actionButtonClicked(const QModelIndex &index, QPoint globalPos) const;
+    Q_OBJECT
+signals:
+    void actionButtonClicked(const QModelIndex &index, QPoint globalPos) const;
 
 public:
     explicit AdminDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    // Make the box taller to fit the button
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         return QSize(option.rect.width(), 85);
     }
 
-    // 1. UPDATE EDITOR EVENT (Only allow clicks if Pending)
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
         if (event->type() == QEvent::MouseButtonRelease) {
-
-            // Check if the admin is actually Pending!
             int statusInt = index.data(AdminStatusRole).toInt();
+
             if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending) {
+                bool alreadyVoted = index.data(AdminVotedRole).toBool();
+                int localVote = index.data(LocalVoteRole).toInt();
 
-                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-                QRect btnRect(option.rect.right() - 135, option.rect.bottom() - 35, 120, 25);
+                // LOGIC FIX: If already voted in DB OR voted just now, block the click!
+                if (!alreadyVoted && localVote == 0) {
+                    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                    QRect btnRect(option.rect.right() - 135, option.rect.bottom() - 35, 120, 25);
 
-                if (btnRect.contains(mouseEvent->pos())) {
-                    int localVote = index.data(LocalVoteRole).toInt();
-                    if (localVote == 0) {
+                    if (btnRect.contains(mouseEvent->pos())) {
                         emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
+                        return true;
                     }
-                    return true;
                 }
             }
         }
         return QStyledItemDelegate::editorEvent(event, model, option, index);
     }
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
@@ -191,105 +187,103 @@ public:
         ApprovalStatus status = static_cast<ApprovalStatus>(statusInt);
 
         QColor statusColor;
-        switch (status)
-        {
-        case ApprovalStatus::Pending:
-            statusColor = QColor("#F39C12");
-            break;
-        case ApprovalStatus::Approved:
-            statusColor = QColor("#27AE60");
-            break;
-        case ApprovalStatus::Rejected:
-            statusColor = QColor("#C0392B");
-            break;
-        default:
-            statusColor = QColor("#7F8C8D");
-            break;
+        switch (status) {
+        case ApprovalStatus::Pending: statusColor = QColor("#F39C12"); break;
+        case ApprovalStatus::Approved: statusColor = QColor("#27AE60"); break;
+        case ApprovalStatus::Rejected: statusColor = QColor("#C0392B"); break;
+        default: statusColor = QColor("#7F8C8D"); break;
         }
 
-        if (option.state & QStyle::State_Selected)
-            painter->setBrush(QColor("#F8F9F9"));
-        else if (option.state & QStyle::State_MouseOver)
-            painter->setBrush(QColor("#F4F6F7"));
+        if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
+        else if (option.state & QStyle::State_MouseOver) painter->setBrush(QColor("#F4F6F7"));
 
-
-        // Draw main border
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // Draw main Text
         painter->setPen(statusColor);
         QString text = index.data(Qt::DisplayRole).toString();
-        QRect textRect = rect.adjusted(15, 5, -150, -5); // Leave space on the right for the button
+        QRect textRect = rect.adjusted(15, 5, -150, -5);
 
-        QFont font = option.font;
-        font.setBold(true);
-        painter->setFont(font);
+        QFont font = option.font; font.setBold(true); painter->setFont(font);
         painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextWordWrap, text);
 
         // ==========================================
-        // DRAW THE ACTION BUTTON
+        // DRAW THE ACTION BUTTON (SIMPLIFIED)
         // ==========================================
-        if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending){
-        QRect btnRect(rect.right() - 135, rect.bottom() - 35, 120, 25);
-        int localVoteInt = index.data(LocalVoteRole).toInt();
+        if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending) {
+            bool alreadyVoted = index.data(AdminVotedRole).toBool();
+            int localVoteInt = index.data(LocalVoteRole).toInt();
 
-        QColor btnColor;
-        QString btnText;
+            QRect btnRect(rect.right() - 135, rect.bottom() - 35, 120, 25);
 
-        // Color Logic Based on your requirements
-        if (localVoteInt == 1)
-        {
-            btnColor = QColor("#27AE60"); // Green
-            btnText = "Approved";
+            // If voted in DB OR voted locally just now -> Lock it!
+            if (alreadyVoted || localVoteInt != 0) {
+                painter->setBrush(QColor("#ECF0F1"));
+                painter->setPen(QPen(QColor("#BDC3C7"), 1));
+                painter->drawRoundedRect(btnRect, 4, 4);
+
+                painter->setPen(QColor("#7F8C8D"));
+                QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
+                painter->setFont(btnFont);
+                painter->drawText(btnRect, Qt::AlignCenter, "✔ Voted");
+
+            } else {
+                // Unlocked, clickable state
+                QColor btnBgColor = Qt::white;
+                if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
+                    btnBgColor = QColor("#ECF0F1");
+                }
+
+                painter->setBrush(btnBgColor);
+                painter->setPen(QPen(QColor("#3498DB"), 2));
+                painter->drawRoundedRect(btnRect, 4, 4);
+
+                painter->setPen(QColor("#3498DB"));
+                QFont btnFont = option.font; btnFont.setPointSize(9); btnFont.setBold(true);
+                painter->setFont(btnFont);
+                painter->drawText(btnRect, Qt::AlignCenter, "Change Status ▾");
+            }
         }
-        else if (localVoteInt == 2)
-        {
-            btnColor = QColor("#C0392B"); // Red
-            btnText = "Rejected";
-        }
-        else
-        {
-            btnColor = QColor("#2980B9"); // Sidebar Dark Blue
-            btnText = "Change Status ▾";
-        }
-
-        painter->setBrush(QColor("#FFFFFF")); // White background
-        painter->setPen(QPen(btnColor, 2));   // Colored border
-        painter->drawRoundedRect(btnRect, 4, 4);
-
-        painter->setPen(btnColor); // Colored text
-        QFont btnFont = option.font;
-        btnFont.setPointSize(9);
-        btnFont.setBold(true);
-        painter->setFont(btnFont);
-        painter->drawText(btnRect, Qt::AlignCenter, btnText);
-        }
-
         painter->restore();
     }
 };
 
 // ==========================================
-// ELECTION ACCORDION DELEGATE
+// ELECTION ACCORDION DELEGATE (UPGRADED)
 // ==========================================
 class ElectionAccordionDelegate : public QStyledItemDelegate {
     Q_OBJECT
 signals:
     void electionClicked(const QModelIndex &index) const;
+    void actionButtonClicked(const QModelIndex &index, QPoint globalPos) const;
 
 public:
     explicit ElectionAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    // Dynamic Height: 60px collapsed, 120px expanded
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         bool isExpanded = index.data(ElectionExpandedRole).toBool();
-        return QSize(option.rect.width(), isExpanded ? 120 : 60);
+        return QSize(option.rect.width(), isExpanded ? 130 : 60);
     }
 
-    // Catch the mouse click anywhere on the box to trigger the expand/collapse
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
         if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            bool isExpanded = index.data(ElectionExpandedRole).toBool();
+            int statusInt = index.data(ElectionStatusRole).toInt();
+
+            if (isExpanded && static_cast<ElectionState>(statusInt) == ElectionState::Pending) {
+                bool alreadyVoted = index.data(ElectionVotedRole).toBool();
+                int localVote = index.data(LocalVoteRole).toInt();
+
+                // LOGIC FIX: Block click if voted!
+                if(!alreadyVoted && localVote == 0) {
+                    QRect btnRect(option.rect.right() - 145, option.rect.bottom() - 40, 130, 28);
+                    if (btnRect.contains(mouseEvent->pos())) {
+                        emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
+                        return true;
+                    }
+                }
+            }
             emit electionClicked(index);
             return true;
         }
@@ -310,59 +304,78 @@ public:
         QColor statusColor;
         QString statusText;
         switch(status) {
-        case ElectionState::Drafted: statusColor = QColor("#95A5A6"); statusText = "Draft"; break; // Gray
-        case ElectionState::Rejected: statusColor = QColor("#E74C3C"); statusText = "Rejected"; break; // Red
-        case ElectionState::Published: statusColor = QColor("#3498DB"); statusText = "Published"; break; // Blue
-        case ElectionState::VotingOpen: statusColor = QColor("#2ECC71"); statusText = "Voting Open"; break; // Green
-        case ElectionState::VotingClosed: statusColor = QColor("#F39C12"); statusText = "Voting Closed"; break; // Orange
-        case ElectionState::ResultsAnnounced: statusColor = QColor("#9B59B6"); statusText = "Results Announced"; break; // Purple
+        case ElectionState::Drafted: statusColor = QColor("#95A5A6"); statusText = "Draft"; break;
+        case ElectionState::Pending: statusColor = QColor("#F39C12"); statusText = "Pending"; break;
+        case ElectionState::Rejected: statusColor = QColor("#E74C3C"); statusText = "Rejected"; break;
+        case ElectionState::Published: statusColor = QColor("#3498DB"); statusText = "Published"; break;
+        case ElectionState::VotingOpen: statusColor = QColor("#2ECC71"); statusText = "Voting Open"; break;
+        case ElectionState::VotingClosed: statusColor = QColor("#F39C12"); statusText = "Voting Closed"; break;
+        case ElectionState::ResultsAnnounced: statusColor = QColor("#9B59B6"); statusText = "Results Announced"; break;
         default: statusColor = QColor("#34495E"); statusText = "Unknown"; break;
         }
 
         if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
-        else if (option.state & QStyle::State_MouseOver) painter->setBrush(QColor("#F4F6F7"));
-
 
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // --- TITLE ---
         QString title = index.data(Qt::DisplayRole).toString();
-        QRect titleRect = rect.adjusted(15, 10, -150, isExpanded ? -80 : 0);
-        QFont titleFont = option.font;
-        titleFont.setBold(true);
-        titleFont.setPointSize(11);
-        painter->setFont(titleFont);
-        painter->setPen(QColor("#2C3E50")); // Dark grey for title
+        QRect titleRect = rect.adjusted(15, 10, -150, isExpanded ? -90 : 0);
+        QFont titleFont = option.font; titleFont.setBold(true); titleFont.setPointSize(11);
+        painter->setFont(titleFont); painter->setPen(QColor("#2C3E50"));
         painter->drawText(titleRect, Qt::AlignLeft | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), title);
 
-        // --- STATUS TEXT (Top Right) ---
-        QRect statusRect = rect.adjusted(0, 10, -15, isExpanded ? -80 : 0);
+        QRect statusRect = rect.adjusted(0, 10, -15, isExpanded ? -90 : 0);
         painter->setPen(statusColor);
         painter->drawText(statusRect, Qt::AlignRight | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), statusText);
 
-        // --- EXPANDED DETAILS ---
         if (isExpanded) {
             QString startTime = "Start: " + index.data(ElectionStartTimeRole).toString();
             QString endTime = "End: " + index.data(ElectionEndTimeRole).toString();
 
-            painter->setPen(QColor("#7F8C8D")); // Light grey text for times
-            QFont detailFont = option.font;
-            detailFont.setPointSize(9);
+            painter->setPen(QColor("#7F8C8D"));
+            QFont detailFont = option.font; detailFont.setPointSize(9);
             painter->setFont(detailFont);
+            painter->drawText(rect.adjusted(15, 45, -15, 0), Qt::AlignLeft | Qt::AlignTop, startTime);
+            painter->drawText(rect.adjusted(15, 70, -15, 0), Qt::AlignLeft | Qt::AlignTop, endTime);
 
-            QRect startRect = rect.adjusted(15, 45, -15, 0);
-            QRect endRect = rect.adjusted(15, 70, -15, 0);
+            if (status == ElectionState::Pending) {
+                bool alreadyVoted = index.data(ElectionVotedRole).toBool();
+                int localVoteInt = index.data(LocalVoteRole).toInt();
+                QRect btnRect(rect.right() - 145, rect.bottom() - 40, 130, 28);
 
-            painter->drawText(startRect, Qt::AlignLeft | Qt::AlignTop, startTime);
-            painter->drawText(endRect, Qt::AlignLeft | Qt::AlignTop, endTime);
+                // If voted in DB OR voted locally just now -> Lock it!
+                if (alreadyVoted || localVoteInt != 0) {
+                    painter->setBrush(QColor("#ECF0F1"));
+                    painter->setPen(QPen(QColor("#BDC3C7"), 1));
+                    painter->drawRoundedRect(btnRect, 4, 4);
 
+                    painter->setPen(QColor("#7F8C8D"));
+                    QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
+                    painter->setFont(btnFont);
+                    painter->drawText(btnRect, Qt::AlignCenter, "✔ Voted");
 
+                } else {
+                    QColor btnBgColor = Qt::white;
+                    if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
+                        btnBgColor = QColor("#ECF0F1");
+                    }
+
+                    painter->setBrush(btnBgColor);
+                    painter->setPen(QPen(QColor("#3498DB"), 2));
+                    painter->drawRoundedRect(btnRect, 4, 4);
+
+                    painter->setPen(QColor("#3498DB"));
+                    QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
+                    painter->setFont(btnFont);
+                    painter->drawText(btnRect, Qt::AlignCenter, "Change Status ▾");
+                }
+            }
         }
-
         painter->restore();
     }
 };
+
 
 // ==========================================
 // TOKEN ACCORDION DELEGATE (RIGHT-SIDE QR LAYOUT)

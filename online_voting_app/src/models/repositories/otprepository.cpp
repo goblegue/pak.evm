@@ -1,6 +1,7 @@
 #include "models/repositories/otprepository.h"
 
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/types.hpp>
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
@@ -14,16 +15,17 @@ bool otprepository::insertOtp(const OTP &otp)
 {
     try
     {
-        auto builder = document{}
-                       << "id" << otp.getId().toStdString()
-                       << "email" << otp.getEmail().toStdString()
-                       << "otpCode" << otp.getOtpCode().toStdString()
-                       << "expiresAt" << static_cast<int64_t>(otp.getExpiresAt().toMSecsSinceEpoch());
+        auto final_doc = document{}
+                         << "id" << otp.getId().toStdString()
+                         << "email" << otp.getEmail().toStdString()
+                         << "otpCode" << otp.getOtpCode().toStdString()
+                         << "expiresAt" << bsoncxx::types::b_int64{static_cast<int64_t>(otp.getExpiresAt().toMSecsSinceEpoch())}
+                         << finalize;
 
-        m_collection.insert_one(builder << finalize);
+        m_collection.insert_one(final_doc.view());
         return true;
     }
-    catch (...)
+    catch (const std::exception &e)
     {
         return false;
     }

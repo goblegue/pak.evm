@@ -39,6 +39,7 @@ void AdminElectionsPage::setupUi() {
 
     QAction *actAll = new QAction(createColorIcon(QColor("#2C3E50")), "Show All", this);
     QAction *actDraft = new QAction(createColorIcon(QColor("#95A5A6")), "Draft", this);
+    QAction *actPending = new QAction(createColorIcon(QColor("#F39C12")), "Pending", this);
     QAction *actRejected = new QAction(createColorIcon(QColor("#E74C3C")), "Rejected", this);
     QAction *actPublished = new QAction(createColorIcon(QColor("#3498DB")), "Published", this);
     QAction *actOpen = new QAction(createColorIcon(QColor("#2ECC71")), "Voting Open", this);
@@ -47,6 +48,7 @@ void AdminElectionsPage::setupUi() {
 
     connect(actAll, &QAction::triggered, this, [this](){ applyFilter(-1, "Filter Status"); });
     connect(actDraft, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Drafted), "Draft"); });
+    connect(actPending, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Pending), "Pending"); });
     connect(actRejected, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Rejected), "Rejected"); });
     connect(actPublished, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::Published), "Published"); });
     connect(actOpen, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::VotingOpen), "Voting Open"); });
@@ -54,7 +56,7 @@ void AdminElectionsPage::setupUi() {
     connect(actResults, &QAction::triggered, this, [this](){ applyFilter(static_cast<int>(ElectionState::ResultsAnnounced), "Results Announced"); });
 
     filterMenu->addAction(actAll); filterMenu->addSeparator();
-    filterMenu->addAction(actDraft); filterMenu->addAction(actRejected); filterMenu->addAction(actPublished);
+    filterMenu->addAction(actDraft);filterMenu->addAction(actPending); filterMenu->addAction(actRejected); filterMenu->addAction(actPublished);
     filterMenu->addAction(actOpen); filterMenu->addAction(actClosed); filterMenu->addAction(actResults);
 
     headerLayout->addWidget(titleLabel);
@@ -73,6 +75,10 @@ void AdminElectionsPage::setupUi() {
     ElectionAccordionDelegate *accordionDelegate = new ElectionAccordionDelegate(this);
     electionListView->setItemDelegate(accordionDelegate);
     electionListView->setStyleSheet("QListView { border: none; background: transparent; outline: none; }");
+
+    // Connect the delegate's click to our expand function
+    connect(accordionDelegate, &ElectionAccordionDelegate::electionClicked, this, &AdminElectionsPage::onElectionBoxClicked);
+    connect(accordionDelegate, &ElectionAccordionDelegate::actionButtonClicked, this, &AdminElectionsPage::showElectionActionMenu);
 
     // ==========================================
     // FLOATING '+' BUTTON
@@ -97,11 +103,10 @@ void AdminElectionsPage::setupUi() {
     connect(filterBtn, &QPushButton::clicked, this, &AdminElectionsPage::showFilterMenu);
     connect(createElectionBtn, &QPushButton::clicked, this, &AdminElectionsPage::navigateToCreateElection);
 
-    // Connect the delegate's click to our expand function
-    connect(accordionDelegate, &ElectionAccordionDelegate::electionClicked, this, &AdminElectionsPage::onElectionBoxClicked);
 }
 
-void AdminElectionsPage::loadElections(Election* elections, int size) {
+void AdminElectionsPage::loadElections(Election* elections, int size, const QString &currentAdminId) {
+    electionModel->setCurrentAdminId(currentAdminId);
     electionModel->setElections(elections, size);
 }
 
@@ -124,4 +129,31 @@ void AdminElectionsPage::showFilterMenu() {
 void AdminElectionsPage::applyFilter(int status, QString filterName) {
     filterBtn->setText(filterName);
     proxyModel->setFilterStatus(status);
+}
+
+void AdminElectionsPage::showElectionActionMenu(const QModelIndex &proxyIndex, QPoint globalPos)
+{
+    QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
+    QString electionId = electionModel->getElectionAt(realIndex.row()).getId();
+
+    QMenu menu(this);
+    menu.setStyleSheet("QMenu { background-color: white; border: 1px solid #BDC3C7; }"
+                       "QMenu::item { padding: 6px 20px; font-weight: bold; }");
+
+    QAction *approveAct = menu.addAction("Approve");
+    QAction *rejectAct = menu.addAction("Reject");
+
+    QAction *selectedAct = menu.exec(globalPos);
+
+    if (selectedAct == approveAct || selectedAct == rejectAct) {
+        ApprovalStatus newStatus = (selectedAct == approveAct) ? ApprovalStatus::Approved : ApprovalStatus::Rejected;
+
+        // ==========================================
+        // THIS LINE PREVENTS THE MENU FROM OPENING AGAIN!
+        // ==========================================
+        electionModel->setLocalVote(electionId, 1);
+
+        // Send message to controller
+        emit electionStatusChangeRequested(electionId, newStatus);
+    }
 }
