@@ -105,3 +105,11 @@ candidateVotes* VoteRepository::getElectionTally(int &size) {
     }
     return arr;
 }
+int VoteRepository::getTotalVotesCount() {
+    std::lock_guard<std::mutex> lock(DatabaseManager::instance().getMutex());
+    QSqlQuery query("SELECT COUNT(*) FROM Votes");
+    if (query.next()) {
+        return query.value(0).toInt();
+    }
+    return 0;
+}

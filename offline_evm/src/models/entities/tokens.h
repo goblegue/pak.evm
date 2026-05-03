@@ -27,7 +27,9 @@ class ITokenRepository
 public:
     virtual ~ITokenRepository() = default;
     virtual bool markTokenAsUsed(const Token &token) = 0;
-    virtual bool isTokenUsed(const QString &tokenId) = 0; 
+    virtual bool isTokenUsed(const QString &tokenId) = 0;
+
+    virtual int getTotalTokensUsedCount() = 0;
     
 };
 

@@ -14,6 +14,8 @@ public:
     QByteArray getLatestVoteHash() override;
     VoteRecord *getAllVotesForAudit(int &votesSize) override;
     candidateVotes *getElectionTally(int &tallySize) override;
+
+    int getTotalVotesCount() override;
 };
 
 #endif // VOTEREPOSITORY_H

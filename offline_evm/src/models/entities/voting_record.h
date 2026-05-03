@@ -73,6 +73,9 @@ public:
     virtual candidateVotes *getElectionTally(int &tallySize) = 0;
 
 
+    virtual int getTotalVotesCount() = 0;
+
+
     virtual bool insertVoteTransaction(const VoteRecord &vote, const Token &token) = 0;
 };
 

@@ -19,3 +19,13 @@ bool TokenRepository::isTokenUsed(const QString &tokenId) {
     q.addBindValue(tokenId);
     return (q.exec() && q.next());
 }
+int TokenRepository::getTotalTokensUsedCount() {
+    std::lock_guard<std::mutex> lock(DatabaseManager::instance().getMutex());
+    // counting num of tokens getting burend.
+
+    QSqlQuery query("SELECT COUNT(*) FROM UsedTokens");
+    if (query.next()) {
+        return query.value(0).toInt();
+    }
+    return 0;
+}
