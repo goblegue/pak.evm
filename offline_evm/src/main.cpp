@@ -1,4 +1,4 @@
-#define deve
+#define prod
 
 #include "views/mainwindow.h"
 #include  "views/OfflineSetupWizard.h"

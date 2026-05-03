@@ -3,8 +3,12 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QMessageBox>
+#include <QDateTime>
+#include <QBuffer>
 
 EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent) {
+    lastProcessTime = 0;
+    scanAlreadySuccessful = false;
     setupUi();
     startCamera();
 }
@@ -55,9 +59,14 @@ void EvmScanPage::setupUi() {
     QLabel *titleLabel = new QLabel("PAK.EVM", this);
     titleLabel->setStyleSheet("font-size: 28px; font-weight: 900; color: white; letter-spacing: 2px; background: transparent;");
 
+    timeRemainingLabel = new QLabel("Time Remaining: 00:00:00", this);
+    timeRemainingLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: white; background: transparent; padding-right: 20px;");
+
     topBarLayout->addWidget(logoLabel);
     topBarLayout->addSpacing(15);
     topBarLayout->addWidget(titleLabel);
+    topBarLayout->addStretch(200);
+    topBarLayout->addWidget(timeRemainingLabel);
     topBarLayout->addStretch();
 
     mainLayout->addWidget(topBar);
@@ -92,8 +101,18 @@ void EvmScanPage::setupUi() {
         "border-radius: 12px; "         /* Rounded corners */
         "padding: 20px;"                /* CRITICAL: Keeps text away from the red border */
         );
+    QLabel *cnicLabel = new QLabel("Enter your CNIC:", this);
+    cnicLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #2C3E50; margin-top: 30px;");
+
+    cnicInput = new QLineEdit(this);
+    cnicInput->setPlaceholderText("e.g., 42101-1234567-1");
+    cnicInput->setStyleSheet("QLineEdit { border: 2px solid #BDC3C7; border-radius: 8px; padding: 15px; font-size: 20px; background-color: white; color: #2C3E50; }"
+                             "QLineEdit:focus { border: 2px solid #7A1A1A; }");
+
     leftLayout->addWidget(instructionTitle);
     leftLayout->addWidget(instructionDesc);
+    leftLayout->addWidget(cnicLabel);
+    leftLayout->addWidget(cnicInput);
     leftLayout->addStretch();
 
     // --- RIGHT SIDE: CAMERA & RED BOX ---
@@ -127,6 +146,7 @@ void EvmScanPage::setupUi() {
         "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
         "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }"
         );
+    connect(proceedBtn, &QPushButton::clicked, this, &EvmScanPage::onProceedClicked);
 
     // Simulate Scan Button (For development testing)
     QPushButton *simBtn = new QPushButton("Simulate Scan (Dev)", this);
@@ -164,28 +184,105 @@ void EvmScanPage::startCamera() {
     captureSession->setCamera(camera);
     captureSession->setVideoOutput(videoWidget);
 
+    QVideoSink *sink = videoWidget->videoSink();
+    connect(sink, &QVideoSink::videoFrameChanged, this,
+            &EvmScanPage::onVideoFrameChanged);
+
     // Start streaming!
     camera->start();
 }
 
-// ==========================================
-// 4. SCAN SUCCESS LOGIC
-// ==========================================
-void EvmScanPage::simulateSuccessfulScan() {
-    // 1. Update Status Label
-    scanStatusLabel->setText("✅ Token Successfully Scanned!");
-    scanStatusLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #27AE60; margin-top: 15px;");
+void EvmScanPage::stopCamera() {
+    if (camera && camera->isActive()) {
+        camera->stop();
+    }
+}
 
-    // 2. Change Camera Frame Border to Green
-    videoWidget->parentWidget()->setStyleSheet("QFrame { background-color: black; border: 4px solid #27AE60; border-radius: 12px; }");
+void EvmScanPage::resetScanner() {
+    // 1. Reset the logic flags
+    scanAlreadySuccessful = false;
 
-    // 3. Enable and Style the Red Proceed Box
-    proceedBtn->setEnabled(true);
+    // 2. Clear the inputs
+    if (cnicInput) cnicInput->clear();
+
+    // 3. Reset the labels and borders back to Blue/Waiting
+    scanStatusLabel->setText("Waiting for QR Code...");
+    scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #7F8C8D; margin-top: 15px;");
+    videoWidget->parentWidget()->setStyleSheet("QFrame { background-color: black; border: 4px dashed #3498DB; border-radius: 12px; }");
+
+    // 4. Lock the Proceed button again
+    proceedBtn->setEnabled(false);
     proceedBtn->setStyleSheet(
-        "QPushButton { background-color: #580000; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #7A1A1A; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); }"
+        "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
+        "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }"
         );
 
-    // Normally, here you would emit the scanned string:
-    // emit validTokenScanned("eyJhbGciOiJIUzI1NiIs...");
+    // 5. Turn the camera back on!
+    startCamera();
+}
+
+void EvmScanPage::onVideoFrameChanged(const QVideoFrame &frame) {
+    if (scanAlreadySuccessful) return;
+
+    QString cnic = cnicInput->text().trimmed();
+
+    if (cnic.isEmpty()) {
+        return;
+    }
+
+    // Throttle to 2 frames per second
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    if (currentTime - lastProcessTime < 500) {
+        return;
+    }
+    lastProcessTime = currentTime;
+
+    QImage image = frame.toImage();
+
+    if (!image.isNull()) {
+        // ==========================================
+        // CONVERT QIMAGE TO BASE64 QSTRING
+        // ==========================================
+        QByteArray byteArray;
+        QBuffer buffer(&byteArray);
+        buffer.open(QIODevice::WriteOnly);
+
+        // Save as JPG to keep the string smaller and processing faster
+        image.save(&buffer, "JPG", 80);
+
+        QString base64Str = QString(byteArray.toBase64());
+
+        // Emit the String to the Backend Developer!
+        emit frameReadyForBackend(base64Str, cnic);
+    }
+}
+
+// The Backend Developer calls this when their decryption succeeds!
+void EvmScanPage::markScanSuccessful(const QString &decryptedTokenData) {
+    scanAlreadySuccessful = true; // Stops the camera from sending more images
+
+    // Update the UI
+    scanStatusLabel->setText("✅ Token Successfully Scanned!");
+    scanStatusLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #27AE60; margin-top: 15px;");
+    videoWidget->parentWidget()->setStyleSheet("QFrame { background-color: black; border: 4px solid #27AE60; border-radius: 12px; }");
+
+    proceedBtn->setEnabled(true);
+    proceedBtn->setStyleSheet("QPushButton { background-color: #580000; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
+                              "QPushButton:hover { background-color: #7A1A1A; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); }");
+
+    // (Optional) You can print the decrypted data just to verify it worked:
+    // qDebug() << "Decrypted Token:" << decryptedTokenData;
+}
+
+// (Keep your simulateSuccessfulScan() function. Change its body to just call markScanSuccessful("mock-data"); )
+void EvmScanPage::simulateSuccessfulScan() {
+    markScanSuccessful("MOCK_SIMULATED_TOKEN_123");
+}
+
+void EvmScanPage::updateTimeRemaining(const QString &timeString) {
+    timeRemainingLabel->setText("Time Remaining: " + timeString);
+}
+
+void EvmScanPage::onProceedClicked() {
+    emit proceedToVotingClicked();
 }

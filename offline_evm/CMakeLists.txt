@@ -51,7 +51,12 @@ set(PROJECT_SOURCES
 add_executable(OfflineVotingKiosk ${PROJECT_SOURCES}
     src/views/OfflineSetupWizard.h src/views/OfflineSetupWizard.cpp
     src/views/EvmScanPage.h src/views/EvmScanPage.cpp
-    src/Resource.qrc)
+    src/Resource.qrc
+    src/views/PreElectionPage.h src/views/PreElectionPage.cpp
+    src/views/PostElectionPage.h src/views/PostElectionPage.cpp
+    src/views/Models.h
+    src/views/Delegates.h
+    src/views/EvmVotingPage.h src/views/EvmVotingPage.cpp)
 
 # 5. Link Libraries
 target_link_libraries(OfflineVotingKiosk PRIVATE

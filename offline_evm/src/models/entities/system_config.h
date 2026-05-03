@@ -12,6 +12,8 @@ private:
     QString m_stationId;     // Loaded from USB
     QString m_electionId;    // Loaded from USB
     QString m_currentState;  // e.g., "SETUP", "OPEN", "PAUSED", "CLOSED"
+    QDateTime m_electionStartTime;
+    QDateTime m_electionEndTime;
     QString m_pollOpenedAt;  // Set when Admin clicks "Start Election"
     QString m_pollClosedAt;  // Set when Admin enters Master Password to close
 
