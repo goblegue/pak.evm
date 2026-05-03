@@ -77,7 +77,8 @@ add_executable(OfflineVotingKiosk ${PROJECT_SOURCES}
     src/models/repos/workerrepository.h src/models/repos/workerrepository.cpp
     src/models/repos/configrepo.h src/models/repos/configrepo.cpp
     src/models/repos/tokenrepo.h src/models/repos/tokenrepo.cpp
-    src/views/OfflineAdminDashboard.h src/views/OfflineAdminDashboard.cpp)
+    src/views/OfflineAdminDashboard.h src/views/OfflineAdminDashboard.cpp
+    src/views/OfflineAdminAuthPage.h src/views/OfflineAdminAuthPage.cpp)
 
 # 5. Link Libraries
 target_link_libraries(OfflineVotingKiosk PRIVATE

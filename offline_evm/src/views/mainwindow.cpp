@@ -38,6 +38,7 @@ void MainWindow::setupKioskUi() {
     scanPage = new EvmScanPage(this);
     votingPage = new EvmVotingPage(this);
     adminDashboard = new OfflineAdminDashboard(this);
+    adminAuthPage = new OfflineAdminAuthPage(this);
 
     // 3. Setup the Master Stacked Widget
     mainKioskStack = new QStackedWidget(this);
@@ -48,6 +49,7 @@ void MainWindow::setupKioskUi() {
     mainKioskStack->addWidget(votingPage);
     mainKioskStack->addWidget(postElectionPage);
     mainKioskStack->addWidget(adminDashboard);
+    mainKioskStack->addWidget(adminAuthPage);
 
     // 4. Set Election Times (Mock data for testing)
     currentElectionStartTime = QDateTime::currentDateTime().addSecs(5); // Starts in 5 seconds
@@ -62,8 +64,6 @@ void MainWindow::setupKioskUi() {
             this, &MainWindow::processCameraString);
     connect(scanPage, &EvmScanPage::proceedToVotingClicked,
             this, &MainWindow::handleProceedToVoting);
-    connect(scanPage, &EvmScanPage::secretAdminDashboardRequested,
-            this, &MainWindow::openSecretAdminDashboard);
     connect(votingPage, &EvmVotingPage::candidateVoted,
             this,[this](Candidate selected) {
 
@@ -83,6 +83,12 @@ void MainWindow::setupKioskUi() {
             this, &MainWindow::handleEmergencyForceClose);
     connect(adminDashboard, &OfflineAdminDashboard::closeDashboardRequested,
             this, &MainWindow::handleCloseAdminDashboard);
+    connect(scanPage, &EvmScanPage::secretAdminDashboardRequested,
+            this, &MainWindow::handleSecretKnockDetected);
+    connect(adminAuthPage, &OfflineAdminAuthPage::authSuccessful,
+            this, &MainWindow::handleAdminAuthSuccess);
+    connect(adminAuthPage, &OfflineAdminAuthPage::backToScanRequested,
+            this, &MainWindow::handleAdminAuthBack);
 }
 
 // ==========================================
@@ -156,7 +162,7 @@ void MainWindow::onHeartbeatTick() {
 
         // ONLY force the screen to the scan page if we are coming from the Pre-Election page.
         // If the user is currently on the Voting Page, leave them alone!
-        if (currentScreen != scanPage && currentScreen != votingPage && currentScreen != adminDashboard) {
+        if (currentScreen != scanPage && currentScreen != votingPage && currentScreen != adminDashboard && currentScreen != adminAuthPage) {
             mainKioskStack->setCurrentWidget(scanPage);
         }
 
@@ -227,17 +233,6 @@ void MainWindow::handleProceedToVoting() {
     mainKioskStack->setCurrentWidget(votingPage);
 }
 
-void MainWindow::openSecretAdminDashboard() {
-    // Inject the latest data into the dashboard before showing it
-    adminDashboard->setCurrentEndTime(currentElectionEndTime);
-    adminDashboard->setPausedState(m_systemIsPaused);
-    // adminDashboard->updateStats( VoteController::getInstance().getTotalVotes() );
-
-    // Stop the camera temporarily to save CPU while admin is working
-    //scanPage->stopCamera();
-    mainKioskStack->setCurrentWidget(adminDashboard);
-}
-
 void MainWindow::handleCloseAdminDashboard() {
     // Send them back to the scanner
     scanPage->resetScanner();
@@ -279,4 +274,30 @@ void MainWindow::handleEmergencyForceClose() {
     currentElectionEndTime = QDateTime::currentDateTime();
 
     // AuditLogRepo->insertLog({"FORCE_CLOSE", "Poll worker triggered emergency shutdown."});
+}
+
+// ---------------------------------------------------------
+// EMERGENCY KIOSK OVERRIDE WORKFLOW
+// ---------------------------------------------------------
+void MainWindow::handleSecretKnockDetected() {
+    // 1. 5 Taps Detected! Go to Auth Page first.
+    adminAuthPage->resetForm();
+    //scanPage->stopCamera(); // Pause camera to save CPU
+    mainKioskStack->setCurrentWidget(adminAuthPage);
+}
+
+void MainWindow::handleAdminAuthBack() {
+    // Admin clicked Back, return to scanner.
+    //scanPage->resetScanner();
+    mainKioskStack->setCurrentWidget(scanPage);
+}
+
+void MainWindow::handleAdminAuthSuccess(QString adminCnic) {
+    // 2. Auth Success! Now we actually open the Secret Dashboard.
+
+    adminDashboard->setCurrentEndTime(currentElectionEndTime);
+    adminDashboard->setPausedState(m_systemIsPaused);
+    // pass the adminCnic to the dashboard if needed for logging
+
+    mainKioskStack->setCurrentWidget(adminDashboard);
 }
