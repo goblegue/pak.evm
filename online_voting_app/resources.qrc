@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/images">
         <file>votingImage.png</file>
+        <file>white_default_profpic.png</file>
     </qresource>
 </RCC>

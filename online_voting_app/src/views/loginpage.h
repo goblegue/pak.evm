@@ -32,6 +32,7 @@ private slots:
 private:
     Ui::LoginPage *ui;
     int identifyInputType(const QString &input);
+    void resetLoginButton();
     QFutureWatcher<AuthManager::LoginResult> m_loginWatcher;
 };
 

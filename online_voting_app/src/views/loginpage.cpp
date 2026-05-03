@@ -67,6 +67,8 @@ void LoginPage::on_loginSubmitBtn_clicked()
     ui->loginSubmitBtn->setEnabled(false);
     ui->goToSignupBtn->setEnabled(false);
     ui->loginSubmitBtn->setText("Logging in...");
+    ui->usernameInput->clearFocus();
+    ui->usernameInput->setSelection(0, 0);
 
     // 1. Clear previous connections
     disconnect(&m_loginWatcher,
@@ -89,27 +91,31 @@ void LoginPage::on_loginSubmitBtn_clicked()
             return AuthManager::getInstance().login(password, username, "");
         } });
 
-    // 4. Connect the future to the watcher
+    // 4. Connect the future to the
     m_loginWatcher.setFuture(future);
 }
 
 void LoginPage::handleLoginFinished()
 {
-
+    ui->usernameInput->clearFocus();
+    ui->usernameInput->setSelection(0, 0);
     AuthManager::LoginResult loginResult = m_loginWatcher.result();
     if (loginResult == AuthManager::LoginResult::InvalidCnicOrEmail)
     {
         QMessageBox::warning(this, "Error", "Incorrect CNIC or Email!");
+        resetLoginButton();
         return;
     }
     else if (loginResult == AuthManager::LoginResult::InvalidPassword)
     {
         QMessageBox::warning(this, "Error", "Incorrect Password!");
+        resetLoginButton();
         return;
     }
     else if (loginResult == AuthManager::LoginResult::SystemError)
     {
         QMessageBox::warning(this, "Error", "System Error!");
+        resetLoginButton();
         return;
     }
 
@@ -121,6 +127,7 @@ void LoginPage::handleLoginFinished()
         if (!otpSendSuccess)
         {
             QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
+            resetLoginButton();
             return;
         }
 
@@ -142,6 +149,7 @@ void LoginPage::handleLoginFinished()
                 QMessageBox::information(this,
                                          "Cancelled",
                                          "Verification cancelled. Please login again.");
+                resetLoginButton();
                 return;
             }
 
@@ -185,6 +193,7 @@ void LoginPage::handleLoginFinished()
         if (!otpSendSuccess)
         {
             QMessageBox::critical(this, "Network Error", "Failed to send OTP email.");
+            resetLoginButton();
             return;
         }
 
@@ -206,6 +215,7 @@ void LoginPage::handleLoginFinished()
                 QMessageBox::information(this,
                                          "Cancelled",
                                          "Verification cancelled. Please login again.");
+                resetLoginButton();
                 return;
             }
 
@@ -230,6 +240,13 @@ void LoginPage::handleLoginFinished()
             }
         }
     }
+    resetLoginButton();
+}
+
+void LoginPage::resetLoginButton()
+{
+    ui->usernameInput->clear();
+    ui->passwordInput->clear();
     ui->loginSubmitBtn->setEnabled(true);
     ui->goToSignupBtn->setEnabled(true);
     ui->loginSubmitBtn->setText("Login");

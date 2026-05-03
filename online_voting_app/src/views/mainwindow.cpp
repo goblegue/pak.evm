@@ -1,4 +1,5 @@
 #include "views/mainwindow.h"
+#include <QBuffer>
 #include <QDateTime>
 #include <QFile>
 #include <QInputDialog>
@@ -8,9 +9,11 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QUuid>
+#include "controllers/adminController.h"
 #include "controllers/auth_manager.h"
 #include "controllers/candidateController.h"
 #include "controllers/electionController.h"
+#include "controllers/voterController.h"
 #include "models/Models.h"
 #include "models/entities/election.h"
 #include "models/entities/user.h"
@@ -18,6 +21,7 @@
 #include "ui_mainwindow.h"
 #include "views/AdminCandidatePage.h"
 #include "votertokenmess.h"
+#include <optional>
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -60,9 +64,12 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(4);
+    ui->MainStack->setCurrentIndex(0);
 
-    connect(m_loginPage, &LoginPage::goToSignupRequested, this, &MainWindow::handleGoToSignupRequested);
+    connect(m_loginPage,
+            &LoginPage::goToSignupRequested,
+            this,
+            &MainWindow::handleGoToSignupRequested);
     connect(m_loginPage, &LoginPage::loginSuccessUser, this, &MainWindow::handleLoginSuccessUser);
     connect(m_loginPage, &LoginPage::loginSuccessAdmin, this, &MainWindow::handleLoginSuccessAdmin);
     connect(m_loginPage, &LoginPage::loginSuccessAdminPending, this, &MainWindow::handleLoginSuccessAdminPending);
@@ -122,11 +129,15 @@ void MainWindow::handleGoToLoginRequested()
 
 void MainWindow::handleLoginSuccessUser()
 {
+    QString username = AuthManager::getInstance().getCurrentUser()->getName();
+    loadAdminProfile(username, "");
     ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
 }
 
 void MainWindow::handleLoginSuccessAdmin()
 {
+    QString username = AuthManager::getInstance().getCurrentUser()->getName();
+    loadAdminProfile(username, "");
     ui->MainStack->setCurrentIndex(StackedPages::AdminDashPage);
 }
 
@@ -241,57 +252,25 @@ void MainWindow::handleElectionSelectedForCandidates(QString electionId)
                                            .getCandidatesByElection(electionId,
                                                                     candidateCount,
                                                                     true);
+    m_adminInnerPage_Candidates->loadCandidates(candidatesForElection, candidateCount);
 
-    // Mock Data for now (so the Frontend Engineer can test the UI colors)
-    Candidate *mockCandidates = new Candidate[candidateCount];
-
-    mockCandidates[0].setUserCnic("42101-1234567-1");
-    mockCandidates[0].setPartyName("Democratic Party");
-    mockCandidates[0].setStatus(ApprovalStatus::Approved); // Should show GREEN border
-
-    mockCandidates[1].setUserCnic("42101-9876543-2");
-    mockCandidates[1].setPartyName("Independent");
-    mockCandidates[1].setStatus(ApprovalStatus::Pending); // Should show YELLOW border
-
-    mockCandidates[2].setUserCnic("42101-5555555-3");
-    mockCandidates[2].setPartyName("Liberty Front");
-    mockCandidates[2].setStatus(ApprovalStatus::Rejected); // Should show RED border
-
-    // Load them into the UI
-    m_adminInnerPage_Candidates->loadCandidates(mockCandidates, candidateCount);
-
-    // Cleanup memory
-    delete[] mockCandidates;
+    delete[] candidatesForElection;
 }
 
 void MainWindow::on_adminSidebarAdminsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
+    QString currUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    int adminCount = 0;
+    auto adminOpt = AdminController::getInstance().getAllAdminsExcept(currUserCnic, adminCount);
+    if (!adminOpt.has_value()) {
+        QMessageBox::critical(this, "Error", "Failed to load admins.");
+        return;
+    }
+    Admin *adminList = adminOpt.value();
+    m_adminInnerPage_Admins->loadAdmins(adminList, adminCount);
 
-
-
-    // Mock Data for the Admins
-    int adminCount = 3;
-    Admin *mockAdmins = new Admin[adminCount];
-
-    mockAdmins[0].setName("Ahmed Munir");
-    mockAdmins[0].setEmail("ahmed@pakevm.com");
-    mockAdmins[0].setCnic("42101-1111111-1");
-    mockAdmins[0].setStatus(ApprovalStatus::Approved);
-
-    mockAdmins[1].setName("Ali Khan");
-    mockAdmins[1].setEmail("ali@pakevm.com");
-    mockAdmins[1].setCnic("42101-2222222-2");
-    mockAdmins[1].setStatus(ApprovalStatus::Pending);
-
-    mockAdmins[2].setName("Usman Tariq");
-    mockAdmins[2].setEmail("usman@pakevm.com");
-    mockAdmins[2].setCnic("42101-3333333-3");
-    mockAdmins[2].setStatus(ApprovalStatus::Rejected);
-
-    m_adminInnerPage_Admins->loadAdmins(mockAdmins, adminCount);
-
-    delete[] mockAdmins;
+    delete[] adminList;
 }
 
 // ---------------------------------------------------------
@@ -306,50 +285,8 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
 
     Election *electionList = ElectionController::getInstance().getAllElections(electionCount);
 
-    // // 2. Generate Mock Elections with various states to test the UI
-    // int electionCount = 5;
-    // Election *mockElections = new Election[electionCount];
-
-    // // Status: Published (Blue)
-    // mockElections[0].setId("ELEC-101");
-    // mockElections[0].setTitle("Federal Senate Election 2026");
-    // mockElections[0].setStartTime(QDateTime::currentDateTime().addDays(5));
-    // mockElections[0].setEndTime(QDateTime::currentDateTime().addDays(6));
-    // mockElections[0].setStatus(ElectionState::Published);
-
-    // // Status: Voting Open (Green)
-    // mockElections[1].setId("ELEC-102");
-    // mockElections[1].setTitle("Lahore Local Council");
-    // mockElections[1].setStartTime(QDateTime::currentDateTime().addDays(-1));
-    // mockElections[1].setEndTime(QDateTime::currentDateTime().addDays(1));
-    // mockElections[1].setStatus(ElectionState::VotingOpen);
-
-    // // Status: Draft (Grey)
-    // mockElections[2].setId("ELEC-103");
-    // mockElections[2].setTitle("Karachi Medical Board Draft");
-    // mockElections[2].setStartTime(QDateTime::currentDateTime().addDays(20));
-    // mockElections[2].setEndTime(QDateTime::currentDateTime().addDays(21));
-    // mockElections[2].setStatus(ElectionState::Drafted);
-
-    // // Status: Rejected (Red)
-    // mockElections[3].setId("ELEC-104");
-    // mockElections[3].setTitle("Fake Test Election");
-    // mockElections[3].setStartTime(QDateTime::currentDateTime());
-    // mockElections[3].setEndTime(QDateTime::currentDateTime().addDays(1));
-    // mockElections[3].setStatus(ElectionState::Rejected);
-
-    // // Status: Results Announced (Purple)
-    // mockElections[4].setId("ELEC-105");
-    // mockElections[4].setTitle("Sindh Bar Council 2025");
-    // mockElections[4].setStartTime(QDateTime::currentDateTime().addDays(-30));
-    // mockElections[4].setEndTime(QDateTime::currentDateTime().addDays(-29));
-    // mockElections[4].setStatus(ElectionState::ResultsAnnounced);
-
-    // 3. Load the data into your custom UI
     m_adminInnerPage_Elections->loadElections(electionList, electionCount);
 
-    // // 4. Prevent memory leaks!
-    // delete[] mockElections;
     delete[] electionList;
 }
 
@@ -358,25 +295,6 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
 {
-    // For testing purposes, let's inject a HUGE manifesto into the selected
-    // candidate right before we show it, just to ensure the QScrollArea works perfectly.
-    if (selectedCandidate.getManifesto().isEmpty())
-    {
-        selectedCandidate.setManifesto(
-            "1. Economic Reform: We will introduce a comprehensive tax relief plan...\n\n"
-            "2. Healthcare: Free access to primary care facilities across the province.\n\n"
-            "3. Education: Building 50 new IT universities by the year 2028.\n\n"
-            "4. Infrastructure: Expanding the Metro bus network to all major cities.\n\n"
-            "5. Environment: Planting 10 million trees to combat urban heat islands.\n\n"
-            "6. Law & Order: Increasing police presence and digitizing all FIRs.\n\n"
-            "7. Youth Empowerment: Paid internships for 100,000 graduates.\n\n"
-            "(Keep scrolling...) \n\n"
-            "8. Foreign Policy: Enhancing trade with neighboring regions.\n\n"
-            "9. Agriculture: Subsidies for solar-powered tube wells.");
-        selectedCandidate.setPreviousHistory("Served as MPA from 2018-2023. Member of Finance Committee.");
-        selectedCandidate.setEducationLevel("Ph.D. in Economics from LUMS");
-    }
-
     // 1. Pass the data to the page UI
     m_adminInnerPage_CandidateDetails->setCandidate(selectedCandidate);
 
@@ -398,28 +316,21 @@ void MainWindow::handleBackToCandidateList()
 // ---------------------------------------------------------
 void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus)
 {
-
-    QString currentAdminCnic = "42101-ADMIN-1";
-
-    QString statusText = (newStatus == ApprovalStatus::Approved) ? "APPROVE" : "REJECT";
-
-    // 2. Show a MessageBox to prove the signal works perfectly!
-    QMessageBox::information(this, "Controller Simulation",
-                             QString("Simulating passing data to CandidateController...\n\n"
-                                     "Target Candidate: %1\n"
-                                     "Action: %2\n"
-                                     "Requested By: Admin %3")
-                                 .arg(targetCnic, statusText, currentAdminCnic));
-    // TODO
-    /*
-     * WHEN YOUR BACKEND IS READY, THIS IS ALL YOU WRITE HERE:
-     *
-     * bool success = CandidateController::getInstance().requestCandidateStatusChange(targetCnic, currentAdminCnic, newStatus);
-     * if(success) {
-     *     QMessageBox::information(this, "Success", "Status request logged.");
-     *     handleBackToCandidateList(); // Kick them back to the list
-     * }
-     */
+    QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    bool success = CandidateController::getInstance().requestCandidateStatusChange(targetCnic,
+                                                                                   currentAdminCnic,
+                                                                                   newStatus);
+    if (success)
+    {
+        QMessageBox::information(this, "Success", "Status change request logged.");
+        handleBackToCandidateList(); // Kick them back to the list
+    }
+    else
+    {
+        QMessageBox::critical(this,
+                              "Error",
+                              "Failed to log status change request. Please try again.");
+    }
 }
 
 void MainWindow::handleNavigateToCreateElection()
@@ -464,43 +375,43 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
 void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
-
-    // Mock Data for Elections
-    int electionCount = 2;
-    Election *mockElections = new Election[electionCount];
-
-    mockElections[0].setId("ELEC-201");
-    mockElections[0].setTitle("National General Election");
-    mockElections[0].setStartTime(QDateTime::currentDateTime().addDays(-1));
-    mockElections[0].setEndTime(QDateTime::currentDateTime().addDays(1));
-    mockElections[0].setStatus(ElectionState::VotingOpen);
-
-    mockElections[1].setId("ELEC-202");
-    mockElections[1].setTitle("Provincial Assembly");
-    mockElections[1].setStartTime(QDateTime::currentDateTime().addDays(5));
-    mockElections[1].setEndTime(QDateTime::currentDateTime().addDays(6));
-    mockElections[1].setStatus(ElectionState::Published);
-
-    userInnerPage_ActiveElections->loadElections(mockElections, electionCount);
-    delete[] mockElections;
+    int electionCount = 0;
+    Election *activeElections = ElectionController::getInstance().getElectionsForUser(electionCount);
+    userInnerPage_ActiveElections->loadElections(activeElections, electionCount);
+    delete[] activeElections;
 }
 
 void MainWindow::handleUserElectionSelected(QString electionId)
 {
     // When the user clicks an election, load the mock candidates for it
-    int candidateCount = 2;
-    Candidate *mockCandidates = new Candidate[candidateCount];
+    int candidateCount = 0;
+    Candidate *candidatsForElection = CandidateController::getInstance()
+                                          .getCandidatesByElection(electionId,
+                                                                   candidateCount,
+                                                                   false);
 
-    mockCandidates[0].setUserCnic("42101-111-1");
-    mockCandidates[0].setPartyName("Democratic Front");
-    mockCandidates[0].setStatus(ApprovalStatus::Approved);
+    int approvedCandidateCount = 0;
+    Candidate *approvedCandidates = new Candidate[0];
 
-    mockCandidates[1].setUserCnic("42101-222-2");
-    mockCandidates[1].setPartyName("Liberty Party");
-    mockCandidates[1].setStatus(ApprovalStatus::Approved);
+    for (int i = 0; i < candidateCount; i++)
+    {
+        if (candidatsForElection[i].getStatus() == ApprovalStatus::Approved)
+        {
+            Candidate *temp = new Candidate[approvedCandidateCount + 1];
+            for (int j = 0; j < approvedCandidateCount; j++)
+            {
+                temp[j] = approvedCandidates[j];
+            }
+            delete[] approvedCandidates;
+            approvedCandidates = temp;
+            approvedCandidates[approvedCandidateCount] = candidatsForElection[i];
+            approvedCandidateCount++;
+        }
+    }
 
-    userInnerPage_ActiveElections->loadCandidates(mockCandidates, candidateCount);
-    delete[] mockCandidates;
+    userInnerPage_ActiveElections->loadCandidates(approvedCandidates, approvedCandidateCount);
+    delete[] approvedCandidates;
+    delete[] candidatsForElection;
 }
 
 // ---------------------------------------------------------
@@ -509,22 +420,49 @@ void MainWindow::handleUserElectionSelected(QString electionId)
 void MainWindow::handleGenerateTokenRequested(QString electionId)
 {
 
-    /*
-     * WHEN BACKEND IS READY, YOU WILL DO SOMETHING LIKE THIS:
-     * QString currentUserId = AuthManager::getInstance().getCurrentUser()->getId();
-     * bool success = TokenController::getInstance().generateAndSaveToken(currentUserId, electionId);
-     * if (success) {
-     *     QMessageBox::information(this, "Success", "Token securely generated! Check your 'My Tokens' tab.");
-     * }
-     */
+    QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    auto requestOpt = TokenController::getInstance().requestVotingToken(currentUserCnic,
+                                                                        electionId,
+                                                                        m_config.privateKey);
+    if (!requestOpt.has_value())
+    {
+        QMessageBox::critical(this, "Error", "Failed to generate token. Please try again.");
+        return;
+    }
 
-    // 1. Get the data from your Backend/Database
+    Token newToken;
+    newToken.setId("TKN-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());
+    newToken.setUserCnic(currentUserCnic);
+    newToken.setElectionId(electionId);
+    newToken.setIssuedAt(QDateTime::currentDateTime());
 
-    // Example Base64 string (your backend will provide a real one)
-    QString backendBase64String = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+    //converting image to base64 string
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+
+    // 3. Open the buffer so we can write to it
+    buffer.open(QIODevice::WriteOnly);
+
+    // 4. "Save" the image into the buffer in PNG format
+    // (PNG is best because it preserves transparency/backgrounds)
+    requestOpt.value().save(&buffer, "PNG");
+
+    // 5. Convert the raw bytes into a safe Base64 string
+    QByteArray base64Bytes = byteArray.toBase64();
+
+    QString tokenSignatureString = QString::fromUtf8(base64Bytes);
+
+    newToken.setTokenSignature(tokenSignatureString);
+
+    bool saveSuccess = TokenController::getInstance().saveToken(newToken);
+    if (!saveSuccess)
+    {
+        QMessageBox::critical(this, "Error", "Failed to save token. Please try again.");
+        return;
+    }
 
     // 2. Create the Dialog using the Designer class
-    VoterTokenMess tokenPopup(backendBase64String, electionId, this);
+    VoterTokenMess tokenPopup(newToken.getTokenSignature(), electionId, this);
 
     // 3. Show it modally (blocks the rest of the app until they click OK)
     tokenPopup.exec();
@@ -534,23 +472,12 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
 
-    int tokenCount = 2;
-    Token *mockTokens = new Token[tokenCount];
+    int tokenCount = 0;
+    QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    Token *issuedTokens = TokenController::getInstance().getVoterTokens(currentUserCnic, tokenCount);
 
-    mockTokens[0].setId("TKN-9991"); // Must have an ID for accordion to work!
-    mockTokens[0].setElectionId("ELEC-201");
-    mockTokens[0].setAssignedStationId("ST-A (Gulberg Branch)");
-    mockTokens[0].setIssuedAt(QDateTime::currentDateTime());
-    mockTokens[0].setTokenSignature("eyJhbGciOiJIUzI1NiIs...");
-
-    mockTokens[1].setId("TKN-9992");
-    mockTokens[1].setElectionId("ELEC-202");
-    mockTokens[1].setAssignedStationId("ST-B (DHA Branch)");
-    mockTokens[1].setIssuedAt(QDateTime::currentDateTime().addDays(-2));
-    mockTokens[1].setTokenSignature("q8g9q8h24q8hg0284ghq...");
-
-    userInnerPage_MyTokens->loadTokens(mockTokens, tokenCount);
-    delete[] mockTokens;
+    userInnerPage_MyTokens->loadTokens(issuedTokens, tokenCount);
+    delete[] issuedTokens;
 }
 
 // ---------------------------------------------------------
@@ -558,20 +485,18 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::handleEmailTokenRequested(Token selectedToken)
 {
-    // For now, just show a popup to prove the button works!
-    QMessageBox::information(this, "Email Token",
-                             "Ready to email token for Election:\n" + selectedToken.getElectionId() +
-                                 "\n\n(Your Lead's EmailService will be connected here!)");
 
-    /*
-     * WHEN READY, YOU WILL USE YOUR LEAD'S EMAIL CLASS LIKE THIS:
-     *
-     * QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
-     * QString body = "Your secure token hash is: " + selectedToken.getTokenSignature();
-     *
-     * EmailService::getInstance().sendEmail(userEmail, "Your Voting Token", body);
-     * QMessageBox::information(this, "Success", "Token sent to your email!");
-     */
+    QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
+    bool emailSuccess = TokenController::getInstance().sendTokenToEmail(selectedToken, userEmail);
+
+    if (emailSuccess)
+    {
+        QMessageBox::information(this, "Success", "Token sent to your email!");
+    }
+    else
+    {
+        QMessageBox::critical(this, "Error", "Failed to send token email. Please try again.");
+    }
 }
 // Note: When you load your mock candidates in handleUserElectionSelected,
 // you can now add mockBase64 strings if you want to test the symbol images!
@@ -607,20 +532,11 @@ void MainWindow::on_userSidebarCandidacyBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_Candidacy);
 
-    // Only fetch PUBLISHED elections for the candidacy form
-    int electionCount = 2;
-    Election *mockElections = new Election[electionCount];
+    int electionCount = 0;
+    Election *draftedElections = ElectionController::getInstance().getElectionsByStatus(ElectionState::Drafted, electionCount);
 
-    mockElections[0].setId("ELEC-201");
-    mockElections[0].setTitle("National General Election");
-    mockElections[0].setStatus(ElectionState::Published);
-
-    mockElections[1].setId("ELEC-202");
-    mockElections[1].setTitle("Provincial Assembly");
-    mockElections[1].setStatus(ElectionState::Published);
-
-    userInnerPage_Candidacy->loadPublishedElections(mockElections, electionCount);
-    delete[] mockElections;
+    userInnerPage_Candidacy->loadPublishedElections(draftedElections, electionCount);
+    delete[] draftedElections;
 }
 
 // ---------------------------------------------------------
@@ -628,28 +544,22 @@ void MainWindow::on_userSidebarCandidacyBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 {
-    // 1. Get the current user's CNIC and add it to the application
-    // QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
-    QString currentUserCnic = "42101-TEST-CNIC"; // Mock CNIC for testing
+    QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
     newCandidate.setUserCnic(currentUserCnic);
 
-    // 2. Show Success Message
+    newCandidate.setStatus(ApprovalStatus::Pending);
+    newCandidate.setId("CAND-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());
+
+    bool success = CandidateController::getInstance().createCandidate(newCandidate);
+    if (!success)
+    {
+        QMessageBox::critical(this, "Error", "Failed to submit application. Please try again.");
+        return;
+    }
+
     QMessageBox::information(this, "Application Submitted",
                              "Your candidacy application for '" + newCandidate.getPartyName() + "' has been successfully submitted!\n\n"
                                                                                                 "Please wait for admin approval. You will see your status update in the Active Elections tab once approved.");
-
-    /*
-     * WHEN YOUR BACKEND IS READY, YOU WILL UNCOMMENT THIS:
-     *
-     * bool success = CandidateController::getInstance().createCandidate(newCandidate);
-     * if(success) {
-     *     QMessageBox::information(this, "Success", "Application Submitted!");
-     * } else {
-     *     QMessageBox::warning(this, "Error", "Failed to submit application.");
-     * }
-     */
-
-    // 3. Send the user back to the Active Elections page so they aren't stuck on the form
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
 
@@ -671,7 +581,7 @@ void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePa
     else
     {
         // Fallback: If they haven't uploaded one, load a default silhouette from your resources
-        originalImage.load(":/images/default_avatar.png");
+        originalImage.load(":/images/white_default_profpic.png");
     }
 
     // 3. Make the Image a Perfect Circle
@@ -713,7 +623,7 @@ void MainWindow::loadAdminProfile(const QString &fullName, const QString &imageP
     else
     {
         // Fallback: If they haven't uploaded one, load a default silhouette from your resources
-        originalImage.load(":/images/default_avatar.png");
+        originalImage.load(":/images/white_default_profpic.png");
     }
 
     // 3. Make the Image a Perfect Circle

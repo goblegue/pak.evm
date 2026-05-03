@@ -210,7 +210,7 @@ std::optional<Admin *> adminrepository::getAllAdminsExcept(const QString &cnic, 
         }
         auto binary = view["passwordHash"].get_binary();
         QByteArray hash(reinterpret_cast<const char *>(binary.bytes), binary.size);
-        admin.setPassword(hash, view["salt"].get_int32().value);
+        admin.setPassword(hash, view["salt"].get_int64().value);
         admins[index++] = admin;
     }
     return admins;

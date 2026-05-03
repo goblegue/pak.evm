@@ -30,7 +30,11 @@ public:
 
     optional<QImage> requestVotingToken(const QString &userCnic, const QString &electionId, const QByteArray &privateKey);
 
+    bool saveToken(const Token &token);
+
     Token *getVoterTokens(const QString &userCnic, int &tokensSize);
+
+    bool sendTokenToEmail(const Token &token, const QString &email);
 
     optional<QImage> getQrCodeForToken(const Token &token);
 

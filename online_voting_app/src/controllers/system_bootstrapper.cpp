@@ -18,6 +18,8 @@
 #include "controllers/auth_manager.h"
 #include "controllers/candidateController.h"
 #include "controllers/electionController.h"
+#include "controllers/adminController.h"
+#include "controllers/voterController.h"
 
 // Services
 #include "services/crypto/cryptoengine.h"
@@ -135,7 +137,8 @@ void SystemBootstrapper::loadOrGenerateEnv()
 void SystemBootstrapper::bootstrapFirstAdmins()
 {
     // Check if we already have admins to avoid duplicate insertion errors
-    if (m_adminRepo->getAdminCount() >= 2) {
+    if (m_adminRepo->getAdminCount() >= 2)
+    {
         qDebug() << "[Bootstrapper] System already has bootstrapped admins.";
         return;
     }
@@ -147,7 +150,8 @@ void SystemBootstrapper::bootstrapFirstAdmins()
     QString emails[2] = {"pak.evm.project@gmail.com", "admin2@evm.pk"};
     QString rawPass = "1234";
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i)
+    {
         Admin admin;
         admin.setId(QString("ROOT_00%1").arg(i + 1));
         admin.setName(names[i]);
@@ -158,7 +162,8 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
         // Securely hash the bootstrap password
         auto hashRes = CryptoEngine::getInstance().hashData(rawPass.toUtf8());
-        if (hashRes) {
+        if (hashRes)
+        {
             admin.setPassword(hashRes->hash, hashRes->salt);
             m_adminRepo->insertAdmin(admin);
 
@@ -194,11 +199,7 @@ void SystemBootstrapper::injectControllers()
                                                           m_adminRepo.get(),
                                                           m_electionRepo.get());
 
-    // Uncomment this once VoterController is created!
-    // VoterController::getInstance().injectRepositories(
-    //     m_voterRepo.get(),
-    //     m_electionRepo.get(),
-    //     m_userRepo.get(),
-    //     m_stationRepo.get()
-    // );
+    TokenController::getInstance().injectRepositories(m_voterRepo.get(), m_electionRepo.get());
+
+    AdminController::getInstance().injectRepositories(m_adminRepo.get());
 }
