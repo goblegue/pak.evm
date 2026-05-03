@@ -1,6 +1,6 @@
 #ifndef AUDITLOGREPOSITORY_H
 #define AUDITLOGREPOSITORY_H
-#include "../models/entities/audit_log.h"
+#include "../entities/audit_log.h"
 
 class AuditLogRepository : public IAuditLogRepository {
 public:

@@ -1,6 +1,6 @@
 #ifndef CANDIDATEREPOSITORY_H
 #define CANDIDATEREPOSITORY_H
-#include "../models/entities/candidates.h"
+#include "../entities/candidates.h"
 
 class CandidateRepository : public ICandidateRepository {
 public:

@@ -1,7 +1,7 @@
 #ifndef TOKENREPO_H
 #define TOKENREPO_H
 
-#include "../models/entities/tokens.h"
+#include "../entities/tokens.h"
 
 class TokenRepository : public ITokenRepository {
 public:

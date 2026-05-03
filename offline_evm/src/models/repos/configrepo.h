@@ -1,7 +1,7 @@
 #ifndef CONFIGREPO_H
 #define CONFIGREPO_H
 
-#include "../models/entities/system_config.h"
+#include "../entities/system_config.h"
 #include <optional>
 
 class ConfigRepository : public IConfigRepository {

@@ -1,8 +1,8 @@
 #ifndef VOTEREPOSITORY_H
 #define VOTEREPOSITORY_H
 
-#include "../models/entities/voting_record.h"
-#include "../models/entities/tokens.h"
+#include "../entities/tokens.h"
+#include "../entities/voting_record.h"
 
 class VoteRepository : public IVoteRepository {
 public:

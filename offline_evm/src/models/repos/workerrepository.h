@@ -1,7 +1,7 @@
 #ifndef WORKERREPO_H
 #define WORKERREPO_H
 
-#include "../models/entities/poll_worker.h"
+#include "../entities/poll_worker.h"
 
 class WorkerRepository : public IWorkerRepository {
 public:

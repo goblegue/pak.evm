@@ -1,5 +1,5 @@
+#include "models/repos/DatabaseManager.h"
 #include "views/mainwindow.h"
-#include "model/DatabaseManager.h"
 
 #include <QApplication>
 

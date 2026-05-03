@@ -21,10 +21,10 @@ set(PROJECT_SOURCES
     src/main.cpp
 
     # --- YOUR DATABASE FILES ---
-    src/model/DatabaseManager.h
-    src/model/DatabaseManager.cpp
-    src/model/candidaterepo.h
-    src/model/candidaterepo.cpp
+    src/models/repos/DatabaseManager.h
+    src/models/repos/DatabaseManager.cpp
+    src/models/repos/candidaterepo.h
+    src/models/repos/candidaterepo.cpp
 
     # --- LEAD'S INTERFACES (Entities) ---
     src/models/entities/tokens.h
@@ -46,11 +46,11 @@ set(PROJECT_SOURCES
 
 # 4. Create the Executable
 add_executable(OfflineVotingKiosk ${PROJECT_SOURCES}
-    src/model/voterepository.h src/model/voterepository.cpp
-    src/model/auditlogrepository.h src/model/auditlogrepository.cpp
-    src/model/workerrepository.h src/model/workerrepository.cpp
-    src/model/configrepo.h src/model/configrepo.cpp
-    src/model/tokenrepo.h src/model/tokenrepo.cpp)
+    src/models/repos/voterepository.h src/models/repos/voterepository.cpp
+    src/models/repos/auditlogrepository.h src/models/repos/auditlogrepository.cpp
+    src/models/repos/workerrepository.h src/models/repos/workerrepository.cpp
+    src/models/repos/configrepo.h src/models/repos/configrepo.cpp
+    src/models/repos/tokenrepo.h src/models/repos/tokenrepo.cpp)
 
 # 5. Link Libraries
 target_link_libraries(OfflineVotingKiosk PRIVATE
