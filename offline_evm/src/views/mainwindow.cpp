@@ -196,8 +196,7 @@ QString MainWindow::formatTime(qint64 totalSeconds) {
 }
 
 void MainWindow::handleProceedToVoting() {
-
-    //scanPage->stopCamera();
+    scanPage->stopCamera();
     // 1. Load mock candidates into the voting page
     int candidateCount = 3;
     Candidate* mockCandidates = new Candidate[candidateCount];

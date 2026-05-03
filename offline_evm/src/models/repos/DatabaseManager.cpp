@@ -23,17 +23,43 @@ void DatabaseManager::close() {
     if (m_db.isOpen()) m_db.close();
 }
 
-bool DatabaseManager::createTables() {
-    QSqlQuery q; bool ok = true;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS Candidates (cnic TEXT PRIMARY KEY, name TEXT, party_name TEXT, symbol_name TEXT, symbol_b64 TEXT, profile_b64 TEXT)")) ok = false;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS AuditLogs (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT, description TEXT)")) ok = false;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS PollWorkers (username TEXT PRIMARY KEY, password_hash BLOB, salt INTEGER)")) ok = false;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS SystemConfig (id INTEGER PRIMARY KEY CHECK (id = 1), device_id TEXT, station_id TEXT, election_id TEXT, current_state TEXT, poll_opened_at TEXT, poll_closed_at TEXT)")) ok = false;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS UsedTokens (token_id TEXT PRIMARY KEY, used_at TEXT)")) ok = false;
-    if(!q.exec("CREATE TABLE IF NOT EXISTS Votes (id INTEGER PRIMARY KEY AUTOINCREMENT, candidate_cnic TEXT, timestamp TEXT, current_hash BLOB, previous_hash BLOB)")) ok = false;
+bool DatabaseManager::createTables()
+{
+    QSqlQuery q;
+    bool ok = true;
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS Candidates (cnic TEXT PRIMARY KEY, name TEXT, "
+                "party_name TEXT, symbol_name TEXT, symbol_b64 TEXT, profile_b64 TEXT)"))
+        ok = false;
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS AuditLogs (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "timestamp TEXT, event_type TEXT, description TEXT)"))
+        ok = false;
+
+    // [CHANGED] salt is now BLOB for Libsodium
+    if (!q.exec("CREATE TABLE IF NOT EXISTS PollWorkers (username TEXT PRIMARY KEY, password_hash "
+                "BLOB, salt BLOB)"))
+        ok = false;
+
+    // [CHANGED] current_state is INTEGER (for the Enum), added epoch timers and pub_key
+    if (!q.exec("CREATE TABLE IF NOT EXISTS SystemConfig (id INTEGER PRIMARY KEY CHECK (id = 1), "
+                "device_id TEXT, station_id TEXT, election_id TEXT, current_state INTEGER, "
+                "pub_key_b64 TEXT, scheduled_start INTEGER, scheduled_end INTEGER, poll_opened_at "
+                "TEXT, poll_closed_at TEXT)"))
+        ok = false;
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS UsedTokens (token_id TEXT PRIMARY KEY, used_at TEXT)"))
+        ok = false;
+
+    if (!q.exec("CREATE TABLE IF NOT EXISTS Votes (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "candidate_cnic TEXT, timestamp TEXT, current_hash BLOB, previous_hash BLOB)"))
+        ok = false;
+
+    if (!ok) {
+        qCritical() << "Failed to create one or more tables:" << q.lastError().text();
+    }
     return ok;
 }
-
 bool DatabaseManager::cleanupForNewElection() {
     std::lock_guard<std::mutex> lock(m_mutex);
     QSqlDatabase db = QSqlDatabase::database();

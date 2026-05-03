@@ -1,37 +1,53 @@
 #define prod
-#include "controllers/system_bootloader.h" // [NEW]
+#include <QApplication>
+
+#include "controllers/election_controller.h"
+#include "controllers/system_bootloader.h"
 #include "models/repos/DatabaseManager.h"
 #include "views/OfflineSetupWizard.h"
 #include "views/mainwindow.h"
-
-#include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    // [NEW] Bootstrap the backend BEFORE loading the UI!
-    SystemBootLoader bootloader;
-    bootloader.initializeSystem();
+    // 1. Initialize the system and database first!
+    SystemBootLoader bootstrapper;
+    bootstrapper.initializeSystem();
 
-    MainWindow w;
+    // 2. Create the main kiosk window (but don't show it yet)
+    MainWindow *w = new MainWindow();
+
 #ifdef prod
-    OfflineSetupWizard *wizard = new OfflineSetupWizard();
+    // 3. Check the current state of the Election
+    ElectionState currentState = ElectionController::getInstance().getCurrentState();
 
-    QObject::connect(wizard, &OfflineSetupWizard::setupComplete, [&]() {
-        w.show();
-        wizard->deleteLater();
-    });
+    // If it's a completely fresh DB (Setup) OR an old election was finished (Closed)
+    if (currentState == ElectionState::Setup || currentState == ElectionState::Closed) {
+        // We need to show the Setup Wizard
+        OfflineSetupWizard *wizard = new OfflineSetupWizard();
 
-    // Check if system is already configured!
-    // If it is, skip the wizard. If not, show it.
-    // (For now, we just show it)
-    wizard->show();
+        // When wizard finishes, show main window and safely delete the wizard
+        QObject::connect(wizard, &OfflineSetupWizard::setupComplete, [w, wizard]() {
+            w->show();
+            wizard->deleteLater();
+        });
+
+        wizard->show();
+    } else {
+        // System is already configured (ReadyWaiting, Open, or Paused).
+        // Skip the wizard entirely and jump straight into Kiosk Mode!
+        w->show();
+    }
 #endif
 
 #ifdef deve
-    w.show();
+    w->show();
 #endif
 
-    return a.exec();
+    int result = a.exec();
+
+    // Clean up
+    delete w;
+    return result;
 }
