@@ -42,6 +42,7 @@ The primary objective of Pak-EVM is to modernize voting systems by ensuring tran
 The project follows a branch-based collaborative development workflow, allowing separate modules to be developed independently and merged efficiently into the main branch.
 ### Welcome Layout
 <img width="1600" height="841" alt="image" src="https://github.com/user-attachments/assets/cfb72a00-4558-4fac-8c97-1f474baa72fe" />
+
 ### Identity Verification 
 <img width="1600" height="847" alt="image" src="https://github.com/user-attachments/assets/29e73459-5cb7-4ac5-9943-8c2b5a2caec3" />
 ### Login Page
