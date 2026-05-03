@@ -90,22 +90,33 @@ void PostElectionPage::setupUi() {
     buttonsLayout->setSpacing(30);
     buttonsLayout->setAlignment(Qt::AlignCenter);
     
-    // EXPORT BUTTON (Green)
+    // EXPORT BUTTON (Left side of the gradient: Red -> Dark Red)
     exportResultsBtn = new QPushButton("⬇ Get Election Results", this);
     exportResultsBtn->setCursor(Qt::PointingHandCursor);
     exportResultsBtn->setFixedSize(250, 50);
     exportResultsBtn->setStyleSheet(
-        "QPushButton { background-color: #27AE60; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #219653; }"
-    );
-    // DELETE BUTTON (Red)
+        "QPushButton { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #580000, stop:1 #340808); "
+        "   color: white; border-radius: 8px; font-size: 16px; font-weight: bold; "
+        "}"
+        "QPushButton:hover { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7A1A1A, stop:1 #4A1212); "
+        "}"
+        );
+
+    // DELETE BUTTON (Right side of the gradient: Dark Red -> Black)
     deleteElectionBtn = new QPushButton("🗑 Delete Election Data", this);
     deleteElectionBtn->setCursor(Qt::PointingHandCursor);
     deleteElectionBtn->setFixedSize(250, 50);
     deleteElectionBtn->setStyleSheet(
-        "QPushButton { background-color: #C0392B; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #A93226; }"
-    );
+        "QPushButton { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #340808, stop:1 #101010); "
+        "   color: white; border-radius: 8px; font-size: 16px; font-weight: bold; "
+        "}"
+        "QPushButton:hover { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A1212, stop:1 #2C2C2C); "
+        "}"
+        );
 
     buttonsLayout->addWidget(exportResultsBtn);
     buttonsLayout->addWidget(deleteElectionBtn);
