@@ -50,7 +50,7 @@ void OfflineAdminDashboard::setupUi() {
     QLabel *statsTitle = new QLabel("📊 System Health & Activity", this);
     statsTitle->setStyleSheet("font-size: 18px; font-weight: bold; color: #2C3E50; border: none;");
     tokensScannedLabel = new QLabel("Total Tokens Successfully Scanned: 0", this);
-    tokensScannedLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #27AE60; border: none; margin-top: 10px;");
+    tokensScannedLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #7A1A1A; border: none; margin-top: 10px;");
 
     statsLayout->addWidget(statsTitle);
     statsLayout->addWidget(tokensScannedLabel);
@@ -88,7 +88,7 @@ void OfflineAdminDashboard::setupUi() {
     extendTimeBtn = new QPushButton("Request Extension", this);
     extendTimeBtn->setCursor(Qt::PointingHandCursor);
     extendTimeBtn->setFixedSize(200, 45);
-    extendTimeBtn->setStyleSheet("QPushButton { background-color: #3498DB; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; border: none; } QPushButton:hover { background-color: #2980B9; }");
+    extendTimeBtn->setStyleSheet("QPushButton { background-color: #7A1A1A; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; border: none; } QPushButton:hover { background-color: #9B2222; }");
 
     timeInputLayout->addWidget(new QLabel("Extend Voting By:", this)); // Updated label
     timeInputLayout->addWidget(extensionCombo);
@@ -103,25 +103,41 @@ void OfflineAdminDashboard::setupUi() {
 
     // --- CARD 3: EMERGENCY CONTROLS ---
     QFrame *emergencyCard = new QFrame(this);
-    emergencyCard->setStyleSheet("QFrame { background-color: #FDEDEC; border: 2px solid #E74C3C; border-radius: 8px; }");
+    emergencyCard->setStyleSheet("QFrame { background-color: #FDEDEC; border: 2px solid #7A1A1A; border-radius: 8px; }");
     QVBoxLayout *emergencyLayout = new QVBoxLayout(emergencyCard);
     emergencyLayout->setContentsMargins(25, 25, 25, 25);
 
     QLabel *emergencyTitle = new QLabel("🚨 EMERGENCY CONTROLS", this);
-    emergencyTitle->setStyleSheet("font-size: 18px; font-weight: bold; color: #C0392B; border: none;");
+    emergencyTitle->setStyleSheet("font-size: 18px; font-weight: bold; color: #7A1A1A; border: none;");
 
     QHBoxLayout *emergencyBtnsLayout = new QHBoxLayout();
 
-    pauseBtn = new QPushButton("⏸ Pause Voting", this);
+    pauseBtn = new QPushButton("Pause Voting", this); // Removed emoji
     pauseBtn->setCursor(Qt::PointingHandCursor);
     pauseBtn->setFixedSize(250, 50);
-    pauseBtn->setStyleSheet("QPushButton { background-color: #F39C12; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; border: none; } QPushButton:hover { background-color: #D68910; }");
+    pauseBtn->setStyleSheet(
+        "QPushButton { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #580000, stop:1 #340808); "
+        "   color: white; border-radius: 8px; font-size: 16px; font-weight: bold; "
+        "}"
+        "QPushButton:hover { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7A1A1A, stop:1 #4A1212); "
+        "}"
+    );
 
-    forceCloseBtn = new QPushButton("🛑 EMERGENCY FORCE CLOSE", this);
+    // FORCE CLOSE BUTTON (Right half of gradient: Dark Red -> Black)
+    forceCloseBtn = new QPushButton("EMERGENCY FORCE CLOSE", this); // Removed emoji
     forceCloseBtn->setCursor(Qt::PointingHandCursor);
     forceCloseBtn->setFixedSize(300, 50);
-    forceCloseBtn->setStyleSheet("QPushButton { background-color: #C0392B; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; border: none; } QPushButton:hover { background-color: #922B21; }");
-
+    forceCloseBtn->setStyleSheet(
+        "QPushButton { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #340808, stop:1 #101010); "
+        "   color: white; border-radius: 8px; font-size: 16px; font-weight: bold; "
+        "}"
+        "QPushButton:hover { "
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A1212, stop:1 #2C2C2C); "
+        "}"
+    );
     emergencyBtnsLayout->addWidget(pauseBtn);
     emergencyBtnsLayout->addStretch();
     emergencyBtnsLayout->addWidget(forceCloseBtn);
