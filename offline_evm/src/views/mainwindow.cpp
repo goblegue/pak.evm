@@ -52,7 +52,7 @@ void MainWindow::setupKioskUi() {
     mainKioskStack->addWidget(adminAuthPage);
 
     // 4. Set Election Times (Mock data for testing)
-    currentElectionStartTime = QDateTime::currentDateTime().addSecs(5); // Starts in 5 seconds
+    currentElectionStartTime = QDateTime::currentDateTime().addSecs(200); // Starts in 5 seconds
     currentElectionEndTime = currentElectionStartTime.addSecs(330);      // Ends 15 seconds later
 
     // 5. Setup Timers & Connections
