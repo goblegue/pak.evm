@@ -44,6 +44,12 @@ set(PROJECT_SOURCES
     src/controllers/auth_manager.cpp
     src/controllers/election_controller.h
     src/controllers/election_controller.cpp
+    src/controllers/candidate_controller.h
+    src/controllers/candidate_controller.cpp
+    src/controllers/audit_controller.h
+    src/controllers/audit_controller.cpp
+    src/controllers/system_controller.h
+    src/controllers/system_controller.cpp
 
     # --- LEAD'S SERVICES ---
     src/services/crypto/crypto_engine.h
