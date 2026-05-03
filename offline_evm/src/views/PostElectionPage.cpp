@@ -2,6 +2,14 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QPainterPath>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMessageBox>
+
+#include "controllers/audit_controller.h"
+#include "controllers/election_controller.h"
+#include "models/repos/DatabaseManager.h"
+
 
 PostElectionPage::PostElectionPage(QWidget *parent) : QWidget(parent) {
     setupUi();
@@ -78,12 +86,129 @@ void PostElectionPage::setupUi() {
     footerLabel->setAlignment(Qt::AlignCenter);
     footerLabel->setStyleSheet("font-size: 16px; color: #7F8C8D; background: transparent; margin-top: 30px;");
 
+    QHBoxLayout *buttonsLayout = new QHBoxLayout();
+    buttonsLayout->setSpacing(30);
+    buttonsLayout->setAlignment(Qt::AlignCenter);
+    
+    // EXPORT BUTTON (Green)
+    exportResultsBtn = new QPushButton("⬇ Get Election Results", this);
+    exportResultsBtn->setCursor(Qt::PointingHandCursor);
+    exportResultsBtn->setFixedSize(250, 50);
+    exportResultsBtn->setStyleSheet(
+        "QPushButton { background-color: #27AE60; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #219653; }"
+    );
+    // DELETE BUTTON (Red)
+    deleteElectionBtn = new QPushButton("🗑 Delete Election Data", this);
+    deleteElectionBtn->setCursor(Qt::PointingHandCursor);
+    deleteElectionBtn->setFixedSize(250, 50);
+    deleteElectionBtn->setStyleSheet(
+        "QPushButton { background-color: #C0392B; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #A93226; }"
+    );
+
+    buttonsLayout->addWidget(exportResultsBtn);
+    buttonsLayout->addWidget(deleteElectionBtn);
+
     centerLayout->addWidget(iconLabel);
     centerLayout->addWidget(titleLabel);
     centerLayout->addWidget(subTitleLabel);
     centerLayout->addWidget(footerLabel);
+    centerLayout->addSpacing(30);
+    centerLayout->addLayout(buttonsLayout);
 
     mainLayout->addStretch();
     mainLayout->addLayout(centerLayout);
     mainLayout->addStretch();
+
+    connect(exportResultsBtn, &QPushButton::clicked, this, &PostElectionPage::onExportResultsClicked);
+    connect(deleteElectionBtn, &QPushButton::clicked, this, &PostElectionPage::onDeleteElectionClicked);
+}
+
+void PostElectionPage::onExportResultsClicked() {
+    // 1. Open the OS File Dialog so the user can pick where to save the file
+    QString filePath = QFileDialog::getSaveFileName(
+        this, 
+        "Save Election Results", 
+        "Election_Final_Results.json", // Default file name
+        "JSON Files (*.json)"
+    );
+
+    // 2. If the user clicks "Cancel" on the dialog, stop here.
+    if (filePath.isEmpty()) {
+        return; 
+    }
+
+    /* 
+     * =======================================================
+     * WHEN YOUR BACKEND IS READY, UNCOMMENT THIS REAL LOGIC:
+     * =======================================================
+     * 
+     * bool success = AuditController::getInstance().exportFinalResults(filePath);
+     * 
+     * if (success) {
+     *     QMessageBox::information(this, "Export Successful", "The election results and cryptographic proofs have been securely saved to:\n" + filePath);
+     * } else {
+     *     QMessageBox::critical(this, "Export Failed", "The forensic audit failed or the file could not be written.");
+     * }
+     */
+
+    // TEMPORARY MOCK FOR UI TESTING:
+    QMessageBox::information(this, "Simulation", "Simulation: Calling AuditController to save JSON file to:\n" + filePath);
+}
+
+void PostElectionPage::onDeleteElectionClicked() {
+    // 1. Double-check warning! You don't want them to delete before exporting.
+    QMessageBox::StandardButton reply = QMessageBox::warning(this, "CRITICAL WARNING", 
+        "Are you absolutely sure you want to PERMANENTLY wipe all election data from this machine?\n\n"
+        "Ensure you have exported the final results first. This action CANNOT be undone.", 
+        QMessageBox::Yes | QMessageBox::Cancel);
+        
+    if (reply == QMessageBox::Yes) {
+        
+        // 2. Open a secure dialog to ask for the Master Password
+        bool ok;
+        QString masterKey = QInputDialog::getText(this, 
+                                        "Master Authorization Required",
+                                        "Enter the Master Password to confirm system wipe:", 
+                                        QLineEdit::Password, 
+                                        "", &ok);
+
+        // 3. Check if they clicked "OK" and actually typed something
+        if (ok) {
+            if (masterKey.isEmpty()) {
+                QMessageBox::warning(this, "Error", "Master Password cannot be empty.");
+                return;
+            }
+
+            /* 
+             * =======================================================
+             * WHEN YOUR BACKEND IS READY, UNCOMMENT THIS REAL LOGIC:
+             * =======================================================
+             * 
+             * // A. Try to close the election using the Master Password
+             * bool authorized = ElectionController::getInstance().closeElection(masterKey);
+             * 
+             * if (authorized) {
+             *     // B. If authorized, wipe the database!
+             *     if (DatabaseManager::getInstance().cleanupForNewElection()) {
+             *         QMessageBox::information(this, "System Wiped", "All election records, candidates, and tokens have been securely wiped.\n\nThe application will now close.");
+             *         QApplication::quit(); // Close the app, ready for next election cycle
+             *     } else {
+             *         QMessageBox::critical(this, "Database Error", "Failed to clear database tables.");
+             *     }
+             * } else {
+             *     QMessageBox::critical(this, "Access Denied", "Incorrect Master Password. Wipe aborted.");
+             * }
+             */
+
+            // TEMPORARY MOCK FOR UI TESTING:
+            if (masterKey == "admin123") {
+                QMessageBox::information(this, "System Wiped", "Simulation: System wiped successfully! Exiting app...");
+                // QApplication::quit(); 
+            } else {
+                QMessageBox::critical(this, "Access Denied", "Simulation: Wrong Password!");
+            }
+        }
+    }
 }

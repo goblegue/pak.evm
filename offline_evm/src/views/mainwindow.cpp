@@ -53,7 +53,7 @@ void MainWindow::setupKioskUi() {
 
     // 4. Set Election Times (Mock data for testing)
     currentElectionStartTime = QDateTime::currentDateTime().addSecs(5); // Starts in 5 seconds
-    currentElectionEndTime = currentElectionStartTime.addSecs(460);      // Ends 15 seconds later
+    currentElectionEndTime = currentElectionStartTime.addSecs(30);      // Ends 15 seconds later
 
     // 5. Setup Timers & Connections
     kioskHeartbeat = new QTimer(this);

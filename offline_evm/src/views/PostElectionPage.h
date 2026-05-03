@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLabel>
+#include <QPushButton> 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFrame>
@@ -13,10 +14,16 @@ class PostElectionPage : public QWidget {
 public:
     explicit PostElectionPage(QWidget *parent = nullptr);
 
+private slots:
+    void onExportResultsClicked();
+    void onDeleteElectionClicked();
+
 private:
     void setupUi();
 
     QLabel *logoLabel;
+    QPushButton *exportResultsBtn;
+    QPushButton *deleteElectionBtn;
 };
 
 #endif // POSTELECTIONPAGE_H
