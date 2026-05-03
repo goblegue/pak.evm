@@ -48,12 +48,7 @@ bool CandidateController::createCandidate(Candidate &candidate)
         return false; // Election not found
     }
     Election election = electionOpt.value();
-    if (election.getStatus() == ElectionState::Drafted ||
-        election.getStatus() == ElectionState::Rejected ||
-        election.getStatus() == ElectionState::ResultsAnnounced ||
-        election.getStatus() == ElectionState::VotingOpen ||
-        election.getStatus() == ElectionState::VotingClosed)
-    {
+    if (election.getStatus() != ElectionState::Drafted) {
         return false; // Cannot add candidates to elections that are not active
     }
     candidate.setStatus(ApprovalStatus::Pending); // New candidates start with Pending status

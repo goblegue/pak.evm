@@ -17,7 +17,7 @@ bool candidaterepository::insertCandidate(const Candidate &candidate)
 {
     auto db = DatabaseManager::getInstance().getDatabase();
 
-    auto electionFilter = document{} << "id" << candidate.getElectionId().toStdString() << "status"
+    auto electionFilter = document{} << "election_id" << candidate.getElectionId().toStdString() << "status"
                                      << static_cast<int>(ElectionState::Drafted) << finalize;
 
     if (!db["Elections"].find_one(electionFilter.view()))
@@ -28,12 +28,12 @@ bool candidaterepository::insertCandidate(const Candidate &candidate)
     try
     {
         auto builder = document{};
-        builder << "id" << candidate.getId().toStdString()
-                << "userCnic" << candidate.getUserCnic().toStdString()
-                << "electionId" << candidate.getElectionId().toStdString()
-                << "partyName" << candidate.getPartyName().toStdString()
-                << "symbolName" << candidate.getSymbolName().toStdString()
-                << "status" << static_cast<int>(candidate.getStatus());
+        builder << "candidate_id" << candidate.getId().toStdString() << "userCnic"
+                << candidate.getUserCnic().toStdString() << "election_id"
+                << candidate.getElectionId().toStdString() << "partyName"
+                << candidate.getPartyName().toStdString() << "symbolName"
+                << candidate.getSymbolName().toStdString() << "status"
+                << static_cast<int>(candidate.getStatus());
 
         m_collection.insert_one(builder << finalize);
         return true;
@@ -58,7 +58,7 @@ Candidate *candidaterepository::getCandidates(int &candidatesSize, const QString
     int i = 0;
     for (auto &&doc : cursor)
     {
-        candidates[i].setId(QString::fromUtf8(doc["id"].get_string().value.data()));
+        candidates[i].setId(QString::fromUtf8(doc["candidate_id"].get_string().value.data()));
         candidates[i].setUserCnic(QString::fromUtf8(doc["userCnic"].get_string().value.data()));
         candidates[i].setElectionId(QString::fromUtf8(doc["electionId"].get_string().value.data()));
         candidates[i].setPartyName(QString::fromUtf8(doc["partyName"].get_string().value.data()));

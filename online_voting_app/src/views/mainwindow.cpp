@@ -23,6 +23,8 @@
 #include "votertokenmess.h"
 #include <optional>
 
+#define deve
+
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
 {
@@ -64,7 +66,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(3);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
@@ -106,6 +108,11 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleUserBackToActiveElections);
     connect(userInnerPage_Candidacy, &UserCandidacyPage::submitApplicationRequested,
             this, &MainWindow::handleCandidacyApplicationSubmit);
+    // ADD THIS CONNECTION:
+    connect(m_adminInnerPage_Admins,
+            &AdminManagementPage::adminStatusChangeRequested,
+            this,
+            &MainWindow::handleAdminStatusChangeRequested);
 }
 
 MainWindow::~MainWindow()
@@ -352,17 +359,49 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
 
 void MainWindow::handleElectionStatusChangeRequested(QString electionId, ApprovalStatus newStatus)
 {
-    QString statusText = (newStatus == ApprovalStatus::Approved) ? "APPROVE" : "REJECT";
+    // 1. Get the current logged-in Admin's CNIC
+    QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
 
-    QMessageBox::information(this, "Controller Simulation",
-                             QString("Ready to send to ElectionController:\n\n"
-                                     "Target Election ID: %1\n"
-                                     "Requested Action: %2")
-                                 .arg(electionId, statusText)
-                             );
+    // 2. Send it to the backend ElectionController
+    bool success = ElectionController::getInstance().requestElectionStatusChange(electionId,
+                                                                                 currentAdminCnic,
+                                                                                 newStatus);
 
-    // WHEN BACKEND IS READY, YOU WILL UNCOMMENT THIS:
-    // bool success = ElectionController::getInstance().requestElectionStatusChange(electionId, AuthManager::getInstance().getCurrentUser()->getId(), newStatus);
+    if (success) {
+        QMessageBox::information(this,
+                                 "Success",
+                                 "Election status change request logged successfully.\n\nIt will "
+                                 "change state once the required threshold of Admins approve it.");
+    } else {
+        QMessageBox::critical(this,
+                              "Error",
+                              "Failed to log election status change. Ensure you are an approved "
+                              "Admin and haven't already voted on this election.");
+    }
+}
+
+void MainWindow::handleAdminStatusChangeRequested(QString currentUserId,
+                                                  QString targetCnic,
+                                                  ApprovalStatus newStatus)
+{
+    // 1. Get the current logged-in Admin's CNIC
+    QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+
+    // 2. Send it to the backend AdminController
+    bool success = AdminController::getInstance().addStatusChangeRequest(targetCnic,
+                                                                         currentAdminCnic,
+                                                                         newStatus);
+
+    if (success) {
+        QMessageBox::information(this,
+                                 "Success",
+                                 "Administrator status change request logged successfully.");
+    } else {
+        QMessageBox::critical(this,
+                              "Error",
+                              "Failed to log Admin status change. Ensure you are an approved Admin "
+                              "and haven't already voted on this user.");
+    }
 }
 
 void MainWindow::handleNavigateToCreateElection()
@@ -576,7 +615,12 @@ void MainWindow::on_userSidebarCandidacyBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 {
+#ifdef deve
+    QString currentUserCnic = "1234567891011";
+#endif
+#ifdef prod
     QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+#endif
     newCandidate.setUserCnic(currentUserCnic);
 
     newCandidate.setStatus(ApprovalStatus::Pending);

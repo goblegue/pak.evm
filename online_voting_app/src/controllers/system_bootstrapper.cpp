@@ -147,7 +147,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
     QString names[2] = {"Root Admin One", "Root Admin Two"};
     QString cnics[2] = {"00000-0000000-1", "00000-0000000-2"};
-    QString emails[2] = {"pak.evm.project@gmail.com", "admin2@evm.pk"};
+    QString emails[2] = {"pak.evm.project@gmail.com", "loco.am.dev@gmail.com"};
     QString rawPass = "1234";
 
     for (int i = 0; i < 2; ++i)

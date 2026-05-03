@@ -57,6 +57,10 @@ private slots:
     void on_adminSidebarCandidatesBtn_clicked();
     void on_adminSidebarAdminsBtn_clicked();
     void on_adminSidebarElectionsBtn_clicked();
+
+    void handleAdminStatusChangeRequested(QString currentUserId,
+                                          QString targetCnic,
+                                          ApprovalStatus newStatus);
     void handleElectionStatusChangeRequested(QString electionId, ApprovalStatus newStatus);
     void handleElectionSelectedForCandidates(QString);
     void handleNavigateToCandidateDetails(Candidate selectedCandidate);
