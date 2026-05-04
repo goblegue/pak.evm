@@ -3,11 +3,10 @@
 
 #include <QString>
 
-enum class ElectionState
-{
+enum class ElectionState {
     Pending,
-    Drafted,
     Rejected,
+    Drafted,
     Published,
     VotingOpen,
     VotingClosed,

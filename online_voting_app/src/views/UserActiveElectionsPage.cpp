@@ -89,7 +89,7 @@ void UserActiveElectionsPage::setupUi() {
         );
 
     // Candidates List
-    QLabel *candidateLabel = new QLabel("<b>Registered Candidates</b>", this);
+    QLabel *candidateLabel = new QLabel("<b>Approved Candidates</b>", this);
     candidateLabel->setStyleSheet("font-size: 18px; color: #2C3E50; margin-top: 10px;");
 
     candidateListView = new QListView(this);

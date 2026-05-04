@@ -254,6 +254,7 @@ void MainWindow::on_adminSidebarCandidatesBtn_clicked()
     delete[] electionList;
     delete[] approvedElections;
 }
+
 void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 {
     int candidateCount = 0;
