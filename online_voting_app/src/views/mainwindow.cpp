@@ -502,11 +502,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
         return;
     }
 
-    Token newToken;
-    newToken.setId("TKN-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());
-    newToken.setUserCnic(currentUserCnic);
-    newToken.setElectionId(electionId);
-    newToken.setIssuedAt(QDateTime::currentDateTime());
+    
 
     //converting image to base64 string
     QByteArray byteArray;
@@ -522,9 +518,6 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     // 5. Convert the raw bytes into a safe Base64 string
     QByteArray base64Bytes = byteArray.toBase64();
 
-    QString tokenSignatureString = QString::fromUtf8(base64Bytes);
-
-    newToken.setTokenSignature(tokenSignatureString);
 
     bool saveSuccess = TokenController::getInstance().saveToken(newToken);
     if (!saveSuccess)
@@ -534,7 +527,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     }
 
     // 2. Create the Dialog using the Designer class
-    VoterTokenMess tokenPopup(newToken.getTokenSignature(), electionId, this);
+    VoterTokenMess tokenPopup(base64Bytes, electionId, this);
 
     // 3. Show it modally (blocks the rest of the app until they click OK)
     tokenPopup.exec();

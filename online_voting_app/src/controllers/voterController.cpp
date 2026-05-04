@@ -3,6 +3,7 @@
 #include "services/email/emailservice.h"
 #include <QFile>
 #include <QDir>
+#include <QUuid>
 
 TokenController::TokenController() : m_tokenRepo(nullptr), m_electionRepo(nullptr) {}
 
@@ -53,6 +54,7 @@ optional<QImage> TokenController::requestVotingToken(const QString &userCnic, co
     }
 
     Token newToken;
+    newToken.setId("TKN-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());
     newToken.setUserCnic(userCnic);
     newToken.setElectionId(electionId);
     newToken.setIssuedAt(QDateTime::currentDateTime());
