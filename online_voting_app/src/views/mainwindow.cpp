@@ -491,19 +491,31 @@ void MainWindow::handleUserElectionSelected(QString electionId)
 // ---------------------------------------------------------
 void MainWindow::handleGenerateTokenRequested(QString electionId)
 {
-
+#ifdef prod
+    QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
     QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
-    auto requestOpt = TokenController::getInstance().requestVotingToken(currentUserCnic,
-                                                                        electionId,
-                                                                        m_config.privateKey);
-    if (!requestOpt.has_value())
-    {
+#endif
+#ifdef deve
+    QString userEmail = "pak.evm.project@gmail.com";
+    QString currentUserCnic = "00000-0000000-1";
+#endif
+    auto tokenOpt = TokenController::getInstance().createAndSaveToken(currentUserCnic,
+                                                                      electionId,
+                                                                      m_config.privateKey);
+    if (!tokenOpt.has_value()) {
         QMessageBox::critical(this, "Error", "Failed to generate token. Please try again.");
         return;
     }
+    Token newToken = tokenOpt.value();
 
-    
+    auto tokenQrCodeOpt = TokenController::getInstance().getQrCodeForToken(newToken);
 
+    if (!tokenQrCodeOpt.has_value()) {
+        QMessageBox::critical(this, "Error", "Token created but Failed to generate QR code.");
+        return;
+    }
+
+    QImage tokenQrCode = tokenQrCodeOpt.value();
     //converting image to base64 string
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
@@ -513,16 +525,16 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
 
     // 4. "Save" the image into the buffer in PNG format
     // (PNG is best because it preserves transparency/backgrounds)
-    requestOpt.value().save(&buffer, "PNG");
+    tokenQrCode.save(&buffer, "PNG");
 
     // 5. Convert the raw bytes into a safe Base64 string
     QByteArray base64Bytes = byteArray.toBase64();
 
+    bool sendTokenToEmailSuccess = TokenController::getInstance().sendTokenToEmail(newToken,
+                                                                                   userEmail);
 
-    bool saveSuccess = TokenController::getInstance().saveToken(newToken);
-    if (!saveSuccess)
-    {
-        QMessageBox::critical(this, "Error", "Failed to save token. Please try again.");
+    if (!sendTokenToEmailSuccess) {
+        QMessageBox::critical(this, "Error", "Token created by failed to be send to mail");
         return;
     }
 

@@ -28,7 +28,9 @@ public:
 
     bool canRequestToken(const QString &userCnic, const QString &electionId);
 
-    optional<QImage> requestVotingToken(const QString &userCnic, const QString &electionId, const QByteArray &privateKey);
+    optional<Token> createAndSaveToken(const QString &userCnic,
+                                       const QString &electionId,
+                                       const QByteArray &privateKey);
 
     bool saveToken(const Token &token);
 

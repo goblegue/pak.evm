@@ -41,7 +41,7 @@ public:
         auto signatureOpt = CryptoEngine::getInstance().signMessage(data.toUtf8(), privateKey);
         if (signatureOpt.has_value())
         {
-            return QString::fromUtf8(signatureOpt.value());
+            return QString::fromUtf8(signatureOpt.value().toBase64());
         }
         return std::nullopt;
     }

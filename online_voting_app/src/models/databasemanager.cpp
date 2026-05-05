@@ -54,7 +54,4 @@ void DatabaseManager::setupSchema()
     db["Candidates"].create_index(
         document{} << "candidate_id" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
-
-    db["Candidates"].create_index(
-        document{} << "party_name" << "text" << "manifesto" << "text" << finalize);
 }

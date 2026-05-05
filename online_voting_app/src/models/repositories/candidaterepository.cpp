@@ -46,7 +46,7 @@ bool candidaterepository::insertCandidate(const Candidate &candidate)
 
 Candidate *candidaterepository::getCandidates(int &candidatesSize, const QString &electionId)
 {
-    auto filter = document{} << "electionId" << electionId.toStdString() << finalize;
+    auto filter = document{} << "election_id" << electionId.toStdString() << finalize;
 
     candidatesSize = static_cast<int>(m_collection.count_documents(filter.view()));
     if (candidatesSize == 0)
@@ -60,7 +60,7 @@ Candidate *candidaterepository::getCandidates(int &candidatesSize, const QString
     {
         candidates[i].setId(QString::fromUtf8(doc["candidate_id"].get_string().value.data()));
         candidates[i].setUserCnic(QString::fromUtf8(doc["userCnic"].get_string().value.data()));
-        candidates[i].setElectionId(QString::fromUtf8(doc["electionId"].get_string().value.data()));
+        candidates[i].setElectionId(QString::fromUtf8(doc["election_id"].get_string().value.data()));
         candidates[i].setPartyName(QString::fromUtf8(doc["partyName"].get_string().value.data()));
         candidates[i].setSymbolName(QString::fromUtf8(doc["symbolName"].get_string().value.data()));
 
