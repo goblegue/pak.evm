@@ -100,9 +100,12 @@ void AdminElectionsPage::setupUi() {
     mainLayout->addLayout(bottomLayout);
 
     // Connections
-    connect(filterBtn, &QPushButton::clicked, this, &AdminElectionsPage::showFilterMenu);
-    connect(createElectionBtn, &QPushButton::clicked, this, &AdminElectionsPage::navigateToCreateElection);
-
+    connect(filterBtn, &QPushButton::clicked,
+            this, &AdminElectionsPage::showFilterMenu);
+    connect(createElectionBtn, &QPushButton::clicked,
+            this, &AdminElectionsPage::navigateToCreateElection);
+    connect(accordionDelegate, &ElectionAccordionDelegate::getConfigButtonClicked,
+            this, &AdminElectionsPage::onGetConfigButtonClicked);
 }
 
 void AdminElectionsPage::loadElections(Election* elections, int size, const QString &currentAdminId) {
@@ -156,4 +159,12 @@ void AdminElectionsPage::showElectionActionMenu(const QModelIndex &proxyIndex, Q
         // Send message to controller
         emit electionStatusChangeRequested(electionId, newStatus);
     }
+}
+
+void AdminElectionsPage::onGetConfigButtonClicked(const QModelIndex &proxyIndex) {
+    QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
+    QString electionId = electionModel->getElectionAt(realIndex.row()).getId();
+
+    // Pass it up to MainWindow!
+    emit getConfigRequested(electionId);
 }

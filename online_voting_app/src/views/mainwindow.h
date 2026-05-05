@@ -70,6 +70,8 @@ private slots:
     void handleCreateElectionSubmit(QString title, QDateTime publishTime, QDateTime startTime, QDateTime endTime);
     void handleBackToElectionList();
     void on_btnAdminLogout_clicked();
+    void handleGetConfigurationRequested(QString electionId);
+
     // user
     void on_userSidebarActiveElectionsBtn_clicked();
     void on_userSidebarMyTokensBtn_clicked();

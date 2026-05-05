@@ -95,6 +95,8 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleCreateElectionSubmit);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::electionStatusChangeRequested,
             this, &MainWindow::handleElectionStatusChangeRequested);
+    connect(m_adminInnerPage_Elections, &AdminElectionsPage::getConfigRequested,
+            this, &MainWindow::handleGetConfigurationRequested);
     // user
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
             this, &MainWindow::handleUserElectionSelected);
@@ -631,6 +633,22 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
                              "Your candidacy application for '" + newCandidate.getPartyName() + "' has been successfully submitted!\n\n"
                                                                                                 "Please wait for admin approval. You will see your status update in the Active Elections tab once approved.");
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
+}
+
+// ---------------------------------------------------------
+// Triggered when Admin clicks "Get Configuration" on Election
+// ---------------------------------------------------------
+void MainWindow::handleGetConfigurationRequested(QString electionId) {
+
+    QMessageBox::information(this, "Get Configuration",
+                             "Ready to fetch configuration for Election ID:\n" + electionId +
+                                 "\n\n(Backend logic to generate/download the JSON file will go here!)");
+
+    /*
+     * WHEN READY, YOU CAN CALL YOUR BACKEND:
+     * QString jsonConfig = ElectionController::getInstance().getElectionConfigJson(electionId);
+     * // Save to file, show in dialog, etc.
+     */
 }
 
 // Helping Functions
