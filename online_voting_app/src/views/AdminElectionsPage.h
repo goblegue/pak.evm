@@ -23,12 +23,15 @@ signals:
     // Tells the MainWindow to swap to the "Create Election" page!
     void navigateToCreateElection();
     void electionStatusChangeRequested(QString electionId, ApprovalStatus newStatus);
+    void getConfigRequested(QString electionId);
 
 private slots:
     void showFilterMenu();
     void applyFilter(int status, QString filterName);
     void onElectionBoxClicked(const QModelIndex &proxyIndex);
     void showElectionActionMenu(const QModelIndex &proxyIndex, QPoint globalPos);
+    void onGetConfigButtonClicked(const QModelIndex &proxyIndex);
+
 
 private:
     QListView *electionListView;

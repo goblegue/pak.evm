@@ -256,6 +256,7 @@ class ElectionAccordionDelegate : public QStyledItemDelegate {
 signals:
     void electionClicked(const QModelIndex &index) const;
     void actionButtonClicked(const QModelIndex &index, QPoint globalPos) const;
+    void getConfigButtonClicked(const QModelIndex &index) const; // NEW SIGNAL
 
 public:
     explicit ElectionAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
@@ -270,17 +271,31 @@ public:
             QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
             bool isExpanded = index.data(ElectionExpandedRole).toBool();
             int statusInt = index.data(ElectionStatusRole).toInt();
+            ElectionState status = static_cast<ElectionState>(statusInt);
 
-            if (isExpanded && static_cast<ElectionState>(statusInt) == ElectionState::Pending) {
-                bool alreadyVoted = index.data(ElectionVotedRole).toBool();
-                int localVote = index.data(LocalVoteRole).toInt();
+            if (isExpanded) {
+                // UI CALCULATION: Shift button if Status Button is present
+                bool hasStatusBtn = (status == ElectionState::Pending);
+                int configBtnOffset = hasStatusBtn ? 290 : 145;
 
-                // LOGIC FIX: Block click if voted!
-                if(!alreadyVoted && localVote == 0) {
-                    QRect btnRect(option.rect.right() - 145, option.rect.bottom() - 40, 130, 28);
-                    if (btnRect.contains(mouseEvent->pos())) {
-                        emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
-                        return true;
+                // 1. Check "Get Configuration" Button Click
+                QRect configBtnRect(option.rect.right() - configBtnOffset, option.rect.bottom() - 40, 140, 28);
+                if (configBtnRect.contains(mouseEvent->pos())) {
+                    emit getConfigButtonClicked(index);
+                    return true;
+                }
+
+                // 2. Check "Change Status" Button Click (Only if Pending)
+                if (hasStatusBtn) {
+                    bool alreadyVoted = index.data(ElectionVotedRole).toBool();
+                    int localVote = index.data(LocalVoteRole).toInt();
+
+                    if(!alreadyVoted && localVote == 0) {
+                        QRect btnRect(option.rect.right() - 145, option.rect.bottom() - 40, 130, 28);
+                        if (btnRect.contains(mouseEvent->pos())) {
+                            emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
+                            return true;
+                        }
                     }
                 }
             }
@@ -339,34 +354,50 @@ public:
             painter->drawText(rect.adjusted(15, 45, -15, 0), Qt::AlignLeft | Qt::AlignTop, startTime);
             painter->drawText(rect.adjusted(15, 70, -15, 0), Qt::AlignLeft | Qt::AlignTop, endTime);
 
-            if (status == ElectionState::Pending) {
+            bool hasStatusBtn = (status == ElectionState::Pending);
+            int configBtnOffset = hasStatusBtn ? 290 : 145;
+
+            // ==========================================
+            // NEW: "GET CONFIGURATION" BUTTON (Always Visible)
+            // ==========================================
+            QRect configBtnRect(rect.right() - configBtnOffset, rect.bottom() - 40, 140, 28);
+            QColor configBgColor = Qt::white;
+            if (option.state & QStyle::State_MouseOver && configBtnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
+                configBgColor = QColor("#ECF0F1");
+            }
+            painter->setBrush(configBgColor);
+            painter->setPen(QPen(QColor("#2C3E50"), 2)); // Dark Slate Border
+            painter->drawRoundedRect(configBtnRect, 4, 4);
+
+            painter->setPen(QColor("#2C3E50"));
+            QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
+            painter->setFont(btnFont);
+            painter->drawText(configBtnRect, Qt::AlignCenter, "Get Configuration");
+
+            // ==========================================
+            // "CHANGE STATUS" BUTTON (Only Visible if Pending)
+            // ==========================================
+            if (hasStatusBtn) {
                 bool alreadyVoted = index.data(ElectionVotedRole).toBool();
                 int localVoteInt = index.data(LocalVoteRole).toInt();
                 QRect btnRect(rect.right() - 145, rect.bottom() - 40, 130, 28);
 
-                // If voted in DB OR voted locally just now -> Lock it!
                 if (alreadyVoted || localVoteInt != 0) {
                     painter->setBrush(QColor("#ECF0F1"));
                     painter->setPen(QPen(QColor("#BDC3C7"), 1));
                     painter->drawRoundedRect(btnRect, 4, 4);
-
                     painter->setPen(QColor("#7F8C8D"));
-                    QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
                     painter->setFont(btnFont);
                     painter->drawText(btnRect, Qt::AlignCenter, "✔ Voted");
-
                 } else {
-                    QColor btnBgColor = Qt::white;
+                    QColor btnBgColorStatus = Qt::white;
                     if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
-                        btnBgColor = QColor("#ECF0F1");
+                        btnBgColorStatus = QColor("#ECF0F1");
                     }
-
-                    painter->setBrush(btnBgColor);
+                    painter->setBrush(btnBgColorStatus);
                     painter->setPen(QPen(QColor("#3498DB"), 2));
                     painter->drawRoundedRect(btnRect, 4, 4);
-
                     painter->setPen(QColor("#3498DB"));
-                    QFont btnFont = option.font; btnFont.setBold(true); btnFont.setPointSize(9);
                     painter->setFont(btnFont);
                     painter->drawText(btnRect, Qt::AlignCenter, "Change Status ▾");
                 }
