@@ -2,17 +2,17 @@
 #define ADMIN_MODELS_H
 
 #include <QAbstractListModel>
-#include <QList>
-#include <QSortFilterProxyModel>
-#include "models/entities/election.h"
-#include "models/entities/candidate.h"
-#include <QSet>
 #include <QDateTime>
 #include <QImage>
-#include "models/states.h"
+#include <QList>
+#include <QSet>
+#include <QSortFilterProxyModel>
+#include "controllers/voterController.h"
 #include "models/entities/admin.h"
+#include "models/entities/candidate.h"
 #include "models/entities/election.h"
 #include "models/entities/voters.h"
+#include "models/states.h"
 
 // Define custom roles so the Delegate can fetch specific data
 enum CustomRoles {
@@ -496,16 +496,12 @@ public:
         if (role == TokenIssueDateRole) return token.getIssuedAt().toString("MMM dd, yyyy - hh:mm AP");
         if (role == TokenStationRole) return token.getAssignedStationId();
 
-        // ==========================================
-        // CALL YOUR BACKEND DEVELOPER's FUNCTION HERE
-        // ==========================================
         if (role == TokenQRCodeRole) {
-            // Example: Ask the backend to generate the QR code using the Token's Signature
-            // QImage generatedQr = BackendDeveloperClass::generateQRCode(token.getTokenSignature());
-            // return generatedQr;
-
-            // (Replace the lines above with the actual function call your backend dev gave you)
-            return QImage(); // Temporary fallback until you plug their function in
+            auto qrImageOpt = TokenController::getInstance().getQrCodeForToken(token);
+            if (qrImageOpt.has_value()) {
+                return qrImageOpt.value();
+            }
+            return QImage();
         }
 
         return QVariant();

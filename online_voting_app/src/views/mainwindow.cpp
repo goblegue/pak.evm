@@ -32,11 +32,6 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 
     this->setFocus();
 
-    // EmailService::getInstance().configure("smtp.gmail.com",
-    //                                       465,
-    //                                       "pak.evm.project@gmail.com",
-    //                                       "dtgn pptc jspd vjnk");
-
     // 1. Create the custom page purely in C++
     m_loginPage = new LoginPage(this);
     m_signupPage = new SignupPage(this); // admin
@@ -66,7 +61,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(3);
+    ui->MainStack->setCurrentIndex(4);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
@@ -298,11 +293,19 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
 void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
+#ifdef prod
     if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser()) {
-        QMessageBox::critical(this, "Authentication Error", "No authenticated admin found. Please log in again.");
+        QMessageBox::critical(this,
+                              "Authentication Error",
+                              "No authenticated admin found. Please log in again.");
         return;
     }
     QString currentAdminId = AuthManager::getInstance().getCurrentUser()->getId();
+#endif
+
+#ifdef deve
+    QString currentAdminId = "ROOT_001";
+#endif
 
     int electionCount = 0;
     Election *electionList = ElectionController::getInstance().getAllElections(electionCount);
@@ -552,7 +555,12 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
     ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
 
     int tokenCount = 0;
+#ifdef prod
     QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+#endif
+#ifdef deve
+    QString currentUserCnic = "00000-0000000-1";
+#endif
     Token *issuedTokens = TokenController::getInstance().getVoterTokens(currentUserCnic, tokenCount);
 
     userInnerPage_MyTokens->loadTokens(issuedTokens, tokenCount);
@@ -564,8 +572,12 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::handleEmailTokenRequested(Token selectedToken)
 {
-
+#ifdef deve
+    QString userEmail = "pak.evm.project@gmail.com";
+#endif
+#ifdef prod
     QString userEmail = AuthManager::getInstance().getCurrentUser()->getEmail();
+#endif
     bool emailSuccess = TokenController::getInstance().sendTokenToEmail(selectedToken, userEmail);
 
     if (emailSuccess)
