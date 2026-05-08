@@ -70,10 +70,10 @@ public:
         {
             if (m_statusChangeRequests[i].requestById == adminId)
             {
-                return; // Already request by this admin
+                return; 
             }
         }
-        // Add new approver
+        
         StatusChangeRequest newRequest{status, adminId};
         StatusChangeRequest *newStatusChangeRequests = new StatusChangeRequest[m_statusChangeCount + 1];
         for (int i = 0; i < m_statusChangeCount; ++i)
@@ -96,7 +96,7 @@ public:
     Election &operator=(const Election &other)
     {
         if (this != &other)
-        { // Prevent self-assignment crash
+        { 
             m_id = other.m_id;
             m_title = other.m_title;
             m_startTime = other.m_startTime;
@@ -104,7 +104,7 @@ public:
             m_publishTime = other.m_publishTime;
             m_status = other.m_status;
 
-            // Delete old memory before making new memory!
+            
             delete[] m_statusChangeRequests;
 
             m_statusChangeCount = other.m_statusChangeCount;
@@ -147,4 +147,4 @@ public:
     virtual std::optional<Election> getElectionById(const QString &id) = 0;
 };
 
-#endif // ELECTION_H
+#endif 

@@ -20,7 +20,7 @@ public:
     }
 
     Admin(const Admin &other)
-        : User(other), // Copy the base class data
+        : User(other), 
           m_status(other.m_status),
           m_statusChangeCount(other.m_statusChangeCount)
     {
@@ -41,11 +41,11 @@ public:
     Admin &operator=(const Admin &other)
     {
         if (this != &other)
-        {                           // Prevent self-assignment crash
-            User::operator=(other); // Copy base class
+        {                           
+            User::operator=(other); 
             m_status = other.m_status;
 
-            // Delete old memory before making new memory!
+            
             delete[] m_statusChangeRequests;
 
             m_statusChangeCount = other.m_statusChangeCount;
@@ -87,10 +87,10 @@ public:
         {
             if (m_statusChangeRequests[i].requestById == adminId)
             {
-                return; // Already request by this admin
+                return; 
             }
         }
-        // Add new approver
+        
         StatusChangeRequest newRequest{status, adminId};
         StatusChangeRequest *newStatusChangeRequests = new StatusChangeRequest[m_statusChangeCount + 1];
         for (int i = 0; i < m_statusChangeCount; ++i)
@@ -107,10 +107,10 @@ public:
     bool hasAdminVoted(const QString &requestingAdminId) const {
         for (int i = 0; i < m_statusChangeCount; ++i) {
             if (m_statusChangeRequests[i].requestById == requestingAdminId) {
-                return true; // Found them!
+                return true; 
             }
         }
-        return false; // They haven't voted yet
+        return false; 
     }
 
     ~Admin() { delete[] m_statusChangeRequests; }
@@ -132,4 +132,4 @@ public:
     virtual int getAdminCount() = 0;
 };
 
-#endif // ADMIN_H
+#endif 
