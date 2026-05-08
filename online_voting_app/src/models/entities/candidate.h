@@ -58,7 +58,7 @@ public:
         }
     }
 
-    // Getters
+
     QString getId() const { return m_id; }
     QString getUserCnic() const { return m_userCnic; }
     QString getElectionId() const { return m_electionId; }
@@ -83,7 +83,7 @@ public:
     }
     ApprovalStatus getStatus() const { return m_status; }
 
-    // Setters
+
     void setId(const QString &id) { m_id = id; }
     void setUserCnic(const QString &cnic) { m_userCnic = cnic; }
     void setElectionId(const QString &electionId) { m_electionId = electionId; }
@@ -102,10 +102,10 @@ public:
         {
             if (m_statusChangeRequests[i].requestById == adminId)
             {
-                return; // Already request by this admin
+                return;
             }
         }
-        // Add new approver
+
         StatusChangeRequest newRequest{status, adminId};
         StatusChangeRequest *newStatusChangeRequests = new StatusChangeRequest[m_statusChangeCount + 1];
         for (int i = 0; i < m_statusChangeCount; ++i)
@@ -120,7 +120,7 @@ public:
     }
     Candidate &operator=(const Candidate &other)
     {
-        if (this != &other) // Prevent self-assignment crash
+        if (this != &other)
         {
             m_id = other.m_id;
             m_userCnic = other.m_userCnic;
@@ -135,7 +135,7 @@ public:
             m_profileImageBase64 = other.m_profileImageBase64;
             m_status = other.m_status;
 
-            // Delete old memory before making new memory!
+
             delete[] m_statusChangeRequests;
 
             m_statusChangeCount = other.m_statusChangeCount;
@@ -158,10 +158,10 @@ public:
     bool hasAdminVoted(const QString &requestingAdminId) const {
         for (int i = 0; i < m_statusChangeCount; ++i) {
             if (m_statusChangeRequests[i].requestById == requestingAdminId) {
-                return true; // Found them!
+                return true;
             }
         }
-        return false; // They haven't voted yet
+        return false;
     }
     ~Candidate() { delete[] m_statusChangeRequests; }
 };
@@ -179,4 +179,4 @@ public:
     virtual bool updateCandidateStatus(const QString &candidateCnic, ApprovalStatus newStatus) = 0;
 };
 
-#endif // CANDIDATE_H
+#endif
