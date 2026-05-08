@@ -14,14 +14,7 @@
 #include "views/UserMyTokensPage.h"
 #include "views/UserCandidacyPage.h"
 
-enum StackedPages
-{
-    Login_Page,
-    SignupPageEnum,
-    AdminWaitingPage,
-    UserDashPage,
-    AdminDashPage
-};
+enum StackedPages { Login_Page, SignupPageEnum, dminWaitingPage, UserDashPage, AdminDashPage };
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -51,7 +44,7 @@ private slots:
     void on_adminWaitBackBtn_clicked();
 
     void on_btnUserHome_clicked();
-    void on_btnUserResults_clicked();
+    // void on_btnUserResults_clicked();
     void on_btnUserLogout_clicked();
     // admin
     void on_adminSidebarCandidatesBtn_clicked();

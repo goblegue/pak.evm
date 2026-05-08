@@ -7,6 +7,7 @@
 #include <QList>
 #include <QSet>
 #include <QSortFilterProxyModel>
+#include "controllers/auth_manager.h"
 #include "controllers/voterController.h"
 #include "models/entities/admin.h"
 #include "models/entities/candidate.h"
@@ -217,7 +218,10 @@ private:
     }
 
 public:
-    explicit AdminListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+    explicit AdminListModel(QObject *parent = nullptr)
+        : QAbstractListModel(parent)
+    {
+    }
 
     void setAdmins(Admin *adminsArray, int size)
     {

@@ -78,7 +78,7 @@
          <item row="3" column="0">
           <widget class="QLineEdit" name="newPasswordInput">
            <property name="echoMode">
-            <enum>QLineEdit::EchoMode::Normal</enum>
+            <enum>QLineEdit::EchoMode::Password</enum>
            </property>
            <property name="placeholderText">
             <string>Password</string>
@@ -95,7 +95,7 @@
          <item row="4" column="0">
           <widget class="QLineEdit" name="confirmPasswordInput">
            <property name="echoMode">
-            <enum>QLineEdit::EchoMode::Normal</enum>
+            <enum>QLineEdit::EchoMode::PasswordEchoOnEdit</enum>
            </property>
            <property name="placeholderText">
             <string>Confirm Password</string>

@@ -146,7 +146,7 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     return filteredElections;
 }
 
- bool ElectionController::sendElectionDataToAdmin(const QString &electionId, const QString &adminId, const QByteArray &privateKey)
+ bool ElectionController::sendElectionConfigToAdmin(const QString &electionId, const QString &adminCnic, const QByteArray &privateKey)
  {
     if (!m_electionRepo || !m_adminRepo)
     {
@@ -158,12 +158,12 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
         return false; // Election not found
     }
     Election election = electionOpt.value();
-    if(/*!(election.getStatus() == ElectionState::Published)||*/
+    if(!(election.getStatus() == ElectionState::Published)&&
        !(election.getStatus() == ElectionState::VotingOpen))
     {
         return false; // Election not active
     }
-    auto adminOpt = m_adminRepo->getAdminByCnic(adminId);
+    auto adminOpt = m_adminRepo->getAdminByCnic(adminCnic);
     if (!adminOpt.has_value())
     {
         return false; // Admin not found
@@ -177,10 +177,9 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     QJsonObject electionJson;
     electionJson["id"] = election.getId();
     electionJson["title"] = election.getTitle();
+    electionJson["publishTime"] = election.getPublishTime().toString(Qt::ISODate);
     electionJson["startTime"] = election.getStartTime().toString(Qt::ISODate);
     electionJson["endTime"] = election.getEndTime().toString(Qt::ISODate);
-
-    
 
     QString candidatesJsonString = CandidateController::getInstance().getCandidatesJsonByElection(electionId);
 

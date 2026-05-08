@@ -8,6 +8,8 @@ SignupPage::SignupPage(QWidget *parent)
     : QWidget(parent), ui(new Ui::SignupPage)
 {
     ui->setupUi(this);
+    ui->newPasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    ui->confirmPasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 }
 
 SignupPage::~SignupPage()
@@ -17,6 +19,11 @@ SignupPage::~SignupPage()
 
 void SignupPage::on_goToLoginBtn_clicked()
 {
+    ui->newUsernameInput->clear();
+    ui->emailInput->clear();
+    ui->cnicInput->clear();
+    ui->newPasswordInput->clear();
+    ui->confirmPasswordInput->clear();
     emit goToLoginRequested();
 }
 

@@ -17,12 +17,12 @@ adminrepository::adminrepository()
 
 bool adminrepository::insertAdmin(const Admin &admin)
 {
-    try {
+    try
+    {
         auto builder = document{};
         builder << "cnic" << admin.getCnic().toStdString() << "name"
                 << admin.getName().toStdString() << "email" << admin.getEmail().toStdString()
-                << "id" << admin.getId().toStdString() << "isEmailVerified"
-                << admin.isEmailVerified() << "status"
+                << "id" << admin.getId().toStdString() << "status"
                 << static_cast<int>(admin.getStatus()) // Store Enum as Int
                 << "salt" << bsoncxx::types::b_int64{static_cast<int64_t>(admin.getSalt())};
 
@@ -37,7 +37,9 @@ bool adminrepository::insertAdmin(const Admin &admin)
         auto final_doc = builder << finalize;
         m_collection.insert_one(final_doc.view());
         return true;
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
         return false;
     }
 }
@@ -47,7 +49,8 @@ std::optional<Admin> adminrepository::getAdminByEmail(const QString &email)
     auto filter = document{} << "email" << email.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
         Admin admin;
 
@@ -55,10 +58,11 @@ std::optional<Admin> adminrepository::getAdminByEmail(const QString &email)
         admin.setName(QString::fromUtf8(view["name"].get_string().value.data()));
         admin.setEmail(QString::fromUtf8(view["email"].get_string().value.data()));
         admin.setStatus(static_cast<ApprovalStatus>(view["status"].get_int32().value));
-        if (view["statusChangeRequests"]
-            && view["statusChangeRequests"].type() == bsoncxx::type::k_array) {
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
-            for (auto &&doc : requestsArray) {
+            for (auto &&doc : requestsArray)
+            {
                 auto reqView = doc.get_document().view();
                 QString requesterId = QString::fromUtf8(
                     reqView["requestById"].get_string().value.data());
@@ -96,7 +100,8 @@ std::optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
         Admin admin;
 
@@ -104,14 +109,14 @@ std::optional<Admin> adminrepository::getAdminByCnic(const QString &cnic)
         admin.setName(QString::fromUtf8(view["name"].get_string().value.data()));
         admin.setEmail(QString::fromUtf8(view["email"].get_string().value.data()));
         admin.setId(QString::fromUtf8(view["id"].get_string().value.data()));
-        admin.setEmailVerified(view["isEmailVerified"].get_bool().value);
 
         admin.setStatus(static_cast<ApprovalStatus>(view["status"].get_int32().value));
-        if (view["statusChangeRequests"]
-            && view["statusChangeRequests"].type() == bsoncxx::type::k_array) {
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
 
-            for (auto &&doc : requestsArray) {
+            for (auto &&doc : requestsArray)
+            {
                 auto reqView = doc.get_document().view();
                 QString requesterId = QString::fromUtf8(
                     reqView["requestById"].get_string().value.data());
@@ -151,15 +156,17 @@ optional<StatusChangeRequest *> adminrepository::getStatusChangeRequests(const Q
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;
     auto result = m_collection.find_one(filter.view());
 
-    if (result) {
+    if (result)
+    {
         auto view = result->view();
-        if (view["statusChangeRequests"]
-            && view["statusChangeRequests"].type() == bsoncxx::type::k_array) {
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
             count = static_cast<int>(distance(requestsArray.begin(), requestsArray.end()));
             StatusChangeRequest *requests = new StatusChangeRequest[count];
             int index = 0;
-            for (auto &&doc : requestsArray) {
+            for (auto &&doc : requestsArray)
+            {
                 auto reqView = doc.get_document().view();
                 QString requesterId = QString::fromUtf8(
                     reqView["requestById"].get_string().value.data());
@@ -187,19 +194,20 @@ std::optional<Admin *> adminrepository::getAllAdminsExcept(const QString &cnic, 
     count = static_cast<int>(m_collection.count_documents(filter.view()));
     Admin *admins = new Admin[count];
     int index = 0;
-    for (auto &&doc : cursor) {
+    for (auto &&doc : cursor)
+    {
         auto view = doc;
         Admin admin;
         admin.setCnic(QString::fromUtf8(view["cnic"].get_string().value.data()));
         admin.setName(QString::fromUtf8(view["name"].get_string().value.data()));
         admin.setEmail(QString::fromUtf8(view["email"].get_string().value.data()));
         admin.setId(QString::fromUtf8(view["id"].get_string().value.data()));
-        admin.setEmailVerified(view["isEmailVerified"].get_bool().value);
         admin.setStatus(static_cast<ApprovalStatus>(view["status"].get_int32().value));
-        if (view["statusChangeRequests"]
-            && view["statusChangeRequests"].type() == bsoncxx::type::k_array) {
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
-            for (auto &&doc : requestsArray) {
+            for (auto &&doc : requestsArray)
+            {
                 auto reqView = doc.get_document().view();
                 QString requesterId = QString::fromUtf8(
                     reqView["requestById"].get_string().value.data());

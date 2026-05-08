@@ -13,7 +13,7 @@ using bsoncxx::builder::stream::open_document;
 
 TokenRepository::TokenRepository()
 {
-    m_collection = DatabaseManager::getInstance().getDatabase()["Token"];
+    m_collection = DatabaseManager::getInstance().getDatabase()["Tokens"];
 }
 
 bool TokenRepository::insertToken(const Token &token)

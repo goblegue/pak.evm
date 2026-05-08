@@ -10,6 +10,7 @@ LoginPage::LoginPage(QWidget *parent)
     : QWidget(parent), ui(new Ui::LoginPage)
 {
     ui->setupUi(this);
+    ui->passwordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 }
 
 LoginPage::~LoginPage()
@@ -40,6 +41,7 @@ int LoginPage::identifyInputType(const QString &input)
 
 void LoginPage::on_goToSignupBtn_clicked()
 {
+    resetLoginButton();
     emit goToSignupRequested();
 }
 
@@ -232,7 +234,16 @@ void LoginPage::handleLoginFinished()
                     this,
                     "Verification Successful",
                     "Email verified successfully! Redirecting to dashboard...");
-                emit loginSuccessUser();
+                Admin *adminPtr = dynamic_cast<Admin *>(AuthManager::getInstance().getCurrentUser());
+                if (adminPtr) {
+                    if (adminPtr->getStatus() == ApprovalStatus::Pending) {
+                        emit loginSuccessAdminPending();
+                    } else if (adminPtr->getStatus() == ApprovalStatus::Approved) {
+                        emit loginSuccessAdmin();
+                    }
+                } else {
+                    emit loginSuccessUser();
+                }
             }
             else
             {

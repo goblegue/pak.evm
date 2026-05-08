@@ -40,8 +40,11 @@ bool AdminController::addStatusChangeRequest(const QString &targetAdminCnic, con
         return false; // Only approved admins can request a status change
     }
 
-    if (!m_adminRepo->addStatusChangeRequest(targetAdminCnic, requestingAdminId, status))
-    {
+    if (targetAdmin.hasAdminVoted(reqAdmin.getCnic())) {
+        return false;
+    }
+
+    if (!m_adminRepo->addStatusChangeRequest(targetAdminCnic, requestingAdminId, status)) {
         return false;
     }
 

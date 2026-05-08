@@ -23,7 +23,7 @@
 #include "votertokenmess.h"
 #include <optional>
 
-#define deve
+#define prod
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -44,12 +44,14 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);
     userInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
-    userInnerPage_CandidateDetails->setUserMode(true); // <--- HIDES THE ADMIN BUTTONS
+    userInnerPage_CandidateDetails->setUserMode(true);
     userInnerPage_Candidacy = new UserCandidacyPage(this);
 
     // 2. Add it to the Stacked Widget manually
     ui->MainStack->insertWidget(0, m_loginPage);
-    ui->MainStack->insertWidget(1, m_signupPage); // admin
+    ui->MainStack->insertWidget(1, m_signupPage);
+
+    // admin
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
@@ -61,7 +63,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(4);
+    ui->MainStack->setCurrentIndex(0);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
@@ -149,7 +151,7 @@ void MainWindow::handleLoginSuccessAdmin()
 
 void MainWindow::handleLoginSuccessAdminPending()
 {
-    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
+    ui->MainStack->setCurrentIndex(2);
 }
 
 void MainWindow::handleSignupSuccessUser()
@@ -159,7 +161,7 @@ void MainWindow::handleSignupSuccessUser()
 
 void MainWindow::handleSignupSuccessAdminPending()
 {
-    ui->MainStack->setCurrentIndex(StackedPages::AdminWaitingPage);
+    ui->MainStack->setCurrentIndex(2);
 }
 
 void MainWindow::on_adminWaitBackBtn_clicked()
@@ -174,11 +176,11 @@ void MainWindow::on_btnUserHome_clicked()
     this->setFocus();
 }
 
-void MainWindow::on_btnUserResults_clicked()
-{
-    ui->userContentStack->setCurrentIndex(2);
-    this->setFocus();
-}
+// void MainWindow::on_btnUserResults_clicked()
+// {
+//     ui->userContentStack->setCurrentIndex(2);
+//     this->setFocus();
+// }
 
 void MainWindow::on_btnUserLogout_clicked()
 {
@@ -267,23 +269,34 @@ void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 void MainWindow::on_adminSidebarAdminsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
-    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser()) {
+#ifdef prod
+    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser())
+    {
         QMessageBox::critical(this, "Authentication Error", "No authenticated admin found. Please log in again.");
         return;
     }
-    QString currentAdminId = AuthManager::getInstance().getCurrentUser()->getId();
     QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+
+#endif
+
+#ifdef deve
+
+    QString currentAdminId = "ROOT_001";
+    QString currentUserCnic = "00000-0000000-1";
+
+#endif
 
     int adminCount = 0;
     auto adminOpt = AdminController::getInstance().getAllAdminsExcept(currentUserCnic, adminCount);
 
-    if (!adminOpt) {
+    if (!adminOpt)
+    {
         QMessageBox::critical(this, "Error", "Failed to load admins.");
         return;
     }
 
     Admin *adminList = adminOpt.value();
-    m_adminInnerPage_Admins->loadAdmins(adminList, adminCount, currentAdminId);
+    m_adminInnerPage_Admins->loadAdmins(adminList, adminCount, currentUserCnic);
 
     delete[] adminList;
 }
@@ -294,7 +307,8 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
 #ifdef prod
-    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser()) {
+    if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser())
+    {
         QMessageBox::critical(this,
                               "Authentication Error",
                               "No authenticated admin found. Please log in again.");
@@ -310,7 +324,8 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
     int electionCount = 0;
     Election *electionList = ElectionController::getInstance().getAllElections(electionCount);
 
-    if (!electionList) {
+    if (!electionList)
+    {
         QMessageBox::critical(this, "Error", "Failed to load elections.");
         return;
     }
@@ -373,12 +388,15 @@ void MainWindow::handleElectionStatusChangeRequested(QString electionId, Approva
                                                                                  currentAdminCnic,
                                                                                  newStatus);
 
-    if (success) {
+    if (success)
+    {
         QMessageBox::information(this,
                                  "Success",
                                  "Election status change request logged successfully.\n\nIt will "
                                  "change state once the required threshold of Admins approve it.");
-    } else {
+    }
+    else
+    {
         QMessageBox::critical(this,
                               "Error",
                               "Failed to log election status change. Ensure you are an approved "
@@ -398,11 +416,14 @@ void MainWindow::handleAdminStatusChangeRequested(QString currentUserId,
                                                                          currentAdminCnic,
                                                                          newStatus);
 
-    if (success) {
+    if (success)
+    {
         QMessageBox::information(this,
                                  "Success",
                                  "Administrator status change request logged successfully.");
-    } else {
+    }
+    else
+    {
         QMessageBox::critical(this,
                               "Error",
                               "Failed to log Admin status change. Ensure you are an approved Admin "
@@ -507,7 +528,8 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     auto tokenOpt = TokenController::getInstance().createAndSaveToken(currentUserCnic,
                                                                       electionId,
                                                                       m_config.privateKey);
-    if (!tokenOpt.has_value()) {
+    if (!tokenOpt.has_value())
+    {
         QMessageBox::critical(this, "Error", "Failed to generate token. Please try again.");
         return;
     }
@@ -515,13 +537,14 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
 
     auto tokenQrCodeOpt = TokenController::getInstance().getQrCodeForToken(newToken);
 
-    if (!tokenQrCodeOpt.has_value()) {
+    if (!tokenQrCodeOpt.has_value())
+    {
         QMessageBox::critical(this, "Error", "Token created but Failed to generate QR code.");
         return;
     }
 
     QImage tokenQrCode = tokenQrCodeOpt.value();
-    //converting image to base64 string
+    // converting image to base64 string
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
 
@@ -538,7 +561,8 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     bool sendTokenToEmailSuccess = TokenController::getInstance().sendTokenToEmail(newToken,
                                                                                    userEmail);
 
-    if (!sendTokenToEmailSuccess) {
+    if (!sendTokenToEmailSuccess)
+    {
         QMessageBox::critical(this, "Error", "Token created by failed to be send to mail");
         return;
     }
@@ -662,7 +686,8 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 // ---------------------------------------------------------
 // Triggered when Admin clicks "Get Configuration" on Election
 // ---------------------------------------------------------
-void MainWindow::handleGetConfigurationRequested(QString electionId) {
+void MainWindow::handleGetConfigurationRequested(QString electionId)
+{
 
     QMessageBox::information(this, "Get Configuration",
                              "Ready to fetch configuration for Election ID:\n" + electionId +
