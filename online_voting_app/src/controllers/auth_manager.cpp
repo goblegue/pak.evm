@@ -1,7 +1,7 @@
 #include "auth_manager.h"
 #include <QUuid>
 
-const int OTP_EXPIRATION_SECONDS = 5 * 60; // 5 minutes
+const int OTP_EXPIRATION_SECONDS = 5 * 60; 
 
 AuthManager::AuthManager()
     : m_userRepo(nullptr)
@@ -35,21 +35,21 @@ AuthManager::SignUpResult AuthManager::signUp(User &user,
                                               bool applyForAdmin)
 {
     if (!m_userRepo || !m_adminRepo) {
-        return SignUpResult::SystemError; // Repositories not injected
+        return SignUpResult::SystemError; 
     }
 
     if (m_userRepo->getUserByCnic(user.getCnic()).has_value()
         || m_userRepo->getUserByEmail(user.getEmail()).has_value()) {
-        return SignUpResult::UserAlreadyExists; // User with same CNIC or Email already exists
+        return SignUpResult::UserAlreadyExists; 
     }
 
     auto hashResultOpt = CryptoEngine::getInstance().hashData(password.toUtf8());
     if (!hashResultOpt.has_value()) {
-        return SignUpResult::SystemError; // Hashing failed
+        return SignUpResult::SystemError; 
     } else {
         user.setPassword(hashResultOpt->hash, hashResultOpt->salt);
         if (!m_userRepo->insertUser(user)) {
-            return SignUpResult::SystemError; // Failed to insert user into database
+            return SignUpResult::SystemError; 
         };
         if (applyForAdmin) {
             Admin admin;
@@ -59,7 +59,7 @@ AuthManager::SignUpResult AuthManager::signUp(User &user,
             admin.setEmail(user.getEmail());
             admin.setPassword(hashResultOpt->hash, hashResultOpt->salt);
             if (!m_adminRepo->insertAdmin(admin)) {
-                return SignUpResult::SystemError; // Failed to insert admin into database
+                return SignUpResult::SystemError; 
             };
             m_currentUser = make_unique<Admin>(admin);
             return SignUpResult::SuccessAdminCreated;
@@ -72,7 +72,7 @@ AuthManager::SignUpResult AuthManager::signUp(User &user,
 bool AuthManager::requestOtp(const QString &email)
 {
     if (!m_otpRepo) {
-        return false; // Repository not injected
+        return false; 
     }
 
     QString otpCode = QString::number(CryptoEngine::getInstance().generateRandomInt(100000, 999999));
@@ -82,12 +82,12 @@ bool AuthManager::requestOtp(const QString &email)
     otp.setOtpCode(otpCode);
     otp.setExpiresAt(QDateTime::currentDateTime().addSecs(OTP_EXPIRATION_SECONDS));
     if (!m_otpRepo->insertOtp(otp)) {
-        return false; // Failed to insert OTP into database
+        return false; 
     }
 
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
 
-    // Append it to the subject
+    
     QString uniqueSubject = "Email Verification For [" + timestamp + "]";
 
     return EmailService::getInstance()
@@ -100,12 +100,12 @@ bool AuthManager::requestOtp(const QString &email)
 bool AuthManager::verifyOtp(const QString &email, const QString &otpCode)
 {
     if (!m_otpRepo || !m_userRepo) {
-        return false; // Repositories not injected
+        return false; 
     }
 
     auto otpOpt = m_otpRepo->getLatestOtpForEmail(email);
     if (!otpOpt.has_value() || otpOpt->isExpired()) {
-        return false; // OTP not found, expired, or does not match
+        return false; 
     }
     if (otpOpt->getOtpCode() == otpCode) {
         m_userRepo->updateUserEmailVerification(email, true);
@@ -119,26 +119,26 @@ AuthManager::LoginResult AuthManager::login(const QString &password,
                                             const QString &email)
 {
     if (!m_userRepo || !m_adminRepo) {
-        return LoginResult::SystemError; // Repositories not injected
+        return LoginResult::SystemError; 
     }
     auto userOpt = cnic.isEmpty() ? m_userRepo->getUserByEmail(email)
                                   : m_userRepo->getUserByCnic(cnic);
     if (!userOpt.has_value()) {
-        return LoginResult::InvalidCnicOrEmail; // User not found
+        return LoginResult::InvalidCnicOrEmail;
     }
 
     auto hashResultOpt = CryptoEngine::getInstance().hashData(password.toUtf8(), userOpt->getSalt());
 
     if (!hashResultOpt.has_value()) {
-        return LoginResult::SystemError; // Hashing failed
+        return LoginResult::SystemError; 
     }
 
     if (hashResultOpt->hash != userOpt->getPasswordHash()) {
-        return LoginResult::InvalidPassword; // Password is incorrect
+        return LoginResult::InvalidPassword; 
     }
 
     if (!userOpt->isEmailVerified()) {
-        return LoginResult::EmailNotVerified; // Email not verified
+        return LoginResult::EmailNotVerified; 
     }
 
     auto adminOpt = cnic.isEmpty() ? m_adminRepo->getAdminByEmail(email)
@@ -146,11 +146,11 @@ AuthManager::LoginResult AuthManager::login(const QString &password,
 
     if (adminOpt.has_value() && adminOpt->getStatus() == ApprovalStatus::Pending) {
         m_currentUser = make_unique<Admin>(adminOpt.value());
-        return LoginResult::SuccessAdminPending; // Admin status pending
+        return LoginResult::SuccessAdminPending; 
     } else if (adminOpt.has_value() && adminOpt->getStatus() == ApprovalStatus::Approved) {
         m_currentUser = make_unique<Admin>(adminOpt.value());
-        return LoginResult::SuccessAdminLoggedIn; // Admin logged in
+        return LoginResult::SuccessAdminLoggedIn; 
     }
     m_currentUser = make_unique<User>(userOpt.value());
-    return LoginResult::SuccessUserLoggedIn; // Regular user logged in
+    return LoginResult::SuccessUserLoggedIn; 
 }

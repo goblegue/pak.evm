@@ -29,29 +29,29 @@ bool CandidateController::createCandidate(Candidate &candidate)
 {
     if (!m_candidateRepo || !m_electionRepo)
     {
-        return false; // Repositories not injected
+        return false; 
     }
     int candidatesSize{};
-    Candidate *existingCandidates = m_candidateRepo->getCandidates(candidatesSize, candidate.getElectionId()); // Get existing candidates for the election to check for duplicate CNIC
+    Candidate *existingCandidates = m_candidateRepo->getCandidates(candidatesSize, candidate.getElectionId()); 
     for (int i = 0; i < candidatesSize; ++i)
     {
         if (existingCandidates[i].getUserCnic() == candidate.getUserCnic())
         {
             delete[] existingCandidates;
-            return false; // Candidate with same CNIC already exists for the election
+            return false; 
         }
     }
     delete[] existingCandidates;
     auto electionOpt = m_electionRepo->getElectionById(candidate.getElectionId());
     if (!electionOpt.has_value())
     {
-        return false; // Election not found
+        return false; 
     }
     Election election = electionOpt.value();
     if (election.getStatus() != ElectionState::Drafted) {
-        return false; // Cannot add candidates to elections that are not active
+        return false; 
     }
-    candidate.setStatus(ApprovalStatus::Pending); // New candidates start with Pending status
+    candidate.setStatus(ApprovalStatus::Pending); 
     return m_candidateRepo->insertCandidate(candidate);
 }
 
@@ -59,17 +59,17 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
 {
     if (!m_candidateRepo || !m_adminRepo)
     {
-        return false; // Repositories not injected
+        return false; 
     }
     auto adminOpt = m_adminRepo->getAdminByCnic(adminCnic);
     if (!adminOpt.has_value())
     {
-        return false; // Admin not found
+        return false; 
     }
     Admin admin = adminOpt.value();
     if (admin.getStatus() != ApprovalStatus::Approved)
     {
-        return false; // Only approved admins can request status changes
+        return false; 
     }
     int candidatesSize{};
     Candidate *candidates = m_candidateRepo->getCandidates(candidatesSize);
@@ -85,7 +85,7 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
     if (!targetCandidate)
     {
         delete[] candidates;
-        return false; // Candidate not found
+        return false; 
     }
     auto electionOpt = m_electionRepo->getElectionById(targetCandidate->getElectionId());
     if (!electionOpt.has_value())
@@ -102,7 +102,7 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
         election.getStatus() == ElectionState::VotingClosed)
     {
         delete[] candidates;
-        return false; // Cannot change candidate status for elections that are not active
+        return false; 
     }
 
     targetCandidate->addStatusChangeRequest(admin.getId(), status);
@@ -130,20 +130,20 @@ Candidate *CandidateController::getCandidatesByElection(const QString &electionI
     if (!m_candidateRepo || !m_electionRepo)
     {
         candidatesSize = 0;
-        return nullptr; // Repositories not injected
+        return nullptr; 
     }
     auto electionOpt = m_electionRepo->getElectionById(electionId);
     if (!electionOpt.has_value())
     {
         candidatesSize = 0;
-        return nullptr; // Election not found
+        return nullptr; 
     }
     Election election = electionOpt.value();
     if (!isAdminRequesting
         && (election.getStatus() == ElectionState::Pending
             || election.getStatus() == ElectionState::Rejected)) {
         candidatesSize = 0;
-        return nullptr; // Voters cannot see candidates for elections that are not active
+        return nullptr; 
     }
     return m_candidateRepo->getCandidates(candidatesSize, electionId);
 }
@@ -153,19 +153,19 @@ Candidate *CandidateController::getCandidatesByElectionAndStatus(const QString &
     if (!m_candidateRepo || !m_electionRepo)
     {
         candidatesSize = 0;
-        return nullptr; // Repositories not injected
+        return nullptr; 
     }
     auto electionOpt = m_electionRepo->getElectionById(electionId);
     if (!electionOpt.has_value())
     {
         candidatesSize = 0;
-        return nullptr; // Election not found
+        return nullptr; 
     }
     Election election = electionOpt.value();
     if (election.getStatus() == ElectionState::Drafted || election.getStatus() == ElectionState::Rejected)
     {
         candidatesSize = 0;
-        return nullptr; // Cannot see candidates for elections that are not active
+        return nullptr; 
     }
     return m_candidateRepo->getCandidatesByStatus(candidatesSize, electionId, status);
 }
@@ -176,21 +176,20 @@ QString CandidateController::getCandidatesJsonByElection(const QString &election
     Candidate *candidates = getCandidatesByElectionAndStatus(electionId, ApprovalStatus::Approved, candidatesSize);
     if (!candidates)
     {
-        return "[]"; // No candidates found, return empty JSON array
+        return "[]"; 
     }
 
     QJsonArray jsonArray;
     for (int i = 0; i < candidatesSize; ++i)
     {
         QJsonObject candidateObj;
-        // Set the keys and values (very similar to a Map)
         candidateObj["cnic"] = candidates[i].getUserCnic();
         candidateObj["party"] = candidates[i].getPartyName();
         candidateObj["symbolName"] = candidates[i].getSymbolName();
         candidateObj["symbolData"] = candidates[i].getSymbolBase64();
         candidateObj["imageData"] = candidates[i].getProfileImageBase64();
 
-        // Add this candidate object into our array
+        
         jsonArray.append(candidateObj);
     }
     delete[] candidates;

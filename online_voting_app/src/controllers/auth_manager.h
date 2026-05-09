@@ -27,19 +27,19 @@ private:
 public:
     enum class LoginResult
     {
-        SuccessUserLoggedIn,  // Logged in as regular user
-        SuccessAdminLoggedIn, // Logged in as admin
-        SuccessAdminPending,  // Logged in, but admin status isn't approved yet
-        InvalidCnicOrEmail,   // No user found with given CNIC or Email
-        InvalidPassword,      // User found, but password is incorrect
-        EmailNotVerified,     // Password correct, but needs OTP verification
-        SystemError           // Database or Crypto failure
+        SuccessUserLoggedIn,  
+        SuccessAdminLoggedIn, 
+        SuccessAdminPending,  
+        InvalidCnicOrEmail,   
+        InvalidPassword,      
+        EmailNotVerified,     
+        SystemError           
     };
 
     enum class SignUpResult
     {
-        SuccessUserCreated,  // User created successfully
-        SuccessAdminCreated, // User created and applied for admin successfully
+        SuccessUserCreated,  
+        SuccessAdminCreated, 
         UserAlreadyExists,
         SystemError
     };
@@ -60,4 +60,4 @@ public:
 
     LoginResult login(const QString &password, const QString &cnic = "", const QString &email = "");
 };
-#endif // AUTH_MANAGER_H
+#endif 

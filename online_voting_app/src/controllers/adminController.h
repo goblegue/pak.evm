@@ -6,7 +6,7 @@
 #include <optional>
 #include <QString>
 
-class IAdminRepository; // Forward declaration
+class IAdminRepository; 
 
 class AdminController
 {
@@ -31,4 +31,4 @@ public:
     std::optional<Admin *> getAllAdminsExcept(const QString &cnic, int &count);
 };
 
-#endif // ADMINCONTROLLER_H
+#endif 
