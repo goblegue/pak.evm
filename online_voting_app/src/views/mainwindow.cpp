@@ -314,7 +314,7 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
                               "No authenticated admin found. Please log in again.");
         return;
     }
-    QString currentAdminId = AuthManager::getInstance().getCurrentUser()->getId();
+    QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
 #endif
 
 #ifdef deve
@@ -330,7 +330,7 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
         return;
     }
 
-    m_adminInnerPage_Elections->loadElections(electionList, electionCount, currentAdminId);
+    m_adminInnerPage_Elections->loadElections(electionList, electionCount, currentAdminCnic);
 
     delete[] electionList;
 }
@@ -688,16 +688,14 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 // ---------------------------------------------------------
 void MainWindow::handleGetConfigurationRequested(QString electionId)
 {
-
-    QMessageBox::information(this, "Get Configuration",
-                             "Ready to fetch configuration for Election ID:\n" + electionId +
-                                 "\n\n(Backend logic to generate/download the JSON file will go here!)");
-
-    /*
-     * WHEN READY, YOU CAN CALL YOUR BACKEND:
-     * QString jsonConfig = ElectionController::getInstance().getElectionConfigJson(electionId);
-     * // Save to file, show in dialog, etc.
-     */
+    QMessageBox::information(this,
+                             "Get Configuration",
+                             "Ready to fetch configuration for Election ID:" + electionId);
+    QString AdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    ElectionController::getInstance().sendElectionConfigToAdmin(electionId,
+                                                                AdminCnic,
+                                                                m_config.privateKey,
+                                                                m_config.publicKey);
 }
 
 // Helping Functions

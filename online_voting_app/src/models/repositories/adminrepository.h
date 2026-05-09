@@ -22,6 +22,7 @@ public:
                                 const ApprovalStatus &status) override;
 
     int getAdminCount() override;
+    int getApprovedAdminCount() override;
 
     bool updateAdminStatus(const QString &cnic, const ApprovalStatus &status) override;
     std::optional<StatusChangeRequest *> getStatusChangeRequests(const QString &cnic, int &count) override;

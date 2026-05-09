@@ -53,7 +53,7 @@ bool AdminController::addStatusChangeRequest(const QString &targetAdminCnic, con
     int approvedCount = targetAdmin.getStatusCount(ApprovalStatus::Approved);
     int rejectedCount = targetAdmin.getStatusCount(ApprovalStatus::Rejected);
 
-    int totalAdmins = m_adminRepo->getAdminCount();
+    int totalAdmins = m_adminRepo->getApprovedAdminCount();
 
     if (approvedCount > (totalAdmins / ADMIN_APPROVAL_THRESHOLD))
     {

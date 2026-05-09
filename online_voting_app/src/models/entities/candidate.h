@@ -6,6 +6,7 @@
 #include <optional>
 
 class Candidate
+
 {
 private:
     QString m_id;

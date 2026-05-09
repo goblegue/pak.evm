@@ -29,7 +29,7 @@ public:
     Election *getElectionsForUser(int &electionsSize); // For voters, returns only elections with status greater than or equal to Published
     // std::optional<Election> getElectionById(const QString &id);
 
-    bool sendElectionConfigToAdmin(const QString &electionId, const QString &adminCnic, const QByteArray &privateKey);
+    bool sendElectionConfigToAdmin(const QString &electionId, const QString &adminCnic, const QByteArray &privateKey, const QByteArray &publicKey);
 };
 
 #endif // ELECTION_CONTROLLER_H

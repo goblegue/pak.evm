@@ -2,7 +2,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
-
+#include <QDir> 
 
 #include "controllers/electionController.h"
 #include "controllers/candidateController.h"
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const int ELECTION_APPROVAL_THRESHOLD = 2; // More than 50% of admins must approve
+const int ELECTION_APPROVAL_THRESHOLD = 2;  // More than 50% of admins must approve
 const int ELECTION_REJECTION_THRESHOLD = 3; // More than 33% of admins
 
 ElectionController::ElectionController() : m_electionRepo(nullptr), m_adminRepo(nullptr) {}
@@ -80,7 +80,7 @@ bool ElectionController::requestElectionStatusChange(const QString &electionId, 
     int approvedCount = election.getStatusCount(ApprovalStatus::Approved);
     int rejectedCount = election.getStatusCount(ApprovalStatus::Rejected);
 
-    int totalAdmins = m_adminRepo->getAdminCount();
+    int totalAdmins = m_adminRepo->getApprovedAdminCount();
     if (approvedCount > (totalAdmins / ELECTION_APPROVAL_THRESHOLD))
     {
         return m_electionRepo->updateElectionState(electionId, ElectionState::Drafted);
@@ -146,8 +146,8 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     return filteredElections;
 }
 
- bool ElectionController::sendElectionConfigToAdmin(const QString &electionId, const QString &adminCnic, const QByteArray &privateKey)
- {
+bool ElectionController::sendElectionConfigToAdmin(const QString &electionId, const QString &adminCnic, const QByteArray &privateKey, const QByteArray &publicKey)
+{
     if (!m_electionRepo || !m_adminRepo)
     {
         return false; // Repositories not injected
@@ -158,8 +158,8 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
         return false; // Election not found
     }
     Election election = electionOpt.value();
-    if(!(election.getStatus() == ElectionState::Published)&&
-       !(election.getStatus() == ElectionState::VotingOpen))
+    if (!(election.getStatus() == ElectionState::Published) &&
+        !(election.getStatus() == ElectionState::VotingOpen))
     {
         return false; // Election not active
     }
@@ -174,20 +174,20 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
         return false; // Admin not approved
     }
 
+    // --- Build the Payload ---
     QJsonObject electionJson;
     electionJson["id"] = election.getId();
     electionJson["title"] = election.getTitle();
-    electionJson["publishTime"] = election.getPublishTime().toString(Qt::ISODate);
+    electionJson["publishTime"] = election.getPublishTime().toString(Qt::ISODate); // (If you have this getter)
     electionJson["startTime"] = election.getStartTime().toString(Qt::ISODate);
     electionJson["endTime"] = election.getEndTime().toString(Qt::ISODate);
 
     QString candidatesJsonString = CandidateController::getInstance().getCandidatesJsonByElection(electionId);
-
     QByteArray candidateBytes = candidatesJsonString.toUtf8();
-
     QJsonDocument candidateJsonDoc = QJsonDocument::fromJson(candidateBytes);
 
-    if (candidateJsonDoc.isNull() && !candidateJsonDoc.isArray()){
+    if (candidateJsonDoc.isNull() || !candidateJsonDoc.isArray())
+    {
         return false;
     }
     QJsonArray candidateJsonArray = candidateJsonDoc.array();
@@ -195,48 +195,82 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     QJsonObject payload;
     payload["election"] = electionJson;
     payload["candidates"] = candidateJsonArray;
-    payload["exportTimeStamp"]= QDateTime::currentDateTime().toString(Qt::ISODate);
+    payload["exportTimeStamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
 
     QJsonDocument doc(payload);
-
-    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact); // Must be compact for strict signature!
 
     auto signatureOpt = CryptoEngine::getInstance().signMessage(jsonData, privateKey);
-
     if (!signatureOpt.has_value())
     {
         return false;
     }
 
     QByteArray signature = signatureOpt.value();
+    payload["signature"] = QString::fromLatin1(signature.toBase64());
 
-    payload["signature"] = QString(signature.toBase64());
-
+    // --- Save File to Temporary Path ---
     doc.setObject(payload);
-    QString fileName = QString("election_%1_data.json").arg(electionId);
-    QFile file(fileName);
+    QString fileName = "election.config.json";                  // Required File Name
+    QString attachmentPath = QDir::tempPath() + "/" + fileName; // Safe OS path
+    QFile file(attachmentPath);
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
         return false;
     }
 
-    jsonData = doc.toJson(QJsonDocument::Indented);
-
-    file.write(jsonData);
+    // Save as Indented so the Admin can look at it if they want (but they shouldn't edit it!)
+    QByteArray finalJsonData = doc.toJson(QJsonDocument::Indented);
+    file.write(finalJsonData);
     file.close();
 
+    // --- Prepare the Public Key for Copy/Pasting ---
+    QString pubKeyBase64 = QString::fromUtf8(publicKey.toBase64());
+
+    // --- Craft Stylized HTML Email ---
     QString adminEmail = admin.getEmail();
-    QString subject = QString("Election Data for %1").arg(election.getTitle());
-    QString body= QString("Hello %1,\n\nPlease find attached the requested election data in json formate below\n\nElection Commission\n\nDo not replay to this mail" )
-    .arg(admin.getName());
+    QString subject = QString("EVM Setup Configuration - %1").arg(election.getTitle());
 
-    bool emailSuccess = EmailService::getInstance().sendEmail(adminEmail,subject,body,false,fileName);
+    QString htmlBody = QString(
+                           "<div style=\"font-family: 'Segoe UI', Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; padding: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);\">"
+                           "<div style=\"text-align: center; border-bottom: 2px solid #1565C0; padding-bottom: 15px; margin-bottom: 20px;\">"
+                           "<h1 style=\"color: #1565C0; margin: 0;\">Election Configuration Export</h1>"
+                           "<p style=\"color: #555; margin-top: 5px;\">Pakistan Election Commission - Secure EVM System</p>"
+                           "</div>"
 
-    file.remove();
+                           "<p style=\"font-size: 16px; color: #333;\">Dear Administrator %1,</p>"
+                           "<p style=\"font-size: 15px; color: #555; line-height: 1.5;\">The configuration for <b>%2</b> has been successfully signed and exported. You must use the attached file and the cryptographic key below to initialize the Offline EVM Terminal.</p>"
+
+                           "<div style=\"background-color: #f8f9fa; border-left: 4px solid #F57F17; padding: 15px; border-radius: 4px; margin: 25px 0;\">"
+                           "<h3 style=\"margin-top: 0; color: #E65100;\">System Public Key:</h3>"
+                           "<p style=\"margin: 10px 0; word-wrap: break-word; font-family: monospace; font-size: 14px; color: #333; background: #e0e0e0; padding: 10px; border-radius: 4px;\">%3</p>"
+                           "</div>"
+
+                           "<h3 style=\"color: #1565C0; border-bottom: 1px solid #eee; padding-bottom: 10px;\">EVM Initialization Instructions:</h3>"
+                           "<ol style=\"color: #555; font-size: 15px; line-height: 1.6;\">"
+                           "<li>Copy the <b>Public Key</b> provided in the orange box above.</li>"
+                           "<li>Launch the Offline EVM (System 2) and paste the key into the initial setup screen.</li>"
+                           "<li>Download the attached <b>election.config.json</b> file to a secure USB Flash Drive.</li>"
+                           "<li>Plug the USB into the EVM terminal to securely load the candidates and election rules.</li>"
+                           "</ol>"
+
+                           "<div style=\"background-color: #ffebee; border: 1px solid #ef9a9a; border-radius: 5px; padding: 15px; text-align: center; margin-top: 30px;\">"
+                           "<p style=\"color: #c62828; font-size: 14px; margin: 0; font-weight: bold;\">⚠️ FORENSIC WARNING</p>"
+                           "<p style=\"color: #d32f2f; font-size: 13px; margin-top: 5px;\">Do not open or modify the <code>election.config.json</code> file in any text editor. Altering even a single space will invalidate the cryptographic signature, and the EVM will reject the election initialization.</p>"
+                           "</div>"
+                           "</div>")
+                           .arg(admin.getName())
+                           .arg(election.getTitle())
+                           .arg(pubKeyBase64);
+
+
+    bool emailSuccess = EmailService::getInstance().sendEmail(adminEmail, subject, htmlBody, true, attachmentPath);
+
+    QFile::remove(attachmentPath); // Memory management: Delete temp file from OS
 
     return emailSuccess;
-
- }
+}
 
 // std::optional<Election> ElectionController::getElectionById(const QString &id)
 // {

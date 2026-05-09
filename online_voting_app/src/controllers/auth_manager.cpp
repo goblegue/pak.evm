@@ -1,4 +1,5 @@
 #include "auth_manager.h"
+
 #include <QUuid>
 
 const int OTP_EXPIRATION_SECONDS = 5 * 60; // 5 minutes

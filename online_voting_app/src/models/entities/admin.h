@@ -130,6 +130,7 @@ public:
     virtual std::optional<StatusChangeRequest *> getStatusChangeRequests(const QString &cnic, int &count) = 0;
     virtual std::optional<Admin *> getAllAdminsExcept(const QString &cnic, int &count) = 0;
     virtual int getAdminCount() = 0;
+    virtual int getApprovedAdminCount() = 0;
 };
 
 #endif // ADMIN_H

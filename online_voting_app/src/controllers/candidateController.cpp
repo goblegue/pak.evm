@@ -95,11 +95,7 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
     }
 
     Election election = electionOpt.value();
-    if (election.getStatus() == ElectionState::Drafted ||
-        election.getStatus() == ElectionState::Rejected ||
-        election.getStatus() == ElectionState::ResultsAnnounced ||
-        election.getStatus() == ElectionState::VotingOpen ||
-        election.getStatus() == ElectionState::VotingClosed)
+    if (election.getStatus() != ElectionState::Drafted )
     {
         delete[] candidates;
         return false; // Cannot change candidate status for elections that are not active
@@ -110,7 +106,7 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
     int approvedCount = targetCandidate->getStatusCount(ApprovalStatus::Approved);
     int rejectedCount = targetCandidate->getStatusCount(ApprovalStatus::Rejected);
 
-    int totalAdmins = m_adminRepo->getAdminCount();
+    int totalAdmins = m_adminRepo->getApprovedAdminCount();
     if (approvedCount > (totalAdmins / CANDIDATE_APPROVAL_THRESHOLD))
     {
         delete[] candidates;

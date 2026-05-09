@@ -176,6 +176,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
 void SystemBootstrapper::instantiateRepositories()
 {
+    
     // unique_ptr<T>(new T()) is used to safely manage heap memory
     m_userRepo = std::unique_ptr<IUserRepository>(new userrepository());
     m_adminRepo = std::unique_ptr<IAdminRepository>(new adminrepository());

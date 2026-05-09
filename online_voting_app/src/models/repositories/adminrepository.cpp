@@ -140,6 +140,12 @@ int adminrepository::getAdminCount()
     return static_cast<int>(m_collection.count_documents({}));
 }
 
+int adminrepository::getApprovedAdminCount()
+{
+    auto filter = document{} << "status" << static_cast<int>(ApprovalStatus::Approved) << finalize;
+    return static_cast<int>(m_collection.count_documents(filter.view()));
+}
+
 bool adminrepository::updateAdminStatus(const QString &cnic, const ApprovalStatus &status)
 {
     auto filter = document{} << "cnic" << cnic.toStdString() << finalize;

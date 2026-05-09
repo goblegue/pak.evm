@@ -37,7 +37,7 @@ public:
 
     static optional<QString> generateSignature(const QString &userCnic, const QString &electionId, const QDateTime &issuedAt, const QByteArray &privateKey)
     {
-        QString data = userCnic + electionId + issuedAt.toString(Qt::ISODate);
+        QString data = userCnic + "|" + electionId + "|" + issuedAt.toString(Qt::ISODate);
         auto signatureOpt = CryptoEngine::getInstance().signMessage(data.toUtf8(), privateKey);
         if (signatureOpt.has_value())
         {
