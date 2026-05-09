@@ -24,7 +24,6 @@ public:
     void setOtpCode(const QString &code) { m_otpCode = code; }
     void setExpiresAt(const QDateTime &time) { m_expiresAt = time; }
 
-    // Helper logic function
     bool isExpired() const { return QDateTime::currentDateTime() > m_expiresAt; }
 };
 
@@ -36,4 +35,4 @@ public:
     virtual std::optional<OTP> getLatestOtpForEmail(const QString &email) = 0;
 };
 
-#endif // OTP_H
+#endif 

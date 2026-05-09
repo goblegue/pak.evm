@@ -19,7 +19,7 @@ private:
     QDateTime m_issuedAt;
 
 public:
-    // Getters
+    
     QString getId() const { return m_id; }
     QString getUserCnic() const { return m_userCnic; }
     QString getElectionId() const { return m_electionId; }
@@ -27,7 +27,7 @@ public:
     QString getTokenSignature() const { return m_tokenSignature; }
     QDateTime getIssuedAt() const { return m_issuedAt; }
 
-    // Setters
+    
     void setId(const QString &id) { m_id = id; }
     void setUserCnic(const QString &cnic) { m_userCnic = cnic; }
     void setElectionId(const QString &electionId) { m_electionId = electionId; }
@@ -54,8 +54,8 @@ public:
     virtual bool insertToken(const Token &token) = 0;
     virtual Token *getTokensByElection(const QString &electionId, int &votersSize) = 0;
     virtual Token *getTokensByUser(const QString &userCnic, int &tokensSize) = 0;
-    // Critical function for security constraint:
+    
     virtual bool hasUserRequestedToken(const QString &userCnic, const QString &electionId) = 0;
 };
 
-#endif // VOTERS_H
+#endif 

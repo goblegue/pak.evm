@@ -39,4 +39,4 @@ public:
     virtual VotingStation *getStationsByCity(const QString &city, int &vSSize) = 0;
 };
 
-#endif // VOTING_STATION_H
+#endif 

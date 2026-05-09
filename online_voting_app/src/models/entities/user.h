@@ -32,7 +32,7 @@ public:
 
     virtual ~User() = default;
 
-    // Getters
+    
     QString getId() const { return m_id; }
     QString getCnic() const { return m_cnic; }
     QString getName() const { return m_name; }
@@ -40,7 +40,7 @@ public:
     QByteArray getPasswordHash() const { return m_passwordHash; }
     long long getSalt() const { return m_salt; }
 
-    // Setters
+    
     void setId(const QString &id) { m_id = id; }
     void setCnic(const QString &cnic) { m_cnic = cnic; }
     void setName(const QString &name) { m_name = name; }
@@ -55,7 +55,7 @@ public:
 
     User &operator=(const User &other)
     {
-        if (this != &other) // Prevent self-assignment crash
+        if (this != &other) 
         {
             m_id = other.m_id;
             m_cnic = other.m_cnic;
@@ -79,4 +79,4 @@ public:
     virtual bool updateUserEmailVerification(const QString &email, bool status) = 0;
 };
 
-#endif // USER_H
+#endif 
