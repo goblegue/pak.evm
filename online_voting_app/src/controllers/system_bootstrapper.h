@@ -5,7 +5,6 @@
 #include <QString>
 #include <memory>
 
-// Forward declare the abstract interfaces to keep the header clean
 class IUserRepository;
 class IAdminRepository;
 class IElectionRepository;
@@ -14,7 +13,6 @@ class IOtpRepository;
 class ITokenRepository;
 class IVotingStationRepository;
 
-// A struct to hold our loaded environment variables
 struct AppConfig
 {
     QByteArray publicKey;
@@ -28,7 +26,7 @@ struct AppConfig
 class SystemBootstrapper
 {
 private:
-    // Repositories managed by Smart Pointers (Zero Memory Leaks!)
+    
     std::unique_ptr<IUserRepository> m_userRepo;
     std::unique_ptr<IAdminRepository> m_adminRepo;
     std::unique_ptr<IElectionRepository> m_electionRepo;
@@ -39,7 +37,7 @@ private:
 
     AppConfig m_config;
 
-    // Helper functions
+    
     void loadOrGenerateEnv();
     void instantiateRepositories();
     void injectControllers();
@@ -48,12 +46,10 @@ public:
     SystemBootstrapper();
     ~SystemBootstrapper();
 
-    // The single function main.cpp needs to call
     void initializeSystem();
     void bootstrapFirstAdmins();
 
-    // Allows main.cpp or controllers to get the private key if needed
     AppConfig getConfig() const { return m_config; }
 };
 
-#endif // SYSTEM_BOOTSTRAPPER_H
+#endif 

@@ -12,8 +12,8 @@
 
 using namespace std;
 
-const int ELECTION_APPROVAL_THRESHOLD = 2; // More than 50% of admins must approve
-const int ELECTION_REJECTION_THRESHOLD = 3; // More than 33% of admins
+const int ELECTION_APPROVAL_THRESHOLD = 2; 
+const int ELECTION_REJECTION_THRESHOLD = 3; 
 
 ElectionController::ElectionController() : m_electionRepo(nullptr), m_adminRepo(nullptr) {}
 
@@ -35,10 +35,10 @@ bool ElectionController::createElection(const Election &election)
 {
     if (!m_electionRepo)
     {
-        return false; // Repository not injected
+        return false; 
     }
     int electionsSize{};
-    Election *existingElections = m_electionRepo->getAllElections(electionsSize); // Get all elections to check for duplicate ID
+    Election *existingElections = m_electionRepo->getAllElections(electionsSize); 
     for (int i = 0; i < electionsSize; ++i)
     {
         if (existingElections[i].getId() == election.getId() ||
@@ -46,7 +46,7 @@ bool ElectionController::createElection(const Election &election)
              existingElections[i].getStatus() != ElectionState::ResultsAnnounced))
         {
             delete[] existingElections;
-            return false; // Election with same ID or title which results are not announced already exists
+            return false; 
         }
     }
     delete[] existingElections;
@@ -57,23 +57,23 @@ bool ElectionController::requestElectionStatusChange(const QString &electionId, 
 {
     if (!m_electionRepo || !m_adminRepo)
     {
-        return false; // Repositories not injected
+        return false; 
     }
     auto electionOpt = m_electionRepo->getElectionById(electionId);
     if (!electionOpt.has_value())
     {
-        return false; // Election not found
+        return false; 
     }
     Election election = electionOpt.value();
     auto adminOpt = m_adminRepo->getAdminByCnic(adminId);
     if (!adminOpt.has_value())
     {
-        return false; // Admin not found
+        return false;
     }
     Admin admin = adminOpt.value();
     if (admin.getStatus() != ApprovalStatus::Approved)
     {
-        return false; // Admin not approved
+        return false; 
     }
     m_electionRepo->addStatusChangeRequest(electionId, adminId, status);
     election.addStatusChangeRequest(adminId, status);
@@ -97,7 +97,7 @@ Election *ElectionController::getAllElections(int &electionsSize)
     if (!m_electionRepo)
     {
         electionsSize = 0;
-        return nullptr; // Repository not injected
+        return nullptr; 
     }
     return m_electionRepo->getAllElections(electionsSize);
 }
@@ -107,7 +107,7 @@ Election *ElectionController::getElectionsByStatus(ElectionState status, int &el
     if (!m_electionRepo)
     {
         electionsSize = 0;
-        return nullptr; // Repository not injected
+        return nullptr; 
     }
     Election *allElections = m_electionRepo->getAllElections(electionsSize);
     Election *filteredElections = new Election[electionsSize];
@@ -129,7 +129,7 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
     if (!m_electionRepo)
     {
         electionsSize = 0;
-        return nullptr; // Repository not injected
+        return nullptr; 
     }
     Election *allElections = m_electionRepo->getAllElections(electionsSize);
     Election *filteredElections = new Election[electionsSize];
@@ -150,28 +150,28 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
  {
     if (!m_electionRepo || !m_adminRepo)
     {
-        return false; // Repositories not injected
+        return false; 
     }
     auto electionOpt = m_electionRepo->getElectionById(electionId);
     if (!electionOpt.has_value())
     {
-        return false; // Election not found
+        return false;
     }
     Election election = electionOpt.value();
     if(/*!(election.getStatus() == ElectionState::Published)||*/
        !(election.getStatus() == ElectionState::VotingOpen))
     {
-        return false; // Election not active
+        return false; 
     }
     auto adminOpt = m_adminRepo->getAdminByCnic(adminId);
     if (!adminOpt.has_value())
     {
-        return false; // Admin not found
+        return false; 
     }
     Admin admin = adminOpt.value();
     if (admin.getStatus() != ApprovalStatus::Approved)
     {
-        return false; // Admin not approved
+        return false; 
     }
 
     QJsonObject electionJson;
@@ -239,11 +239,3 @@ Election *ElectionController::getElectionsForUser(int &electionsSize)
 
  }
 
-// std::optional<Election> ElectionController::getElectionById(const QString &id)
-// {
-//     if (!m_electionRepo)
-//     {
-//         return std::nullopt; // Repository not injected
-//     }
-//     return m_electionRepo->getElectionById(id);
-// }

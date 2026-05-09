@@ -4,7 +4,6 @@
 #include <QMap>
 #include <QTextStream>
 
-// Repositories & Managers
 #include "models/repositories/adminrepository.h"
 #include "models/repositories/candidaterepository.h"
 #include "models/databasemanager.h"
@@ -14,14 +13,12 @@
 #include "models/repositories/voterrepository.h"
 #include "models/repositories/votingstationrepository.h"
 
-// Controllers
 #include "controllers/auth_manager.h"
 #include "controllers/candidateController.h"
 #include "controllers/electionController.h"
 #include "controllers/adminController.h"
 #include "controllers/voterController.h"
 
-// Services
 #include "services/crypto/cryptoengine.h"
 #include "services/email/emailservice.h"
 
@@ -32,25 +29,24 @@ void SystemBootstrapper::initializeSystem()
 {
     qDebug() << "[Bootstrapper] Initializing System 1...";
 
-    // 1. Setup Environment & Keys
     loadOrGenerateEnv();
 
-    // 2. Setup Database
+    
     DatabaseManager::getInstance().setupSchema();
 
-    // 3. Configure Email Service with your specific credentials
+    
     EmailService::getInstance().configure(m_config.smtpHost,
                                           m_config.smtpPort,
                                           m_config.smtpEmail,
                                           m_config.smtpPassword);
 
-    // 4. Instantiate Repositories
+    
     instantiateRepositories();
 
-    // 5. Inject dependencies into Singletons
+    
     injectControllers();
 
-    // 6. BOOTSTRAP: Add the first 2 Admins if they don't exist
+    
     bootstrapFirstAdmins();
 
     qDebug() << "[Bootstrapper] System Ready.";
@@ -78,7 +74,6 @@ void SystemBootstrapper::loadOrGenerateEnv()
 
     bool needsRewrite = false;
 
-    // Generate Crypto Keys if missing
     if (!envMap.contains("PUBLIC_KEY") || !envMap.contains("PRIVATE_KEY"))
     {
         auto keyPairOpt = CryptoEngine::getInstance().generateKeyPair();
@@ -90,7 +85,6 @@ void SystemBootstrapper::loadOrGenerateEnv()
         }
     }
 
-    // MANDATORY EMAIL SETUP (Your requested info)
     if (envMap["SMTP_HOST"] != "smtp.gmail.com")
     {
         envMap["SMTP_HOST"] = "smtp.gmail.com";
@@ -136,7 +130,7 @@ void SystemBootstrapper::loadOrGenerateEnv()
 
 void SystemBootstrapper::bootstrapFirstAdmins()
 {
-    // Check if we already have admins to avoid duplicate insertion errors
+    
     if (m_adminRepo->getAdminCount() >= 2)
     {
         qDebug() << "[Bootstrapper] System already has bootstrapped admins.";
@@ -158,16 +152,16 @@ void SystemBootstrapper::bootstrapFirstAdmins()
         admin.setCnic(cnics[i]);
         admin.setEmail(emails[i]);
         admin.setEmailVerified(true);
-        admin.setStatus(ApprovalStatus::Approved); // Direct approval
+        admin.setStatus(ApprovalStatus::Approved); 
 
-        // Securely hash the bootstrap password
+    
         auto hashRes = CryptoEngine::getInstance().hashData(rawPass.toUtf8());
         if (hashRes)
         {
             admin.setPassword(hashRes->hash, hashRes->salt);
             m_adminRepo->insertAdmin(admin);
 
-            // Also insert into Users collection so they can log in as voters if needed
+            
             m_userRepo->insertUser(admin);
         }
     }
@@ -176,7 +170,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
 void SystemBootstrapper::instantiateRepositories()
 {
-    // unique_ptr<T>(new T()) is used to safely manage heap memory
+
     m_userRepo = std::unique_ptr<IUserRepository>(new userrepository());
     m_adminRepo = std::unique_ptr<IAdminRepository>(new adminrepository());
     m_electionRepo = std::unique_ptr<IElectionRepository>(new electionrepository());
@@ -188,7 +182,7 @@ void SystemBootstrapper::instantiateRepositories()
 
 void SystemBootstrapper::injectControllers()
 {
-    // get() returns the raw pointer without deleting the unique_ptr
+    
     AuthManager::getInstance().injectRepositories(m_userRepo.get(),
                                                   m_adminRepo.get(),
                                                   m_otpRepo.get());

@@ -42,4 +42,4 @@ public:
 
     std::optional<int> getTokenCountForElection(const QString &electionId);
 };
-#endif // VOTER_CONTROLLER_H
+#endif 

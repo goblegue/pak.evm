@@ -124,11 +124,11 @@ bool TokenController::sendTokenToEmail(const Token &token, const QString &email)
 {
     QString subject = "Your Official Voting Token - Election " + token.getElectionId();
 
-    // 1. Generate the QR Code Image
+    
     QString payload = QR::preparePayload(token);
     QImage qrCode = QR::generateQRCode(payload);
 
-    // 2. Save the QR Code to a temporary file so EmailService can attach it
+    
     QString tempFileName = QString("voting_token_%1_%2.png")
                                .arg(token.getElectionId())
                                .arg(token.getUserCnic());
@@ -192,7 +192,7 @@ bool TokenController::sendTokenToEmail(const Token &token, const QString &email)
               .arg(token.getUserCnic())
               .arg(token.getElectionId())
               .arg(token.getIssuedAt().toString(
-                  "dd MMMM yyyy, hh:mm AP")) // Formats nicely like: 20 April 2026, 09:30 AM
+                  "dd MMMM yyyy, hh:mm AP")) 
               .arg(token.getTokenSignature());
 
     bool emailSuccess = EmailService::getInstance().sendEmail(

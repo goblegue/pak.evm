@@ -30,4 +30,4 @@ public:
     QString getCandidatesJsonByElection(const QString &electionId);
 };
 
-#endif // CANDIDATE_CONTROLLER_H
+#endif 
