@@ -36,10 +36,10 @@ private:
     QListView *electionListView;
     ElectionListModel *electionModel;
 
-    // --- RIGHT SIDE MANAGERS ---
-    QStackedWidget *rightStackedWidget; // Swaps between placeholder and details
-    QWidget *placeholderWidget;         // The empty state
-    QWidget *detailsContainer;          // The actual details
+    
+    QStackedWidget *rightStackedWidget; 
+    QWidget *placeholderWidget;         
+    QWidget *detailsContainer;          
 
     QLabel *detailTitleLabel;
     QLabel *detailStartTimeLabel;
@@ -54,4 +54,4 @@ private:
     void setupUi();
 };
 
-#endif // USERACTIVEELECTIONSPAGE_H
+#endif 

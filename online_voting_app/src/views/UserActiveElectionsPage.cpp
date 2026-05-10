@@ -13,10 +13,7 @@ void UserActiveElectionsPage::setupUi() {
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(25);
 
-    // ==========================================
-    // LEFT SIDE: ELECTION LIST (Fixed Width)
-    // ==========================================
-    // Wrapping it in a QWidget protects it from being squished!
+    
     QWidget *leftPanel = new QWidget(this);
     leftPanel->setMinimumWidth(350);
     leftPanel->setMaximumWidth(450); // Locks the width
@@ -38,27 +35,25 @@ void UserActiveElectionsPage::setupUi() {
     leftLayout->addWidget(electionLabel);
     leftLayout->addWidget(electionListView);
 
-    // ==========================================
-    // RIGHT SIDE: STACKED WIDGET
-    // ==========================================
+    
     rightStackedWidget = new QStackedWidget(this);
 
-    // --- PAGE 0: PLACEHOLDER (When nothing is selected) ---
+    
     placeholderWidget = new QWidget(this);
     QVBoxLayout *phLayout = new QVBoxLayout(placeholderWidget);
     QLabel *phLabel = new QLabel("👈 Select an election from the list\nto view details and register.", this);
     phLabel->setAlignment(Qt::AlignCenter);
     phLabel->setStyleSheet("font-size: 18px; color: #7F8C8D; font-style: italic;");
     phLayout->addWidget(phLabel);
-    rightStackedWidget->addWidget(placeholderWidget); // Index 0
+    rightStackedWidget->addWidget(placeholderWidget); 
 
-    // --- PAGE 1: ELECTION DETAILS & CANDIDATES ---
+    
     detailsContainer = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(detailsContainer);
     rightLayout->setContentsMargins(0, 0, 0, 0);
     rightLayout->setSpacing(15);
 
-    // Details Card
+    
     QFrame *detailsCard = new QFrame(this);
     detailsCard->setStyleSheet("QFrame { background-color: white; border-radius: 8px; border: 1px solid #BDC3C7; }");
     QVBoxLayout *cardLayout = new QVBoxLayout(detailsCard);
@@ -78,8 +73,8 @@ void UserActiveElectionsPage::setupUi() {
     cardLayout->addWidget(detailStartTimeLabel);
     cardLayout->addWidget(detailEndTimeLabel);
 
-    // Generate Token Button
-    generateTokenBtn = new QPushButton("Register & Generate Token", this); // Removed emoji to fix font glitch in your screenshot
+    
+    generateTokenBtn = new QPushButton("Register & Generate Token", this); 
     generateTokenBtn->setCursor(Qt::PointingHandCursor);
     generateTokenBtn->setFixedHeight(50);
     generateTokenBtn->setStyleSheet(
@@ -88,7 +83,7 @@ void UserActiveElectionsPage::setupUi() {
         "QPushButton:disabled { background-color: #BDC3C7; color: #7F8C8D; }"
         );
 
-    // Candidates List
+    
     QLabel *candidateLabel = new QLabel("<b>Approved Candidates</b>", this);
     candidateLabel->setStyleSheet("font-size: 18px; color: #2C3E50; margin-top: 10px;");
 
@@ -105,15 +100,13 @@ void UserActiveElectionsPage::setupUi() {
     rightLayout->addWidget(candidateLabel);
     rightLayout->addWidget(candidateListView);
 
-    rightStackedWidget->addWidget(detailsContainer); // Index 1
+    rightStackedWidget->addWidget(detailsContainer); 
 
-    // ==========================================
-    // ASSEMBLE MAIN LAYOUT
-    // ==========================================
-    mainLayout->addWidget(leftPanel);            // Left column (Fixed width)
-    mainLayout->addWidget(rightStackedWidget);   // Right column (Takes remaining space)
+    
+    mainLayout->addWidget(leftPanel);            
+    mainLayout->addWidget(rightStackedWidget);   
 
-    // Connections
+    
     connect(electionListView, &QListView::clicked, this, &UserActiveElectionsPage::onElectionClicked);
     connect(generateTokenBtn, &QPushButton::clicked, this, &UserActiveElectionsPage::onGenerateTokenClicked);
     connect(candidateListView, &QListView::clicked, this, &UserActiveElectionsPage::onCandidateClicked);
@@ -123,7 +116,7 @@ void UserActiveElectionsPage::setupUi() {
 void UserActiveElectionsPage::loadElections(Election* elections, int size) {
     electionModel->setElections(elections, size);
 
-    // Always show the empty placeholder when fresh data loads
+    
     rightStackedWidget->setCurrentIndex(0);
 }
 
@@ -147,7 +140,7 @@ void UserActiveElectionsPage::onElectionClicked(const QModelIndex &index) {
         generateTokenBtn->setText("Register & Generate Token");
     }
 
-    // Swap the right panel to show the details instead of the placeholder!
+    
     rightStackedWidget->setCurrentIndex(1);
 
     emit electionSelected(currentSelectedElectionId);

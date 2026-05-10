@@ -22,7 +22,7 @@ void SignupPage::on_goToLoginBtn_clicked()
 
 void SignupPage::lockSignupPage()
 {
-    // Disable all input fields and buttons to prevent interaction
+    
     ui->newUsernameInput->setEnabled(false);
     ui->emailInput->setEnabled(false);
     ui->cnicInput->setEnabled(false);
@@ -53,16 +53,16 @@ void SignupPage::unlockSignupPage()
 void SignupPage::on_signupSubmitBtn_clicked()
 {
     lockSignupPage();
-    // 1. Grab text from UI and use .trimmed() to remove accidental spacebars
+    
     QString newUsername = ui->newUsernameInput->text().trimmed();
     QString newEmail = ui->emailInput->text().trimmed();
     QString newCnic = ui->cnicInput->text().trimmed();
 
-    // Passwords should NOT be trimmed
+    
     QString newPassword = ui->newPasswordInput->text();
     QString confirmPassword = ui->confirmPasswordInput->text();
 
-    // 2. Validation Level 1: Check for Empty Fields
+    
     if (newUsername.isEmpty() || newEmail.isEmpty() || newCnic.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty())
     {
         QMessageBox::warning(this, "Validation Error", "All fields must be filled out.");
@@ -70,7 +70,7 @@ void SignupPage::on_signupSubmitBtn_clicked()
         return;
     }
 
-    // 3. Validation Level 2: Password Match Check
+    
     if (newPassword != confirmPassword)
     {
         QMessageBox::warning(this,
@@ -83,7 +83,7 @@ void SignupPage::on_signupSubmitBtn_clicked()
         return;
     }
 
-    // 4. Validation Level 3: Email Format Check
+    
     QRegularExpression emailRegex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     if (!emailRegex.match(newEmail).hasMatch())
     {
@@ -93,7 +93,7 @@ void SignupPage::on_signupSubmitBtn_clicked()
         return;
     }
 
-    // 5. Validation Level 4: CNIC Format Check (Pakistani Standard)
+    
     QRegularExpression cnicRegex("^\\d{5}-?\\d{7}-?\\d$");
     if (!cnicRegex.match(newCnic).hasMatch())
     {
@@ -153,13 +153,13 @@ void SignupPage::on_signupSubmitBtn_clicked()
             if (otp.trimmed().isEmpty())
             {
                 QMessageBox::warning(this, "Error", "OTP field cannot be empty!");
-                continue; // Skips the rest and asks again
+                continue; 
             }
 
-            // Condition 3: Verify the OTP
+            
             if (AuthManager::getInstance().verifyOtp(newEmail, otp))
             {
-                verified = true; // Breaks the loop naturally
+                verified = true; 
                 if (signupResult == AuthManager::SignUpResult::SuccessUserCreated)
                 {
                     QMessageBox::information(
@@ -187,21 +187,21 @@ void SignupPage::on_signupSubmitBtn_clicked()
     else if (AuthManager::SignUpResult::UserAlreadyExists == signupResult)
     {
         QMessageBox::warning(this, "Error", "User Already Exists");
-        // --- NORMAL VOTER FLOW ---
+        
     }
     else if (AuthManager::SignUpResult::SystemError == signupResult)
     {
         QMessageBox::warning(this, "Error", "System Error");
     }
 
-    // 7. Security Cleanup: Clear all inputs so the next person can't see them
+    
     ui->newUsernameInput->clear();
     ui->emailInput->clear();
     ui->cnicInput->clear();
     ui->newPasswordInput->clear();
     ui->confirmPasswordInput->clear();
 
-    // CRITICAL: Uncheck the box so it doesn't stay checked for the next user!
+    
     ui->adminCheckBox->setChecked(false);
     unlockSignupPage();
 }

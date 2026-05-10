@@ -15,9 +15,7 @@ void UserCandidacyPage::setupUi() {
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(25);
 
-    // ==========================================
-    // LEFT SIDE: PUBLISHED ELECTIONS
-    // ==========================================
+    
     QWidget *leftPanel = new QWidget(this);
     leftPanel->setMinimumWidth(350);
     leftPanel->setMaximumWidth(450);
@@ -39,19 +37,17 @@ void UserCandidacyPage::setupUi() {
     leftLayout->addWidget(electionLabel);
     leftLayout->addWidget(electionListView);
 
-    // ==========================================
-    // RIGHT SIDE: FORM
-    // ==========================================
+    
     rightStackedWidget = new QStackedWidget(this);
 
-    // --- PAGE 0: PLACEHOLDER ---
+    
     placeholderWidget = new QWidget(this);
     QVBoxLayout *phLayout = new QVBoxLayout(placeholderWidget);
     QLabel *phLabel = new QLabel("👈 Select an election to begin your application.", this);
     phLabel->setAlignment(Qt::AlignCenter);
     phLabel->setStyleSheet("font-size: 18px; color: #7F8C8D; font-style: italic;");
     phLayout->addWidget(phLabel);
-    rightStackedWidget->addWidget(placeholderWidget); // Index 0
+    rightStackedWidget->addWidget(placeholderWidget); 
 
     // --- PAGE 1: CANDIDACY FORM ---
     formContainer = new QWidget(this);
@@ -78,29 +74,29 @@ void UserCandidacyPage::setupUi() {
                          "QTextEdit:focus { border: 2px solid #3498DB; }";
     QString labelStyle = "font-size: 14px; color: #34495E; font-weight: bold;";
 
-    // 1. Party Name
+    
     partyNameInput = new QLineEdit(this);
     partyNameInput->setStyleSheet(inputStyle);
     QLabel *l1 = new QLabel("Party Name:", this); l1->setStyleSheet(labelStyle);
     formLayout->addRow(l1, partyNameInput);
 
-    // 2. Education Level (Dropdown for better UX)
+    
     educationCombo = new QComboBox(this);
     educationCombo->addItems({"Select Education...", "High School / Matric", "Intermediate", "Bachelor's Degree", "Master's Degree", "Doctorate / Ph.D."});
     educationCombo->setStyleSheet(inputStyle);
     QLabel *l2 = new QLabel("Education Level:", this); l2->setStyleSheet(labelStyle);
     formLayout->addRow(l2, educationCombo);
 
-    //manifesto
+
     manifestoInput = new QTextEdit(this);
     manifestoInput->setStyleSheet(inputStyle);
-    manifestoInput->setFixedHeight(100); // Make it tall enough for a paragraph
+    manifestoInput->setFixedHeight(100); 
     manifestoInput->setPlaceholderText("Write your election manifesto and promises here...");
     QLabel *lManifesto = new QLabel("Manifesto:", this);
     lManifesto->setStyleSheet(labelStyle);
     formLayout->addRow(lManifesto, manifestoInput);
 
-    // 3. Profile Image Upload
+    
     QHBoxLayout *profileUploadLayout = new QHBoxLayout();
     uploadProfileBtn = new QPushButton("Browse Image...", this);
     uploadProfileBtn->setCursor(Qt::PointingHandCursor);
@@ -116,7 +112,7 @@ void UserCandidacyPage::setupUi() {
     QLabel *l3 = new QLabel("Profile Photo:", this); l3->setStyleSheet(labelStyle);
     formLayout->addRow(l3, profileUploadLayout);
 
-    // 4. Symbol Image Upload
+    
     QHBoxLayout *symbolUploadLayout = new QHBoxLayout();
     uploadSymbolBtn = new QPushButton("Browse Image...", this);
     uploadSymbolBtn->setCursor(Qt::PointingHandCursor);
@@ -134,7 +130,7 @@ void UserCandidacyPage::setupUi() {
 
     cardLayout->addLayout(formLayout);
 
-    // 5. Submit Button
+    
     submitBtn = new QPushButton("Submit Application", this);
     submitBtn->setCursor(Qt::PointingHandCursor);
     submitBtn->setFixedHeight(45);
@@ -143,23 +139,21 @@ void UserCandidacyPage::setupUi() {
     cardLayout->addWidget(submitBtn);
 
     rightLayout->addWidget(formCard);
-    rightLayout->addStretch(); // Pushes form to the top
+    rightLayout->addStretch(); 
 
-    rightStackedWidget->addWidget(formContainer); // Index 1
+    rightStackedWidget->addWidget(formContainer); 
 
     mainLayout->addWidget(leftPanel);
     mainLayout->addWidget(rightStackedWidget);
 
-    // Connections
+    
     connect(electionListView, &QListView::clicked, this, &UserCandidacyPage::onElectionClicked);
     connect(uploadProfileBtn, &QPushButton::clicked, this, &UserCandidacyPage::onUploadProfileClicked);
     connect(uploadSymbolBtn, &QPushButton::clicked, this, &UserCandidacyPage::onUploadSymbolClicked);
     connect(submitBtn, &QPushButton::clicked, this, &UserCandidacyPage::onSubmitClicked);
 }
 
-// ---------------------------------------------------------
-// LOGIC
-// ---------------------------------------------------------
+
 void UserCandidacyPage::loadPublishedElections(Election* elections, int size) {
     electionModel->setElections(elections, size);
     rightStackedWidget->setCurrentIndex(0);
@@ -184,10 +178,10 @@ void UserCandidacyPage::resetForm() {
     symbolPreview->clear(); symbolPreview->setText("No Image");
 }
 
-// THE IMAGE CONVERTER
+
 QString UserCandidacyPage::pickAndConvertImage(QLabel *previewLabel) {
     QString filePath = QFileDialog::getOpenFileName(this, "Select Image", "", "Images (*.png *.jpg *.jpeg)");
-    if(filePath.isEmpty()) return ""; // User cancelled
+    if(filePath.isEmpty()) return ""; 
 
     QPixmap pixmap(filePath);
     if(pixmap.isNull()) {
@@ -195,14 +189,14 @@ QString UserCandidacyPage::pickAndConvertImage(QLabel *previewLabel) {
         return "";
     }
 
-    // Set tiny preview
+    
     previewLabel->setPixmap(pixmap.scaled(previewLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    // Convert to Base64 to send to Database
+    
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
     buffer.open(QIODevice::WriteOnly);
-    pixmap.save(&buffer, "PNG"); // Standardize as PNG
+    pixmap.save(&buffer, "PNG"); 
     return QString(byteArray.toBase64());
 }
 
@@ -215,7 +209,7 @@ void UserCandidacyPage::onUploadSymbolClicked() {
 }
 
 void UserCandidacyPage::onSubmitClicked() {
-    // 1. Validation!
+    
     if(partyNameInput->text().trimmed().isEmpty() ||
         educationCombo->currentIndex() == 0 ||
         manifestoInput->toPlainText().trimmed().isEmpty() ||
@@ -226,7 +220,7 @@ void UserCandidacyPage::onSubmitClicked() {
         return;
     }
 
-    // 2. Build the Candidate Object
+    
     Candidate newCandidate;
     newCandidate.setElectionId(currentSelectedElectionId);
     newCandidate.setPartyName(partyNameInput->text().trimmed());
@@ -237,6 +231,6 @@ void UserCandidacyPage::onSubmitClicked() {
     newCandidate.setSymbolName(partyNameInput->text().trimmed() + " Symbol"); // Defaulting symbol name to Party Name
     newCandidate.setStatus(ApprovalStatus::Pending);
 
-    // 3. Emit to MainWindow
+    
     emit submitApplicationRequested(newCandidate);
 }

@@ -20,4 +20,4 @@ private:
     void loadBase64Image(const QString &base64String);
 };
 
-#endif // VOTERTOKENMESS_H
+#endif 

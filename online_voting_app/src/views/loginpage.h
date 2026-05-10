@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QFutureWatcher>
-#include "controllers/auth_manager.h" // For LoginResult etc
+#include "controllers/auth_manager.h" 
 
 namespace Ui
 {
@@ -36,4 +36,4 @@ private:
     QFutureWatcher<AuthManager::LoginResult> m_loginWatcher;
 };
 
-#endif // LOGINPAGE_H
+#endif 

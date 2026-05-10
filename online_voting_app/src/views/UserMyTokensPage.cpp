@@ -27,7 +27,7 @@ void UserMyTokensPage::setupUi() {
     mainLayout->addWidget(titleLabel);
     mainLayout->addWidget(tokenListView);
 
-    // Connect custom delegate signals to our page slots
+    
     connect(delegate, &TokenAccordionDelegate::tokenClicked, this, &UserMyTokensPage::onTokenBoxClicked);
     connect(delegate, &TokenAccordionDelegate::sendEmailClicked, this, &UserMyTokensPage::onSendEmailClicked);
 }
@@ -37,13 +37,13 @@ void UserMyTokensPage::loadTokens(Token* tokens, int size) {
 }
 
 void UserMyTokensPage::onTokenBoxClicked(const QModelIndex &index) {
-    // Extract ID and tell the model to toggle its expanded state
+    
     QString tokenId = tokenModel->getTokenAt(index.row()).getId();
     tokenModel->toggleExpanded(tokenId);
 }
 
 void UserMyTokensPage::onSendEmailClicked(const QModelIndex &index) {
-    // Fetch the token and emit it to MainWindow
+    
     Token selectedToken = tokenModel->getTokenAt(index.row());
     emit emailTokenRequested(selectedToken);
 }

@@ -16,7 +16,7 @@ public:
     void loadTokens(Token* tokens, int size);
 
 signals:
-    // Emits the full token object so MainWindow can send the email
+    
     void emailTokenRequested(Token token);
 
 private slots:
@@ -30,4 +30,4 @@ private:
     void setupUi();
 };
 
-#endif // USERMYTOKENSPAGE_H
+#endif 

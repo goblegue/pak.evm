@@ -24,7 +24,7 @@ public:
     void loadPublishedElections(Election* elections, int size);
 
 signals:
-    // Emits the completely filled Candidate object back to MainWindow
+    
     void submitApplicationRequested(Candidate newCandidate);
 
 private slots:
@@ -46,7 +46,7 @@ private:
     QComboBox *educationCombo;
     QTextEdit *manifestoInput;
 
-    // Image Upload UI
+    
     QPushButton *uploadProfileBtn;
     QLabel *profilePreview;
     QString base64ProfileStr;
@@ -61,9 +61,9 @@ private:
 
     void setupUi();
 
-    // Helper function to handle image picking and converting to Base64
+    
     QString pickAndConvertImage(QLabel *previewLabel);
     void resetForm();
 };
 
-#endif // USERCANDIDACYPAGE_H
+#endif 

@@ -53,7 +53,7 @@ private slots:
     void on_btnUserHome_clicked();
     void on_btnUserResults_clicked();
     void on_btnUserLogout_clicked();
-    // admin
+    
     void on_adminSidebarCandidatesBtn_clicked();
     void on_adminSidebarAdminsBtn_clicked();
     void on_adminSidebarElectionsBtn_clicked();
@@ -72,7 +72,7 @@ private slots:
     void on_btnAdminLogout_clicked();
     void handleGetConfigurationRequested(QString electionId);
 
-    // user
+    
     void on_userSidebarActiveElectionsBtn_clicked();
     void on_userSidebarMyTokensBtn_clicked();
     void handleUserElectionSelected(QString electionId);
@@ -87,7 +87,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     AppConfig m_config;
-    // admin
+    
     LoginPage *m_loginPage;
     SignupPage *m_signupPage;
     AdminCandidatePage *m_adminInnerPage_Candidates;
@@ -95,10 +95,10 @@ private:
     AdminElectionsPage *m_adminInnerPage_Elections;
     AdminCandidateDetailsPage *m_adminInnerPage_CandidateDetails;
     AdminCreateElectionPage *m_adminInnerPage_CreateElection;
-    // user
+    
     UserActiveElectionsPage *userInnerPage_ActiveElections;
     UserMyTokensPage *userInnerPage_MyTokens;
     AdminCandidateDetailsPage *userInnerPage_CandidateDetails;
     UserCandidacyPage *userInnerPage_Candidacy;
 };
-#endif // MAINWINDOW_H
+#endif 

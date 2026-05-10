@@ -32,7 +32,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 
     this->setFocus();
 
-    // 1. Create the custom page purely in C++
+    
     m_loginPage = new LoginPage(this);
     m_signupPage = new SignupPage(this); // admin
     m_adminInnerPage_Candidates = new AdminCandidatePage(this);
@@ -40,16 +40,16 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
-    // user
+    
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);
     userInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
-    userInnerPage_CandidateDetails->setUserMode(true); // <--- HIDES THE ADMIN BUTTONS
+    userInnerPage_CandidateDetails->setUserMode(true); 
     userInnerPage_Candidacy = new UserCandidacyPage(this);
 
-    // 2. Add it to the Stacked Widget manually
+    
     ui->MainStack->insertWidget(0, m_loginPage);
-    ui->MainStack->insertWidget(1, m_signupPage); // admin
+    ui->MainStack->insertWidget(1, m_signupPage); 
     ui->adminContentStack->addWidget(m_adminInnerPage_Candidates);
     ui->adminContentStack->addWidget(m_adminInnerPage_Admins);
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
@@ -73,7 +73,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     connect(m_signupPage, &SignupPage::goToLoginRequested, this, &MainWindow::handleGoToLoginRequested);
     connect(m_signupPage, &SignupPage::signupSuccessUser, this, &MainWindow::handleSignupSuccessUser);
     connect(m_signupPage, &SignupPage::signupSuccessAdminPending, this, &MainWindow::handleSignupSuccessAdminPending);
-    // admin
+    
     connect(m_adminInnerPage_Candidates, &AdminCandidatePage::electionSelected,
             this, &MainWindow::handleElectionSelectedForCandidates);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::navigateToCreateElection,
@@ -92,7 +92,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleElectionStatusChangeRequested);
     connect(m_adminInnerPage_Elections, &AdminElectionsPage::getConfigRequested,
             this, &MainWindow::handleGetConfigurationRequested);
-    // user
+    
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::electionSelected,
             this, &MainWindow::handleUserElectionSelected);
     connect(userInnerPage_ActiveElections, &UserActiveElectionsPage::generateTokenRequested,
@@ -105,7 +105,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
             this, &MainWindow::handleUserBackToActiveElections);
     connect(userInnerPage_Candidacy, &UserCandidacyPage::submitApplicationRequested,
             this, &MainWindow::handleCandidacyApplicationSubmit);
-    // ADD THIS CONNECTION:
+    
     connect(m_adminInnerPage_Admins,
             &AdminManagementPage::adminStatusChangeRequested,
             this,
@@ -117,21 +117,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// Navigation
 
 void MainWindow::handleGoToSignupRequested()
 {
-    ui->MainStack->setCurrentIndex(1); // SignupPageEnum is at index 1
+    ui->MainStack->setCurrentIndex(1); 
     this->setFocus();
 }
 
 void MainWindow::handleGoToLoginRequested()
 {
-    ui->MainStack->setCurrentIndex(0); // LoginPage is at index 0
+    ui->MainStack->setCurrentIndex(0); 
     this->setFocus();
 }
 
-// Authentication
+
 
 void MainWindow::handleLoginSuccessUser()
 {
@@ -218,7 +217,7 @@ void MainWindow::on_btnAdminLogout_clicked()
 
 void MainWindow::on_adminSidebarCandidatesBtn_clicked()
 {
-    // 1. Change the nested stacked widget to show the candidate page
+    
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 
     int electionCount = 0;
@@ -244,10 +243,10 @@ void MainWindow::on_adminSidebarCandidatesBtn_clicked()
         }
     }
 
-    // 3. Load them into the UI
+    
     m_adminInnerPage_Candidates->loadElections(approvedElections, approvedCount);
 
-    // 4. Cleanup memory to prevent leaks!
+    
     delete[] electionList;
     delete[] approvedElections;
 }
@@ -287,9 +286,7 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
 
     delete[] adminList;
 }
-// ---------------------------------------------------------
-// Triggered when the Admin clicks "Elections" on Left Sidebar
-// ---------------------------------------------------------
+
 void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
@@ -320,30 +317,23 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
     delete[] electionList;
 }
 
-// ---------------------------------------------------------
-// Navigation: Go TO Details Page
-// ---------------------------------------------------------
+
 void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
 {
-    // 1. Pass the data to the page UI
+    
     m_adminInnerPage_CandidateDetails->setCandidate(selectedCandidate);
 
-    // 2. Tell the StackedWidget to change screens!
+    
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_CandidateDetails);
 }
 
-// ---------------------------------------------------------
-// Navigation: Go BACK to List
-// ---------------------------------------------------------
 void MainWindow::handleBackToCandidateList()
 {
-    // Change the screen back to the candidates list
+    
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 }
 
-// ---------------------------------------------------------
-// Action: Test the Approve/Reject Buttons
-// ---------------------------------------------------------
+
 void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus)
 {
     QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
@@ -353,7 +343,7 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
     if (success)
     {
         QMessageBox::information(this, "Success", "Status change request logged.");
-        handleBackToCandidateList(); // Kick them back to the list
+        handleBackToCandidateList(); 
     }
     else
     {
@@ -365,10 +355,10 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
 
 void MainWindow::handleElectionStatusChangeRequested(QString electionId, ApprovalStatus newStatus)
 {
-    // 1. Get the current logged-in Admin's CNIC
+    
     QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
 
-    // 2. Send it to the backend ElectionController
+    
     bool success = ElectionController::getInstance().requestElectionStatusChange(electionId,
                                                                                  currentAdminCnic,
                                                                                  newStatus);
@@ -390,10 +380,10 @@ void MainWindow::handleAdminStatusChangeRequested(QString currentUserId,
                                                   QString targetCnic,
                                                   ApprovalStatus newStatus)
 {
-    // 1. Get the current logged-in Admin's CNIC
+    
     QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
 
-    // 2. Send it to the backend AdminController
+    
     bool success = AdminController::getInstance().addStatusChangeRequest(targetCnic,
                                                                          currentAdminCnic,
                                                                          newStatus);
@@ -412,10 +402,10 @@ void MainWindow::handleAdminStatusChangeRequested(QString currentUserId,
 
 void MainWindow::handleNavigateToCreateElection()
 {
-    // Important: Reset the dates to ensure they calculate "2 days from TODAY" accurately
+    
     m_adminInnerPage_CreateElection->resetForm();
 
-    // Swap the screen
+    
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_CreateElection);
 }
 
@@ -424,9 +414,7 @@ void MainWindow::handleBackToElectionList()
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
 }
 
-// ---------------------------------------------------------
-// Triggered when Admin clicks "Create Election"
-// ---------------------------------------------------------
+
 void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime, QDateTime startTime, QDateTime endTime)
 {
     QString id = "ELEC-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper();
@@ -445,10 +433,10 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
     {
         QMessageBox::critical(this, "Error", "Failed to create election.");
     }
-    handleBackToElectionList(); // Go back to list after success
+    handleBackToElectionList(); 
 }
 
-//---------------user-pages---------------
+
 void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
@@ -460,7 +448,7 @@ void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 
 void MainWindow::handleUserElectionSelected(QString electionId)
 {
-    // When the user clicks an election, load the mock candidates for it
+    
     int candidateCount = 0;
     Candidate *candidatsForElection = CandidateController::getInstance()
                                           .getCandidatesByElection(electionId,
@@ -491,9 +479,6 @@ void MainWindow::handleUserElectionSelected(QString electionId)
     delete[] candidatsForElection;
 }
 
-// ---------------------------------------------------------
-// Triggered when User clicks "Register & Generate Token"
-// ---------------------------------------------------------
 void MainWindow::handleGenerateTokenRequested(QString electionId)
 {
 #ifdef prod
@@ -521,18 +506,17 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     }
 
     QImage tokenQrCode = tokenQrCodeOpt.value();
-    //converting image to base64 string
+    
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
 
-    // 3. Open the buffer so we can write to it
+    
     buffer.open(QIODevice::WriteOnly);
 
-    // 4. "Save" the image into the buffer in PNG format
-    // (PNG is best because it preserves transparency/backgrounds)
+    
     tokenQrCode.save(&buffer, "PNG");
 
-    // 5. Convert the raw bytes into a safe Base64 string
+    
     QByteArray base64Bytes = byteArray.toBase64();
 
     bool sendTokenToEmailSuccess = TokenController::getInstance().sendTokenToEmail(newToken,
@@ -543,10 +527,10 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
         return;
     }
 
-    // 2. Create the Dialog using the Designer class
+    
     VoterTokenMess tokenPopup(base64Bytes, electionId, this);
 
-    // 3. Show it modally (blocks the rest of the app until they click OK)
+    
     tokenPopup.exec();
 }
 
@@ -567,9 +551,7 @@ void MainWindow::on_userSidebarMyTokensBtn_clicked()
     delete[] issuedTokens;
 }
 
-// ---------------------------------------------------------
-// Triggered when User clicks "✉ Send to Email" on a Token
-// ---------------------------------------------------------
+
 void MainWindow::handleEmailTokenRequested(Token selectedToken)
 {
 #ifdef deve
@@ -589,36 +571,31 @@ void MainWindow::handleEmailTokenRequested(Token selectedToken)
         QMessageBox::critical(this, "Error", "Failed to send token email. Please try again.");
     }
 }
-// Note: When you load your mock candidates in handleUserElectionSelected,
-// you can now add mockBase64 strings if you want to test the symbol images!
+
 
 void MainWindow::handleUserNavigateToCandidateDetails(Candidate selectedCandidate)
 {
-    // Pass data to the UI
+    
     userInnerPage_CandidateDetails->setCandidate(selectedCandidate);
 
-    // Change the USER stacked widget screen
+    
     ui->userContentStack->setCurrentWidget(userInnerPage_CandidateDetails);
 }
 
 void MainWindow::handleUserBackToActiveElections()
 {
-    // Go back to the active elections list
+    
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
 
-// ---------------------------------------------------------
-// Triggered when User clicks "Locate Station"
-// ---------------------------------------------------------
+
 void MainWindow::on_userSidebarLocateStationBtn_clicked()
 {
     QMessageBox::information(this, "Coming Soon",
                              "📍 The Locate Station feature is currently under development and will be available soon!");
 }
 
-// ---------------------------------------------------------
-// Triggered when User clicks "Run for Office" on Sidebar
-// ---------------------------------------------------------
+
 void MainWindow::on_userSidebarCandidacyBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_Candidacy);
@@ -630,9 +607,7 @@ void MainWindow::on_userSidebarCandidacyBtn_clicked()
     delete[] draftedElections;
 }
 
-// ---------------------------------------------------------
-// Triggered when User clicks "Submit Application" on Candidacy Page
-// ---------------------------------------------------------
+
 void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 {
 #ifdef deve
@@ -659,44 +634,38 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
 
-// ---------------------------------------------------------
-// Triggered when Admin clicks "Get Configuration" on Election
-// ---------------------------------------------------------
+
 void MainWindow::handleGetConfigurationRequested(QString electionId) {
 
     QMessageBox::information(this, "Get Configuration",
                              "Ready to fetch configuration for Election ID:\n" + electionId +
                                  "\n\n(Backend logic to generate/download the JSON file will go here!)");
 
-    /*
-     * WHEN READY, YOU CAN CALL YOUR BACKEND:
-     * QString jsonConfig = ElectionController::getInstance().getElectionConfigJson(electionId);
-     * // Save to file, show in dialog, etc.
-     */
+   
 }
 
-// Helping Functions
+
 
 void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePath)
 {
-    // 1. Set the Dynamic Name
+    
     ui->userNameLabel->setText("Hello, " + fullName);
 
-    // 2. Load the Dynamic Image
+    
     QPixmap originalImage;
 
-    // Check if the user has an uploaded image path, and if the file actually exists
+    
     if (!imagePath.isEmpty() && QFile::exists(imagePath))
     {
         originalImage.load(imagePath);
     }
     else
     {
-        // Fallback: If they haven't uploaded one, load a default silhouette from your resources
+        
         originalImage.load(":/images/white_default_profpic.png");
     }
 
-    // 3. Make the Image a Perfect Circle
+    
     QPixmap circularImage(50, 50);
     circularImage.fill(Qt::transparent);
 
@@ -708,37 +677,37 @@ void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePa
     path.addEllipse(0, 0, 50, 50);
     painter.setClipPath(path);
 
-    // Scale the image down so it fits nicely inside the 50x50 circle
+    
     QPixmap scaledOriginal = originalImage.scaled(50,
                                                   50,
                                                   Qt::KeepAspectRatioByExpanding,
                                                   Qt::SmoothTransformation);
     painter.drawPixmap(0, 0, scaledOriginal);
 
-    // 4. Apply to the Button
+    
     ui->userProfilePicBtn->setIcon(QIcon(circularImage));
     ui->userProfilePicBtn->setIconSize(QSize(50, 50));
 }
 void MainWindow::loadAdminProfile(const QString &fullName, const QString &imagePath)
 {
-    // 1. Set the Dynamic Name
+    
     ui->adminNameLabel->setText("Hello, " + fullName);
 
-    // 2. Load the Dynamic Image
+    
     QPixmap originalImage;
 
-    // Check if the user has an uploaded image path, and if the file actually exists
+    
     if (!imagePath.isEmpty() && QFile::exists(imagePath))
     {
         originalImage.load(imagePath);
     }
     else
     {
-        // Fallback: If they haven't uploaded one, load a default silhouette from your resources
+        
         originalImage.load(":/images/white_default_profpic.png");
     }
 
-    // 3. Make the Image a Perfect Circle
+    
     QPixmap circularImage(50, 50);
     circularImage.fill(Qt::transparent);
 
@@ -750,14 +719,14 @@ void MainWindow::loadAdminProfile(const QString &fullName, const QString &imageP
     path.addEllipse(0, 0, 50, 50);
     painter.setClipPath(path);
 
-    // Scale the image down so it fits nicely inside the 50x50 circle
+
     QPixmap scaledOriginal = originalImage.scaled(50,
                                                   50,
                                                   Qt::KeepAspectRatioByExpanding,
                                                   Qt::SmoothTransformation);
     painter.drawPixmap(0, 0, scaledOriginal);
 
-    // 4. Apply to the Button
+    
     ui->adminProfilePicBtn->setIcon(QIcon(circularImage));
     ui->adminProfilePicBtn->setIconSize(QSize(50, 50));
 }
