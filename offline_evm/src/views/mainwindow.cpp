@@ -9,8 +9,7 @@
 #define deve
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this); // Auto-generated UI from designer
 
@@ -20,7 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    if (scanPage) {
+    if (scanPage)
+    {
         scanPage->stopCamera();
     }
     delete ui;
@@ -81,17 +81,7 @@ void MainWindow::setupKioskUi()
             &EvmScanPage::proceedToVotingClicked,
             this,
             &MainWindow::handleProceedToVoting);
-    connect(votingPage, &EvmVotingPage::candidateVoted, this, [this](Candidate selected) {
-        QMessageBox::information(this,
-                                 "Vote Cast",
-                                 "You successfully voted for: " + selected.getPartyName());
-
-        // 1. Reset the scanner for the NEXT voter
-        scanPage->resetScanner();
-
-        // 2. Send the screen back to the scanner
-        mainKioskStack->setCurrentWidget(scanPage);
-    });
+    connect(votingPage, &EvmVotingPage::candidateVoted, this, &MainWindow::handleCandidateVoted);
     connect(adminDashboard,
             &OfflineAdminDashboard::pauseVotingRequested,
             this,
@@ -152,8 +142,10 @@ void MainWindow::verifyScannedToken(QString cnic, QString qrPayload)
                                                                                   out_tokenId);
 
     // Handle the UI feedback based on the exact result
-    switch (result) {
+    switch (result)
+    {
     case AuthManager::TokenResult::Valid:
+        m_activeTokenId = out_tokenId; // Store the valid token ID for the voting phase
         scanPage->markScanSuccessful(out_tokenId);
         break;
 
@@ -186,44 +178,59 @@ void MainWindow::onHeartbeatTick()
 {
     QDateTime now = QDateTime::currentDateTime();
 
+    // Fetch the actual current state from the database
+    ElectionState dbState = ElectionController::getInstance().getCurrentState();
+
     // STATE 1: PRE-ELECTION (Waiting to start)
-    if (now < currentElectionStartTime) {
-        if (mainKioskStack->currentWidget() != preElectionPage) {
+    if (now < currentElectionStartTime)
+    {
+        if (mainKioskStack->currentWidget() != preElectionPage)
+        {
             mainKioskStack->setCurrentWidget(preElectionPage);
         }
 
-        qint64 secondsLeft = ElectionController::getInstance().getSecondsUntilStart();
+        // Only calculate based on the current overridden times
+        qint64 secondsLeft = now.secsTo(currentElectionStartTime);
         preElectionPage->updateCountdown(formatTime(secondsLeft));
     }
 
     // STATE 2: ACTIVE ELECTION (Scanning OR Voting)
-    else if (now >= currentElectionStartTime && now < currentElectionEndTime) {
+    else if (now >= currentElectionStartTime && now < currentElectionEndTime)
+    {
+
+        // [CRITICAL FIX] If DB still says ReadyWaiting (1), officially open it!
+        if (dbState == ElectionState::ReadyWaiting || dbState == ElectionState::Setup)
+        {
+            ElectionController::getInstance().autoOpenElection(); // Updates DB to State 2
+        }
+
         QWidget *currentScreen = mainKioskStack->currentWidget();
 
-        // ONLY force the screen to the scan page if we are coming from the Pre-Election page.
-        // If the user is currently on the Voting Page, leave them alone!
-        if (currentScreen != scanPage && currentScreen != votingPage
-            && currentScreen != adminDashboard && currentScreen != adminAuthPage) {
+        if (currentScreen != scanPage && currentScreen != votingPage && currentScreen != adminDashboard && currentScreen != adminAuthPage)
+        {
             mainKioskStack->setCurrentWidget(scanPage);
         }
 
-        // Calculate time left until END
-        qint64 secondsLeft = ElectionController::getInstance().getSecondsUntilEnd();
+        qint64 secondsLeft = now.secsTo(currentElectionEndTime);
         QString timeString = formatTime(secondsLeft);
 
-        // Update the clock on BOTH pages so the user sees it while voting!
         scanPage->updateTimeRemaining(timeString);
         votingPage->updateTimeRemaining(timeString);
     }
 
     // STATE 3: POST-ELECTION (Finished)
-    else {
-        // Ensure we are on the Closed screen
-        if (mainKioskStack->currentWidget() != postElectionPage) {
-            mainKioskStack->setCurrentWidget(postElectionPage);
+    else
+    {
 
-            // Lock down the app, stop the camera, stop the timer
-            // scanPage->stopCamera();
+        // [CRITICAL FIX] If DB still says Open (2), officially close it!
+        if (dbState == ElectionState::Open)
+        {
+            ElectionController::getInstance().autoCloseElection(); // Updates DB to State 4
+        }
+
+        if (mainKioskStack->currentWidget() != postElectionPage)
+        {
+            mainKioskStack->setCurrentWidget(postElectionPage);
             kioskHeartbeat->stop();
         }
     }
@@ -268,10 +275,13 @@ void MainWindow::handleEmergencyPause(bool pause)
     m_systemIsPaused = pause;
     adminDashboard->setPausedState(pause);
 
-    if (pause) {
+    if (pause)
+    {
         // Mute the heartbeat UI updates or switch to a "PAUSED" screen
         // AuditLogRepo->insertLog({"EMERGENCY_PAUSE", "Poll worker paused the terminal."});
-    } else {
+    }
+    else
+    {
         // AuditLogRepo->insertLog({"EMERGENCY_RESUME", "Poll worker resumed the terminal."});
     }
 }
@@ -331,4 +341,44 @@ void MainWindow::handleAdminAuthSuccess(QString adminCnic)
     // pass the adminCnic to the dashboard if needed for logging
 
     mainKioskStack->setCurrentWidget(adminDashboard);
+}
+
+void MainWindow::handleCandidateVoted(Candidate selectedCandidate)
+{
+    if (m_activeTokenId.isEmpty())
+    {
+        QMessageBox::critical(this, "Session Error", "No active token found! Session aborted.");
+        scanPage->resetScanner();
+        mainKioskStack->setCurrentWidget(scanPage);
+        return;
+    }
+
+    // 2. Call the Backend to Cast the Vote!
+    QByteArray receiptHash;
+    bool success = ElectionController::getInstance().castVote(
+        selectedCandidate.getCnic(),
+        m_activeTokenId,
+        receiptHash);
+
+    // 3. Provide Feedback to the Voter
+    if (success)
+    {
+        QMessageBox::information(this,
+                                 "Vote Cast Successfully",
+                                 "You successfully voted for: " + selectedCandidate.getPartyName() +
+                                     "\n\nYour Anonymous Receipt Hash:\n" + QString(receiptHash));
+    }
+    else
+    {
+        QMessageBox::critical(this,
+                              "Vote Failed",
+                              "An error occurred while securing your ballot. Please contact a poll worker.");
+    }
+
+    // 4. [SECURITY] Wipe the token from the UI layer immediately
+    m_activeTokenId.clear();
+
+    // 5. Reset the scanner and return to the start screen for the NEXT voter
+    scanPage->resetScanner();
+    mainKioskStack->setCurrentWidget(scanPage);
 }

@@ -40,7 +40,8 @@ std::optional<QByteArray> CryptoEngine::hashWorkerPassword(const QString &passwo
     QByteArray hash(64, Qt::Uninitialized);
     QByteArray pwdBytes = password.toUtf8();
 
-    if (salt.isEmpty()) {
+    if (salt.isEmpty())
+    {
         salt = generateAndStoreRandomSalt();
     }
 
@@ -144,6 +145,8 @@ bool CryptoEngine::generateAndStoreKeyPair(const QString &masterKey)
     {
         return false;
     }
+
+    m_auditKey = keyPairOpt->AuditKey; // Store the audit key in memory for block hashing
 
     return true;
 }

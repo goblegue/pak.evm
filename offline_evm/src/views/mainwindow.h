@@ -31,7 +31,7 @@ private slots:
     void processCameraString(QString base64ImageString, QString cnic);
     void onHeartbeatTick();
     void handleProceedToVoting();
-
+    void handleCandidateVoted(Candidate selectedCandidate);
     void handleEmergencyPause(bool pause);
     void handleTimeExtension(int minutesToAdd);
     void handleEmergencyForceClose();
@@ -39,6 +39,7 @@ private slots:
     void handleSecretKnockDetected();
     void handleAdminAuthSuccess(QString adminCnic);
     void handleAdminAuthBack();
+    
 
 private:
     Ui::MainWindow *ui;
@@ -59,6 +60,7 @@ private:
 
     void verifyScannedToken(QString cnic, QString qrPayload);
     QString formatTime(qint64 totalSeconds);
+    QString m_activeTokenId; // Set when a token is successfully scanned, cleared after voting or timeout
 
 
     EvmScanPage *scanPage;

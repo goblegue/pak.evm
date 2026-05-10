@@ -16,8 +16,13 @@
 #include "controllers/election_controller.h"
 #include "controllers/system_controller.h"
 
+#include "services/crypto/crypto_engine.h"
+
 SystemBootLoader::SystemBootLoader() {}
 SystemBootLoader::~SystemBootLoader() {}
+
+#include <QDebug>
+
 
 void SystemBootLoader::initializeSystem()
 {
@@ -49,4 +54,28 @@ void SystemBootLoader::initializeSystem()
     SystemController::getInstance().injectDependencies(m_configRepo.get(), m_auditRepo.get());
     AuditController::getInstance().injectDependencies(
         m_voteRepo.get(), m_configRepo.get(), m_tokenRepo.get());
+
+    // ==============================================================
+    // 4. CRYPTOGRAPHIC KEY LOADING & VALIDATION
+    // ==============================================================
+    SystemConfig config = SystemController::getInstance().getSystemConfig();
+    
+    // If the system has already been set up, it MUST have the vault files.
+    if (config.getCurrentState() != ElectionState::Setup)
+    {
+        auto auditKeyOpt = CryptoEngine::getInstance().loadAuditKeyFromVault();
+
+        // If files are missing, deleted by a hacker, or empty:
+        if (!auditKeyOpt.has_value()) {
+            // qFatal will instantly crash the app and print this to the console.
+            // This is the correct security protocol for missing cryptographic keys.
+            qFatal("CRITICAL SECURITY ERROR: Election is configured, but cryptographic keys (.bin files) are missing or corrupted! System Halting.");
+        }
+
+        // Successfully loaded. Store them securely in the CryptoEngine's RAM.
+
+        CryptoEngine::getInstance().setAuditKey(auditKeyOpt.value());
+        
+        qDebug() << "[Bootstrapper] Cryptographic Vault loaded successfully.";
+    }
 }

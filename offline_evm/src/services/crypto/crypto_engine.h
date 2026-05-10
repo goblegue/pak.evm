@@ -5,7 +5,6 @@
 #include <QString>
 #include <optional>
 
-
 class CryptoEngine
 {
 private:
@@ -36,6 +35,12 @@ public:
     bool verifyTokenSignature(const QString &payload,
                               const QString &signatureBase64,
                               const QByteArray &publicKey);
+
+    bool setAuditKey(const QByteArray &auditKey)
+    {
+        m_auditKey = auditKey;
+        return true;
+    }
 
     std::optional<QByteArray> generateBlockHash(const QString &blockData,
                                                 const QByteArray &previousHash);
