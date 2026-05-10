@@ -42,6 +42,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
+    m_adminInnerPage_Results = new AdminResultPage(this);
     
     // user
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
@@ -60,6 +61,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->adminContentStack->addWidget(m_adminInnerPage_Elections);
     ui->adminContentStack->addWidget(m_adminInnerPage_CandidateDetails);
     ui->adminContentStack->addWidget(m_adminInnerPage_CreateElection);
+    ui->adminContentStack->addWidget(m_adminInnerPage_Results);
     // user
     ui->userContentStack->addWidget(userInnerPage_ActiveElections);
     ui->userContentStack->addWidget(userInnerPage_MyTokens);
@@ -862,5 +864,30 @@ void MainWindow::loadAdminProfile(const QString &fullName, const QString &imageP
     ui->adminProfilePicBtn->setIconSize(QSize(50, 50));
 }
 
+// ---------------------------------------------------------
+// Triggered when Admin clicks "Results" on the Left Sidebar
+// ---------------------------------------------------------
+void MainWindow::on_adminSidebarResultsBtn_clicked()
+{
+    // 1. Change the nested stacked widget to show the results page
+    ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Results);
 
+    // 2. Fetch all Elections that have FINISHED (ResultsAnnounced or Closed)
+    int electionCount = 2;
+    Election* mockElections = new Election[electionCount];
+
+    mockElections[0].setId("ELEC-28D42");
+    mockElections[0].setTitle("Karachi Mayoral Election");
+    mockElections[0].setStatus(ElectionState::ResultsAnnounced);
+
+    mockElections[1].setId("ELEC-99X11");
+    mockElections[1].setTitle("Punjab Provincial Assembly");
+    mockElections[1].setStatus(ElectionState::ResultsAnnounced);
+
+    // 3. Load them into the UI
+    m_adminInnerPage_Results->loadElections(mockElections, electionCount);
+
+    // 4. Cleanup memory to prevent leaks!
+    delete[] mockElections;
+}
 

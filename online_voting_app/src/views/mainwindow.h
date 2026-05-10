@@ -13,6 +13,7 @@
 #include "views/UserActiveElectionsPage.h"
 #include "views/UserMyTokensPage.h"
 #include "views/UserCandidacyPage.h"
+#include "views/AdminResultPage.h"
 
 enum StackedPages { Login_Page, SignupPageEnum, dminWaitingPage, UserDashPage, AdminDashPage };
 
@@ -65,6 +66,7 @@ private slots:
     void on_btnAdminLogout_clicked();
     void handleGetConfigurationRequested(QString electionId);
     void on_adminUserDashBtn_clicked();
+    void on_adminSidebarResultsBtn_clicked();
 
     // user
     void on_userSidebarActiveElectionsBtn_clicked();
@@ -92,6 +94,7 @@ private:
     AdminElectionsPage *m_adminInnerPage_Elections;
     AdminCandidateDetailsPage *m_adminInnerPage_CandidateDetails;
     AdminCreateElectionPage *m_adminInnerPage_CreateElection;
+    AdminResultPage *m_adminInnerPage_Results;
     // user
     UserActiveElectionsPage *userInnerPage_ActiveElections;
     UserMyTokensPage *userInnerPage_MyTokens;

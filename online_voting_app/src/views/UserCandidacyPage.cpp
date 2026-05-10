@@ -143,7 +143,6 @@ void UserCandidacyPage::setupUi() {
     formLayout->addRow(l4, symbolUploadLayout);
 
     cardLayout->addLayout(formLayout);
-    cardLayout->addStretch();
 
     // 7. Submit Button
     submitBtn = new QPushButton("Submit Application", this);
@@ -152,7 +151,6 @@ void UserCandidacyPage::setupUi() {
     submitBtn->setStyleSheet("QPushButton { background-color: #27AE60; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }"
                              "QPushButton:hover { background-color: #219653; }");
     cardLayout->addWidget(submitBtn);
-    cardLayout->addStretch();
 
     rightLayout->addWidget(formCard);
     rightLayout->addStretch(); // Pushes form to the top
