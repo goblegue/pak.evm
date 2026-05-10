@@ -17,11 +17,11 @@ public:
     explicit AdminCandidateDetailsPage(QWidget *parent = nullptr);
     void setUserMode(bool isUserMode);
 
-    // Call this right before showing the page to populate all the text/images
+    
     void setCandidate(const Candidate &candidate);
 
 signals:
-    // Tells the MainWindow to go back to the Candidates List
+    
     void backBtnClicked();
     void candidateStatusChangeRequested(QString targetCnic, ApprovalStatus newStatus);
 
@@ -33,11 +33,11 @@ private:
     QPushButton *backBtn;
     QLabel *headerTitleLabel;
 
-    // Images
+    
     QLabel *profilePicLabel;
     QLabel *symbolPicLabel;
 
-    // Details
+    
     QLabel *statusLabel;
     QLabel *cnicLabel;
     QLabel *electionIdLabel;
@@ -45,21 +45,21 @@ private:
     QLabel *symbolNameLabel;
     QLabel *educationLabel;
 
-    // Long Text
+    
     QLabel *historyLabel;
     QLabel *manifestoLabel;
 
-    // to approve or reject candidate
+    
     QPushButton *approveBtn;
     QPushButton *rejectBtn;
-    QLabel *approvalCountLabel; // To show "1 Admin has approved"
-    QString currentCandidateCnic; // To remember who we are looking at
+    QLabel *approvalCountLabel; 
+    QString currentCandidateCnic; 
 
     void setupUi();
 
-    // Helper function to turn Base64 strings back into Qt Images
+    
     QPixmap decodeBase64Image(const QString &base64Str, int expectedSize);
     bool m_isUserMode = false;
 };
 
-#endif // ADMINCANDIDATEDETAILSPAGE_H
+#endif 

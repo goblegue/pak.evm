@@ -10,9 +10,7 @@ void AdminCandidateDetailsPage::setupUi() {
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(20);
 
-    // ==========================================
-    // 1. TOP HEADER (Back Btn, Center Title, Status)
-    // ==========================================
+    
     QHBoxLayout *headerLayout = new QHBoxLayout();
 
     backBtn = new QPushButton("← Back", this);
@@ -35,9 +33,7 @@ void AdminCandidateDetailsPage::setupUi() {
     headerLayout->addStretch(1);
     headerLayout->addWidget(statusLabel, 0, Qt::AlignRight);
 
-    // ==========================================
-    // 2. SCROLL AREA
-    // ==========================================
+    
     QScrollArea *scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setStyleSheet("QScrollArea { border: none; background: transparent; }");
@@ -48,13 +44,9 @@ void AdminCandidateDetailsPage::setupUi() {
     contentLayout->setContentsMargins(30, 30, 30, 30);
     contentLayout->setSpacing(25);
 
-    // ==========================================
-    // 3. TOP PROFILE SECTION (SIDE-BY-SIDE FIX)
-    // ==========================================
-    // We use an HBoxLayout to put Images on the Left, and Details on the Right!
+    
     QHBoxLayout *topProfileLayout = new QHBoxLayout();
 
-    // --- Left Side: Images ---
     QVBoxLayout *imagesLayout = new QVBoxLayout();
     profilePicLabel = new QLabel("No Profile", this);
     profilePicLabel->setFixedSize(150, 150); // INCREASED SIZE
@@ -71,7 +63,7 @@ void AdminCandidateDetailsPage::setupUi() {
     imagesLayout->addWidget(symbolPicLabel, 0, Qt::AlignHCenter);
     imagesLayout->addStretch();
 
-    // --- Right Side: Form Details ---
+    
     QFormLayout *formLayout = new QFormLayout();
     formLayout->setHorizontalSpacing(40);
     formLayout->setVerticalSpacing(20);
@@ -102,29 +94,27 @@ void AdminCandidateDetailsPage::setupUi() {
     formLayout->addRow(createKeyLabel("Symbol Name:"), symbolNameLabel);
     formLayout->addRow(createKeyLabel("Education Level:"), educationLabel);
 
-    // Merge Images and Form side-by-side
-    topProfileLayout->addLayout(imagesLayout, 1); // Images take 1 part space
+    
+    topProfileLayout->addLayout(imagesLayout, 1); 
     topProfileLayout->addSpacing(40);
-    topProfileLayout->addLayout(formLayout, 3);   // Text takes 3 parts space (Fills the empty void!)
+    topProfileLayout->addLayout(formLayout, 3);   
 
-    // ==========================================
-    // 4. LONG TEXT SECTION (Grey Boxes)
-    // ==========================================
+    
     QLabel *historyTitle = new QLabel("Previous Political History", this);
     historyTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px;");
 
     historyLabel = new QLabel("-", this);
     historyLabel->setWordWrap(true);
-    historyLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
+    historyLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); 
 
     QLabel *manifestoTitle = new QLabel("Election Manifesto", this);
     manifestoTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px; margin-top: 15px;");
 
     manifestoLabel = new QLabel("-", this);
     manifestoLabel->setWordWrap(true);
-    manifestoLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
+    manifestoLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); 
 
-    // Assemble Content inside Scroll Area
+    
     contentLayout->addLayout(topProfileLayout);
     contentLayout->addWidget(historyTitle);
     contentLayout->addWidget(historyLabel);
@@ -134,9 +124,7 @@ void AdminCandidateDetailsPage::setupUi() {
 
     scrollArea->setWidget(scrollContent);
 
-    // ==========================================
-    // 5. ACTION BUTTONS (Approve / Reject)
-    // ==========================================
+    
     QHBoxLayout *actionLayout = new QHBoxLayout();
 
     approvalCountLabel = new QLabel("", this);
@@ -155,26 +143,22 @@ void AdminCandidateDetailsPage::setupUi() {
     actionLayout->addWidget(rejectBtn);
     actionLayout->addWidget(approveBtn);
 
-    // ==========================================
-    // 6. FINAL ASSEMBLY & CONNECTIONS
-    // ==========================================
+    
     mainLayout->addLayout(headerLayout);
     mainLayout->addWidget(scrollArea);
     mainLayout->addLayout(actionLayout);
 
     connect(backBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::backBtnClicked);
     connect(approveBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::onApproveClicked);
-    connect(rejectBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::onRejectClicked); // This was missing in your old code!
+    connect(rejectBtn, &QPushButton::clicked, this, &AdminCandidateDetailsPage::onRejectClicked); 
 }
-// -------------------------------------------------------------------
-// DATA INJECTION: Populates the UI with the Candidate's data
-// -------------------------------------------------------------------
+
 void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
     headerTitleLabel->setText("Candidate: " + candidate.getPartyName());
 
     currentCandidateCnic = candidate.getUserCnic();
 
-    // Handle Text
+    
     cnicLabel->setText(candidate.getUserCnic());
     electionIdLabel->setText(candidate.getElectionId());
     partyNameLabel->setText(candidate.getPartyName());
@@ -183,7 +167,7 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
     historyLabel->setText(candidate.getPreviousHistory().isEmpty() ? "No history provided." : candidate.getPreviousHistory());
     manifestoLabel->setText(candidate.getManifesto().isEmpty() ? "No manifesto provided." : candidate.getManifesto());
 
-    // Handle Status Badge Colors
+    
     ApprovalStatus status = candidate.getStatus();
     if(status == ApprovalStatus::Pending) {
         statusLabel->setText("PENDING");
@@ -196,11 +180,11 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
         statusLabel->setStyleSheet("background-color: #C0392B; color: white; font-weight: bold; border-radius: 4px;");
     }
 
-    // Handle Images
+    
     profilePicLabel->setPixmap(decodeBase64Image(candidate.getProfileImageBase64(), 120));
     symbolPicLabel->setPixmap(decodeBase64Image(candidate.getSymbolBase64(), 80));
 
-    // Check how many admins have approved already using your custom OOP function!
+    
     int currentApprovals = const_cast<Candidate&>(candidate).getStatusCount(ApprovalStatus::Approved);
     int currentRejections = const_cast<Candidate&>(candidate).getStatusCount(ApprovalStatus::Rejected);
 
@@ -212,7 +196,7 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
         approvalCountLabel->setText("No admin actions yet.");
     }
 
-    // Optional: Hide buttons if already finalized
+    
     if (candidate.getStatus() == ApprovalStatus::Approved || candidate.getStatus() == ApprovalStatus::Rejected) {
         approveBtn->hide();
         rejectBtn->hide();
@@ -237,19 +221,19 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
 }
 
 
-// Helper: Converts Base64 string to a Qt Image
+
 QPixmap AdminCandidateDetailsPage::decodeBase64Image(const QString &base64Str, int expectedSize) {
-    if(base64Str.isEmpty()) return QPixmap(); // Returns empty if no image
+    if(base64Str.isEmpty()) return QPixmap(); 
 
     QByteArray imageBytes = QByteArray::fromBase64(base64Str.toUtf8());
     QPixmap pixmap;
     pixmap.loadFromData(imageBytes);
 
-    // Scale it down nicely so it fits the UI box perfectly
+
     return pixmap.scaled(expectedSize, expectedSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
 }
 
-// Emits the signal with the exact data your CandidateController needs!
+
 void AdminCandidateDetailsPage::onApproveClicked() {
     emit candidateStatusChangeRequested(currentCandidateCnic, ApprovalStatus::Approved);
 }

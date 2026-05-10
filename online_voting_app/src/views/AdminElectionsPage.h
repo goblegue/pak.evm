@@ -36,7 +36,7 @@ private slots:
 private:
     QListView *electionListView;
     QPushButton *filterBtn;
-    QPushButton *createElectionBtn; // The + Button
+    QPushButton *createElectionBtn; 
     QMenu *filterMenu;
 
     ManageElectionListModel *electionModel;
@@ -45,4 +45,4 @@ private:
     void setupUi();
 };
 
-#endif // ADMINELECTIONSPAGE_H
+#endif 

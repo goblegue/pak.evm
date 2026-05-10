@@ -17,19 +17,19 @@ class AdminCreateElectionPage : public QWidget {
 public:
     explicit AdminCreateElectionPage(QWidget *parent = nullptr);
 
-    // Call this every time before showing the page so the dates are fresh!
+    
     void resetForm();
 
 signals:
     void backBtnClicked();
 
-    // Emits the data to MainWindow to send to ElectionController
+    
     void createElectionRequested(QString title, QDateTime publishTime, QDateTime startTime, QDateTime endTime);
 
 private slots:
     void onSubmitClicked();
 
-    // These dynamically update the constraints of the next pickers
+    
     void onPublishTimeChanged(const QDateTime &newDateTime);
     void onStartTimeChanged(const QDateTime &newDateTime);
 
@@ -44,4 +44,4 @@ private:
     void setupUi();
 };
 
-#endif // ADMINCREATEELECTIONPAGE_H
+#endif 

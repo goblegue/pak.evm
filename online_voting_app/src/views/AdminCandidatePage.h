@@ -9,7 +9,7 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QAction>
-#include "models/Models.h" // Include the models we just made
+#include "models/Models.h" 
 #include "models/entities/election.h"
 #include "models/entities/candidate.h"
 
@@ -19,18 +19,18 @@ class AdminCandidatePage : public QWidget {
 public:
     explicit AdminCandidatePage(QWidget *parent = nullptr);
 
-    // Methods for the Lead/Backend to inject the data arrays
+    
     void loadElections(Election* elections, int size);
     void loadCandidates(Candidate* candidates, int size);
 
 signals:
-    // Signal to tell the Main Stacked Widget to change to the "Details" page
+    
     void navigateToCandidateDetails(Candidate selectedCandidate);
 
-    // Signal for the filter logic
+    
     void filterRequested();
 
-    // Signal when election is clicked so DB can fetch new candidates
+    
     void electionSelected(QString electionId);
 
 private slots:
@@ -47,10 +47,10 @@ private:
     ElectionListModel *electionModel;
     CandidateListModel *candidateModel;
 
-    QMenu *filterMenu; // The dropdown menu
-    CandidateFilterProxyModel *proxyModel; // Our new magic filter!
+    QMenu *filterMenu; 
+    CandidateFilterProxyModel *proxyModel; 
 
     void setupUi();
 };
 
-#endif // ADMINCANDIDATEPAGE_H
+#endif 

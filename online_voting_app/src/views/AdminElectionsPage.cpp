@@ -16,9 +16,7 @@ void AdminElectionsPage::setupUi() {
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(20);
 
-    // ==========================================
-    // HEADER: TITLE & FILTER
-    // ==========================================
+    
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *titleLabel = new QLabel("<b>Election Management</b>", this);
     titleLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
@@ -63,9 +61,7 @@ void AdminElectionsPage::setupUi() {
     headerLayout->addStretch();
     headerLayout->addWidget(filterBtn);
 
-    // ==========================================
-    // ACCORDION LIST VIEW
-    // ==========================================
+    
     electionListView = new QListView(this);
     electionListView->setMouseTracking(true);
     electionListView->setModel(proxyModel);
@@ -76,13 +72,11 @@ void AdminElectionsPage::setupUi() {
     electionListView->setItemDelegate(accordionDelegate);
     electionListView->setStyleSheet("QListView { border: none; background: transparent; outline: none; }");
 
-    // Connect the delegate's click to our expand function
+    
     connect(accordionDelegate, &ElectionAccordionDelegate::electionClicked, this, &AdminElectionsPage::onElectionBoxClicked);
     connect(accordionDelegate, &ElectionAccordionDelegate::actionButtonClicked, this, &AdminElectionsPage::showElectionActionMenu);
 
-    // ==========================================
-    // FLOATING '+' BUTTON
-    // ==========================================
+    
     QHBoxLayout *bottomLayout = new QHBoxLayout();
     createElectionBtn = new QPushButton("+", this);
     createElectionBtn->setFixedSize(60, 60);
@@ -92,14 +86,14 @@ void AdminElectionsPage::setupUi() {
         "QPushButton:hover { background-color: #219653; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }"
         );
 
-    bottomLayout->addStretch(); // Push button to the right
+    bottomLayout->addStretch(); 
     bottomLayout->addWidget(createElectionBtn);
 
     mainLayout->addLayout(headerLayout);
     mainLayout->addWidget(electionListView);
     mainLayout->addLayout(bottomLayout);
 
-    // Connections
+    
     connect(filterBtn, &QPushButton::clicked,
             this, &AdminElectionsPage::showFilterMenu);
     connect(createElectionBtn, &QPushButton::clicked,
@@ -116,9 +110,9 @@ void AdminElectionsPage::loadElections(Election* elections, int size, const QStr
 void AdminElectionsPage::onElectionBoxClicked(const QModelIndex &proxyIndex) {
     QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
 
-    // Extract ID and tell the model to toggle its expanded state
-    QString electionId = electionModel->data(realIndex, Qt::DisplayRole).toString(); // Wait, DisplayRole is Title. Let's get the election directly.
-    // Better way:
+    
+    QString electionId = electionModel->data(realIndex, Qt::DisplayRole).toString(); 
+    
     QString actualId = electionModel->getElectionAt(realIndex.row()).getId();
 
     electionModel->toggleExpanded(actualId);
@@ -151,12 +145,10 @@ void AdminElectionsPage::showElectionActionMenu(const QModelIndex &proxyIndex, Q
     if (selectedAct == approveAct || selectedAct == rejectAct) {
         ApprovalStatus newStatus = (selectedAct == approveAct) ? ApprovalStatus::Approved : ApprovalStatus::Rejected;
 
-        // ==========================================
-        // THIS LINE PREVENTS THE MENU FROM OPENING AGAIN!
-        // ==========================================
+       
         electionModel->setLocalVote(electionId, 1);
 
-        // Send message to controller
+        
         emit electionStatusChangeRequested(electionId, newStatus);
     }
 }
@@ -165,6 +157,6 @@ void AdminElectionsPage::onGetConfigButtonClicked(const QModelIndex &proxyIndex)
     QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
     QString electionId = electionModel->getElectionAt(realIndex.row()).getId();
 
-    // Pass it up to MainWindow!
+    
     emit getConfigRequested(electionId);
 }
