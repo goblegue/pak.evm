@@ -21,6 +21,8 @@ public:
                                 const QString &requestingAdminId,
                                 const ApprovalStatus &status) override;
 
+    std::optional<Candidate> getCandidateByCnic(const QString &cnic)override;
+
     Candidate *getCandidates(int &candidatesSize, const QString &electionId = "") override;
 
     // Ensure these exactly match the interface signatures

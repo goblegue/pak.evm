@@ -2,7 +2,6 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-
 #include "controllers/candidateController.h"
 
 const int CANDIDATE_APPROVAL_THRESHOLD = 3;
@@ -48,7 +47,8 @@ bool CandidateController::createCandidate(Candidate &candidate)
         return false; // Election not found
     }
     Election election = electionOpt.value();
-    if (election.getStatus() != ElectionState::Drafted) {
+    if (election.getStatus() != ElectionState::Drafted)
+    {
         return false; // Cannot add candidates to elections that are not active
     }
     candidate.setStatus(ApprovalStatus::Pending); // New candidates start with Pending status
@@ -71,53 +71,51 @@ bool CandidateController::requestCandidateStatusChange(const QString &candidateC
     {
         return false; // Only approved admins can request status changes
     }
-    int candidatesSize{};
-    Candidate *candidates = m_candidateRepo->getCandidates(candidatesSize);
-    Candidate *targetCandidate = nullptr;
-    for (int i = 0; i < candidatesSize; ++i)
+    auto candidateOpt = m_candidateRepo->getCandidateByCnic(candidateCnic);
+    if (!candidateOpt.has_value())
     {
-        if (candidates[i].getUserCnic() == candidateCnic)
-        {
-            targetCandidate = &candidates[i];
-            break;
-        }
-    }
-    if (!targetCandidate)
-    {
-        delete[] candidates;
         return false; // Candidate not found
     }
-    auto electionOpt = m_electionRepo->getElectionById(targetCandidate->getElectionId());
+    Candidate targetCandidate = candidateOpt.value();
+
+    if(targetCandidate.hasAdminVoted(admin.getId()))
+    {
+        return false; // Admin has already voted on this candidate
+    }
+
+    auto electionOpt = m_electionRepo->getElectionById(targetCandidate.getElectionId());
     if (!electionOpt.has_value())
     {
-        delete[] candidates;
         return false;
     }
 
     Election election = electionOpt.value();
-    if (election.getStatus() != ElectionState::Drafted )
+    if (election.getStatus() != ElectionState::Drafted)
     {
-        delete[] candidates;
         return false; // Cannot change candidate status for elections that are not active
     }
+    if (!m_candidateRepo->addStatusChangeRequest(candidateCnic, adminCnic, status))
+    {
+        return false; // Failed to add status change request
+    }
 
-    targetCandidate->addStatusChangeRequest(admin.getId(), status);
+    targetCandidate.addStatusChangeRequest(admin.getId(), status);
 
-    int approvedCount = targetCandidate->getStatusCount(ApprovalStatus::Approved);
-    int rejectedCount = targetCandidate->getStatusCount(ApprovalStatus::Rejected);
+    int approvedCount = targetCandidate.getStatusCount(ApprovalStatus::Approved);
+    int rejectedCount = targetCandidate.getStatusCount(ApprovalStatus::Rejected);
 
     int totalAdmins = m_adminRepo->getApprovedAdminCount();
     if (approvedCount > (totalAdmins / CANDIDATE_APPROVAL_THRESHOLD))
     {
-        delete[] candidates;
+
         return m_candidateRepo->updateCandidateStatus(candidateCnic, ApprovalStatus::Approved);
     }
     if (rejectedCount > (totalAdmins / CANDIDATE_REJECTION_THRESHOLD))
     {
-        delete[] candidates;
+
         return m_candidateRepo->updateCandidateStatus(candidateCnic, ApprovalStatus::Rejected);
     }
-    delete[] candidates;
+
     return true;
 }
 
@@ -135,9 +133,8 @@ Candidate *CandidateController::getCandidatesByElection(const QString &electionI
         return nullptr; // Election not found
     }
     Election election = electionOpt.value();
-    if (!isAdminRequesting
-        && (election.getStatus() == ElectionState::Pending
-            || election.getStatus() == ElectionState::Rejected)) {
+    if (!isAdminRequesting && (election.getStatus() == ElectionState::Pending || election.getStatus() == ElectionState::Rejected))
+    {
         candidatesSize = 0;
         return nullptr; // Voters cannot see candidates for elections that are not active
     }
@@ -181,6 +178,7 @@ QString CandidateController::getCandidatesJsonByElection(const QString &election
         QJsonObject candidateObj;
         // Set the keys and values (very similar to a Map)
         candidateObj["cnic"] = candidates[i].getUserCnic();
+        candidateObj["name"] = candidates[i].getName();
         candidateObj["party"] = candidates[i].getPartyName();
         candidateObj["symbolName"] = candidates[i].getSymbolName();
         candidateObj["symbolData"] = candidates[i].getSymbolBase64();

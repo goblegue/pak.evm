@@ -22,6 +22,7 @@ public:
     // Methods for the Lead/Backend to inject the data arrays
     void loadElections(Election* elections, int size);
     void loadCandidates(Candidate* candidates, int size);
+    void clearData();
 
 signals:
     // Signal to tell the Main Stacked Widget to change to the "Details" page

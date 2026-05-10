@@ -1,4 +1,6 @@
 #include "AdminCandidateDetailsPage.h"
+#include "controllers/auth_manager.h"
+
 #include <QByteArray>
 
 AdminCandidateDetailsPage::AdminCandidateDetailsPage(QWidget *parent) : QWidget(parent) {
@@ -110,12 +112,12 @@ void AdminCandidateDetailsPage::setupUi() {
     // ==========================================
     // 4. LONG TEXT SECTION (Grey Boxes)
     // ==========================================
-    QLabel *historyTitle = new QLabel("Previous Political History", this);
-    historyTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px;");
+    // QLabel *historyTitle = new QLabel("Previous Political History", this);
+    // historyTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px;");
 
-    historyLabel = new QLabel("-", this);
-    historyLabel->setWordWrap(true);
-    historyLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
+    // historyLabel = new QLabel("-", this);
+    // historyLabel->setWordWrap(true);
+    // historyLabel->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.6; background-color: #F8F9F9; padding: 15px; border-radius: 6px;"); // Grey Box
 
     QLabel *manifestoTitle = new QLabel("Election Manifesto", this);
     manifestoTitle->setStyleSheet("font-size: 20px; font-weight: bold; color: #2980B9; border-bottom: 2px solid #ECF0F1; padding-bottom: 5px; margin-top: 15px;");
@@ -126,8 +128,8 @@ void AdminCandidateDetailsPage::setupUi() {
 
     // Assemble Content inside Scroll Area
     contentLayout->addLayout(topProfileLayout);
-    contentLayout->addWidget(historyTitle);
-    contentLayout->addWidget(historyLabel);
+    // contentLayout->addWidget(historyTitle);
+    // contentLayout->addWidget(historyLabel);
     contentLayout->addWidget(manifestoTitle);
     contentLayout->addWidget(manifestoLabel);
     contentLayout->addStretch();
@@ -180,7 +182,7 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
     partyNameLabel->setText(candidate.getPartyName());
     symbolNameLabel->setText(candidate.getSymbolName());
     educationLabel->setText(candidate.getEducationLevel());
-    historyLabel->setText(candidate.getPreviousHistory().isEmpty() ? "No history provided." : candidate.getPreviousHistory());
+    // historyLabel->setText(candidate.getPreviousHistory().isEmpty() ? "No history provided." : candidate.getPreviousHistory());
     manifestoLabel->setText(candidate.getManifesto().isEmpty() ? "No manifesto provided." : candidate.getManifesto());
 
     // Handle Status Badge Colors
@@ -212,8 +214,10 @@ void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
         approvalCountLabel->setText("No admin actions yet.");
     }
 
-    // Optional: Hide buttons if already finalized
-    if (candidate.getStatus() == ApprovalStatus::Approved || candidate.getStatus() == ApprovalStatus::Rejected) {
+    QString currentAdminCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    if (candidate.getStatus() == ApprovalStatus::Approved || 
+        candidate.getStatus() == ApprovalStatus::Rejected ||
+        candidate.hasAdminVoted(currentAdminCnic)) {
         approveBtn->hide();
         rejectBtn->hide();
     } else {

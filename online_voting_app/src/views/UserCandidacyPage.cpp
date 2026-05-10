@@ -5,22 +5,24 @@
 #include <QFormLayout>
 #include <QFrame>
 
-UserCandidacyPage::UserCandidacyPage(QWidget *parent) : QWidget(parent) {
+UserCandidacyPage::UserCandidacyPage(QWidget *parent) : QWidget(parent)
+{
     electionModel = new ElectionListModel(this);
     setupUi();
 }
 
-void UserCandidacyPage::setupUi() {
+void UserCandidacyPage::setupUi()
+{
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(25);
 
     // ==========================================
-    // LEFT SIDE: PUBLISHED ELECTIONS
+    // LEFT SIDE
     // ==========================================
     QWidget *leftPanel = new QWidget(this);
-    leftPanel->setMinimumWidth(350);
-    leftPanel->setMaximumWidth(450);
+    leftPanel->setMinimumWidth(200);
+    leftPanel->setMaximumWidth(400);
     QVBoxLayout *leftLayout = new QVBoxLayout(leftPanel);
     leftLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -40,7 +42,7 @@ void UserCandidacyPage::setupUi() {
     leftLayout->addWidget(electionListView);
 
     // ==========================================
-    // RIGHT SIDE: FORM
+    // RIGHT SIDE
     // ==========================================
     rightStackedWidget = new QStackedWidget(this);
 
@@ -51,7 +53,7 @@ void UserCandidacyPage::setupUi() {
     phLabel->setAlignment(Qt::AlignCenter);
     phLabel->setStyleSheet("font-size: 18px; color: #7F8C8D; font-style: italic;");
     phLayout->addWidget(phLabel);
-    rightStackedWidget->addWidget(placeholderWidget); // Index 0
+    rightStackedWidget->addWidget(placeholderWidget);
 
     // --- PAGE 1: CANDIDACY FORM ---
     formContainer = new QWidget(this);
@@ -69,86 +71,111 @@ void UserCandidacyPage::setupUi() {
     cardLayout->addWidget(formTitleLabel);
     cardLayout->addSpacing(15);
 
-    QFormLayout *formLayout = new QFormLayout();
-    formLayout->setHorizontalSpacing(20);
-    formLayout->setVerticalSpacing(20);
-
     QString inputStyle = "QLineEdit, QComboBox { border: 2px solid #BDC3C7; border-radius: 6px; padding: 8px; font-size: 14px; color: #2C3E50; }"
                          "QLineEdit:focus, QComboBox:focus { border: 2px solid #3498DB; }"
+                         "QTextEdit { border: 2px solid #BDC3C7; border-radius: 6px; padding: 8px; font-size: 14px; color: #2C3E50; }"
                          "QTextEdit:focus { border: 2px solid #3498DB; }";
     QString labelStyle = "font-size: 14px; color: #34495E; font-weight: bold;";
 
-    // 1. Party Name
+    // ==========================================
+    // CREATE ALL WIDGETS FIRST
+    // ==========================================
     partyNameInput = new QLineEdit(this);
     partyNameInput->setStyleSheet(inputStyle);
-    QLabel *l1 = new QLabel("Party Name:", this); l1->setStyleSheet(labelStyle);
-    formLayout->addRow(l1, partyNameInput);
 
-    // 2. Education Level (Dropdown for better UX)
     educationCombo = new QComboBox(this);
-    educationCombo->addItems({"Select Education...", "High School / Matric", "Intermediate", "Bachelor's Degree", "Master's Degree", "Doctorate / Ph.D."});
+    educationCombo->addItems({"Select Education...", "High School / Matric", "Intermediate",
+                              "Bachelor's Degree", "Master's Degree", "Doctorate / Ph.D."});
     educationCombo->setStyleSheet(inputStyle);
-    QLabel *l2 = new QLabel("Education Level:", this); l2->setStyleSheet(labelStyle);
-    formLayout->addRow(l2, educationCombo);
 
-    //manifesto
     manifestoInput = new QTextEdit(this);
     manifestoInput->setStyleSheet(inputStyle);
-    manifestoInput->setFixedHeight(100); // Make it tall enough for a paragraph
+    manifestoInput->setMinimumHeight(150);
     manifestoInput->setPlaceholderText("Write your election manifesto and promises here...");
-    QLabel *lManifesto = new QLabel("Manifesto:", this);
-    lManifesto->setStyleSheet(labelStyle);
-    formLayout->addRow(lManifesto, manifestoInput);
 
-    // 3. Profile Image Upload
-    QHBoxLayout *profileUploadLayout = new QHBoxLayout();
     uploadProfileBtn = new QPushButton("Browse Image...", this);
     uploadProfileBtn->setCursor(Qt::PointingHandCursor);
-    uploadProfileBtn->setFixedSize(120, 35);
+    uploadProfileBtn->setFixedSize(150, 40);
+
     profilePreview = new QLabel("No Image", this);
-    profilePreview->setFixedSize(40, 40);
+    profilePreview->setFixedSize(80, 80);
     profilePreview->setStyleSheet("border: 1px solid #BDC3C7; background: #ECF0F1; font-size: 9px;");
     profilePreview->setAlignment(Qt::AlignCenter);
 
-    profileUploadLayout->addWidget(uploadProfileBtn);
-    profileUploadLayout->addWidget(profilePreview);
-    profileUploadLayout->addStretch();
-    QLabel *l3 = new QLabel("Profile Photo:", this); l3->setStyleSheet(labelStyle);
-    formLayout->addRow(l3, profileUploadLayout);
-
-    // 4. Symbol Image Upload
-    QHBoxLayout *symbolUploadLayout = new QHBoxLayout();
     uploadSymbolBtn = new QPushButton("Browse Image...", this);
     uploadSymbolBtn->setCursor(Qt::PointingHandCursor);
-    uploadSymbolBtn->setFixedSize(120, 35);
+    uploadSymbolBtn->setFixedSize(150, 40);
+
     symbolPreview = new QLabel("No Image", this);
-    symbolPreview->setFixedSize(40, 40);
+    symbolPreview->setFixedSize(80, 80);
     symbolPreview->setStyleSheet("border: 1px solid #BDC3C7; background: #ECF0F1; font-size: 9px;");
     symbolPreview->setAlignment(Qt::AlignCenter);
 
-    symbolUploadLayout->addWidget(uploadSymbolBtn);
-    symbolUploadLayout->addWidget(symbolPreview);
-    symbolUploadLayout->addStretch();
-    QLabel *l4 = new QLabel("Party Symbol:", this); l4->setStyleSheet(labelStyle);
-    formLayout->addRow(l4, symbolUploadLayout);
-
-    cardLayout->addLayout(formLayout);
-
-    // 5. Submit Button
     submitBtn = new QPushButton("Submit Application", this);
     submitBtn->setCursor(Qt::PointingHandCursor);
     submitBtn->setFixedHeight(45);
     submitBtn->setStyleSheet("QPushButton { background-color: #27AE60; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 15px; }"
                              "QPushButton:hover { background-color: #219653; }");
+
+    // ==========================================
+    // NOW BUILD THE LAYOUT
+    // ==========================================
+    QGridLayout *formLayout = new QGridLayout();
+    formLayout->setHorizontalSpacing(20);
+    formLayout->setVerticalSpacing(35);
+    formLayout->setColumnStretch(1, 1);
+
+    // Row 0 — Party Name
+    QLabel *l1 = new QLabel("Party Name:", this);
+    l1->setStyleSheet(labelStyle);
+    formLayout->addWidget(l1, 0, 0, Qt::AlignVCenter);
+    formLayout->addWidget(partyNameInput, 0, 1);
+
+    // Row 1 — Education
+    QLabel *l2 = new QLabel("Education Level:", this);
+    l2->setStyleSheet(labelStyle);
+    formLayout->addWidget(l2, 1, 0, Qt::AlignVCenter);
+    formLayout->addWidget(educationCombo, 1, 1);
+
+    // Row 2 — Manifesto
+    QLabel *lManifesto = new QLabel("Manifesto:", this);
+    lManifesto->setStyleSheet(labelStyle);
+    formLayout->addWidget(lManifesto, 2, 0, Qt::AlignTop);
+    formLayout->addWidget(manifestoInput, 2, 1);
+
+    // Row 3 — Profile Photo
+    QLabel *l3 = new QLabel("Profile Photo:", this);
+    l3->setStyleSheet(labelStyle);
+    QHBoxLayout *profileUploadLayout = new QHBoxLayout();
+    profileUploadLayout->addWidget(uploadProfileBtn);
+    profileUploadLayout->addStretch();
+    profileUploadLayout->addWidget(profilePreview);
+    QWidget *profileUploadWidget = new QWidget(this);
+    profileUploadWidget->setLayout(profileUploadLayout);
+    formLayout->addWidget(l3, 3, 0, Qt::AlignVCenter);
+    formLayout->addWidget(profileUploadWidget, 3, 1);
+
+    // Row 4 — Party Symbol
+    QLabel *l4 = new QLabel("Party Symbol:", this);
+    l4->setStyleSheet(labelStyle);
+    QHBoxLayout *symbolUploadLayout = new QHBoxLayout();
+    symbolUploadLayout->addWidget(uploadSymbolBtn);
+    symbolUploadLayout->addStretch();
+    symbolUploadLayout->addWidget(symbolPreview);
+    QWidget *symbolUploadWidget = new QWidget(this);
+    symbolUploadWidget->setLayout(symbolUploadLayout);
+    formLayout->addWidget(l4, 4, 0, Qt::AlignVCenter);
+    formLayout->addWidget(symbolUploadWidget, 4, 1);
+
+    cardLayout->addLayout(formLayout, 1);
+    cardLayout->addStretch();
     cardLayout->addWidget(submitBtn);
 
-    rightLayout->addWidget(formCard);
-    rightLayout->addStretch(); // Pushes form to the top
+    rightLayout->addWidget(formCard, 1);
+    rightStackedWidget->addWidget(formContainer);
 
-    rightStackedWidget->addWidget(formContainer); // Index 1
-
-    mainLayout->addWidget(leftPanel);
-    mainLayout->addWidget(rightStackedWidget);
+    mainLayout->addWidget(leftPanel, 1);
+    mainLayout->addWidget(rightStackedWidget, 2);
 
     // Connections
     connect(electionListView, &QListView::clicked, this, &UserCandidacyPage::onElectionClicked);
@@ -160,12 +187,14 @@ void UserCandidacyPage::setupUi() {
 // ---------------------------------------------------------
 // LOGIC
 // ---------------------------------------------------------
-void UserCandidacyPage::loadPublishedElections(Election* elections, int size) {
+void UserCandidacyPage::loadPublishedElections(Election *elections, int size)
+{
     electionModel->setElections(elections, size);
     rightStackedWidget->setCurrentIndex(0);
 }
 
-void UserCandidacyPage::onElectionClicked(const QModelIndex &index) {
+void UserCandidacyPage::onElectionClicked(const QModelIndex &index)
+{
     Election selected = electionModel->getElectionAt(index.row());
     currentSelectedElectionId = selected.getId();
     formTitleLabel->setText("Apply for: " + selected.getTitle());
@@ -174,49 +203,72 @@ void UserCandidacyPage::onElectionClicked(const QModelIndex &index) {
     rightStackedWidget->setCurrentIndex(1);
 }
 
-void UserCandidacyPage::resetForm() {
+void UserCandidacyPage::resetForm()
+{
     partyNameInput->clear();
     educationCombo->setCurrentIndex(0);
     manifestoInput->clear();
     base64ProfileStr.clear();
     base64SymbolStr.clear();
-    profilePreview->clear(); profilePreview->setText("No Image");
-    symbolPreview->clear(); symbolPreview->setText("No Image");
+    profilePreview->clear();
+    profilePreview->setText("No Image");
+    symbolPreview->clear();
+    symbolPreview->setText("No Image");
 }
 
 // THE IMAGE CONVERTER
-QString UserCandidacyPage::pickAndConvertImage(QLabel *previewLabel) {
+QString UserCandidacyPage::pickAndConvertImage(QLabel *previewLabel)
+{
     QString filePath = QFileDialog::getOpenFileName(this, "Select Image", "", "Images (*.png *.jpg *.jpeg)");
-    if(filePath.isEmpty()) return ""; // User cancelled
+    if (filePath.isEmpty())
+        return ""; // User cancelled
 
     QPixmap pixmap(filePath);
-    if(pixmap.isNull()) {
+    if (pixmap.isNull())
+    {
         QMessageBox::warning(this, "Error", "Could not load image.");
         return "";
     }
 
-    // Set tiny preview
+    // Set tiny preview on the UI
     previewLabel->setPixmap(pixmap.scaled(previewLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-    // Convert to Base64 to send to Database
+    // ==========================================
+    // --- DATABASE IMAGE COMPRESSION ALGORITHM ---
+    // ==========================================
+
+    // 1. RESIZE: Scale the massive image down to a 256x256 thumbnail max.
+    // (This alone reduces a 4K image down to a tiny fraction of its size)
+    QPixmap compressedPixmap = pixmap.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // 2. SETUP BUFFER
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
     buffer.open(QIODevice::WriteOnly);
-    pixmap.save(&buffer, "PNG"); // Standardize as PNG
+
+    // 3. COMPRESS TO JPG:
+    // Change "PNG" to "JPG" and add the '70' quality parameter (out of 100).
+    // PNG ignores quality settings and stays huge. JPG compresses aggressively.
+    compressedPixmap.save(&buffer, "JPG", 70);
+
+    // Return the compressed string!
     return QString(byteArray.toBase64());
 }
 
-void UserCandidacyPage::onUploadProfileClicked() {
+void UserCandidacyPage::onUploadProfileClicked()
+{
     base64ProfileStr = pickAndConvertImage(profilePreview);
 }
 
-void UserCandidacyPage::onUploadSymbolClicked() {
+void UserCandidacyPage::onUploadSymbolClicked()
+{
     base64SymbolStr = pickAndConvertImage(symbolPreview);
 }
 
-void UserCandidacyPage::onSubmitClicked() {
+void UserCandidacyPage::onSubmitClicked()
+{
     // 1. Validation!
-    if(partyNameInput->text().trimmed().isEmpty() ||
+    if (partyNameInput->text().trimmed().isEmpty() ||
         educationCombo->currentIndex() == 0 ||
         manifestoInput->toPlainText().trimmed().isEmpty() ||
         base64ProfileStr.isEmpty() ||

@@ -131,7 +131,6 @@ void AdminCandidatePage::onElectionClicked(const QModelIndex &index)
     emit electionSelected(selected.getId());
 }
 
-
 // Shows the Dropdown right below the button
 void AdminCandidatePage::showFilterMenu()
 {
@@ -158,7 +157,8 @@ void AdminCandidatePage::loadCandidates(Candidate *candidates, int size)
     candidateModel->setCandidates(candidates, size);
 }
 
-void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex) {
+void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex)
+{
     // 1. Because we are using a Filter (ProxyModel), row '0' on screen might be row '5' in the data.
     // We MUST map the proxy index back to the real source index!
     QModelIndex realIndex = proxyModel->mapToSource(proxyIndex);
@@ -168,4 +168,11 @@ void AdminCandidatePage::onCandidateClicked(const QModelIndex &proxyIndex) {
 
     // 3. Emit the signal! (MainWindow catches this and changes the page)
     emit navigateToCandidateDetails(selected);
+}
+
+void AdminCandidatePage::clearData()
+{
+    electionModel->clear();
+    candidateModel->clear();
+    filterBtn->setText("Filter Status");
 }

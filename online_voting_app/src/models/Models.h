@@ -16,7 +16,8 @@
 #include "models/states.h"
 
 // Define custom roles so the Delegate can fetch specific data
-enum CustomRoles {
+enum CustomRoles
+{
     CandidateStatusRole = Qt::UserRole + 1,
     CandidateSymbolNameRole = Qt::UserRole + 2,
     CandidateSymbolImageRole = Qt::UserRole + 3
@@ -31,7 +32,8 @@ enum AdminCustomRoles
 };
 
 // Add Custom Roles for the Election Delegate to use
-enum ElectionCustomRoles {
+enum ElectionCustomRoles
+{
     ElectionStatusRole = Qt::UserRole + 20,
     ElectionExpandedRole = Qt::UserRole + 21,
     ElectionStartTimeRole = Qt::UserRole + 22,
@@ -40,7 +42,8 @@ enum ElectionCustomRoles {
 };
 
 // Custom roles for the Token Delegate
-enum TokenCustomRoles {
+enum TokenCustomRoles
+{
     TokenExpandedRole = Qt::UserRole + 30,
     TokenSignatureRole = Qt::UserRole + 31,
     TokenIssueDateRole = Qt::UserRole + 32,
@@ -84,14 +87,22 @@ public:
         if (role == Qt::DisplayRole)
             return election.getTitle();
 
-        if (role == ElectionVotedRole) {
+        if (role == ElectionVotedRole)
+        {
             // FIX: We use the 'election' variable we just created above! No Admins here!
             return election.hasAdminVoted(m_currentAdminId);
         }
         return QVariant();
     }
-    void setCurrentAdminId(const QString &id) {
+    void setCurrentAdminId(const QString &id)
+    {
         m_currentAdminId = id;
+    }
+    void clear()
+    {
+        beginResetModel();
+        m_elections.clear();
+        endResetModel();
     }
 };
 
@@ -136,23 +147,34 @@ public:
             return 0;
         return m_candidates.count();
     }
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
-        if (!index.isValid() || index.row() >= m_candidates.count()) return QVariant();
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (!index.isValid() || index.row() >= m_candidates.count())
+            return QVariant();
         const Candidate &candidate = m_candidates.at(index.row());
 
-        if (role == Qt::DisplayRole) {
+        if (role == Qt::DisplayRole)
+        {
             return QString("%1\nParty: %2\nSymbol: %3\nStatus: %4")
                 .arg(candidate.getUserCnic())
                 .arg(candidate.getPartyName())
                 .arg(candidate.getSymbolName())
                 .arg(statusToString(candidate.getStatus()));
         }
-        if (role == CandidateStatusRole) return static_cast<int>(candidate.getStatus());
+        if (role == CandidateStatusRole)
+            return static_cast<int>(candidate.getStatus());
 
         // Pass the Base64 Image to the Delegate
-        if (role == CandidateSymbolImageRole) return candidate.getSymbolBase64();
+        if (role == CandidateSymbolImageRole)
+            return candidate.getSymbolBase64();
 
         return QVariant();
+    }
+    void clear()
+    {
+        beginResetModel();
+        m_candidates.clear();
+        endResetModel();
     }
 };
 
@@ -258,30 +280,37 @@ public:
         return m_admins.count();
     }
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
-        if (!index.isValid() || index.row() >= m_admins.count()) return QVariant();
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (!index.isValid() || index.row() >= m_admins.count())
+            return QVariant();
 
         const Admin &admin = m_admins.at(index.row());
 
-        if (role == Qt::DisplayRole) {
+        if (role == Qt::DisplayRole)
+        {
             return QString("%1 (%2) - CNIC: %3\nStatus: %4")
                 .arg(admin.getName())
                 .arg(admin.getEmail())
                 .arg(admin.getCnic())
                 .arg(statusToString(admin.getStatus()));
         }
-        if (role == AdminStatusRole) return static_cast<int>(admin.getStatus());
+        if (role == AdminStatusRole)
+            return static_cast<int>(admin.getStatus());
 
-        if (role == AdminVotedRole) {
+        if (role == AdminVotedRole)
+        {
             return admin.hasAdminVoted(m_currentAdminId);
         }
-        if (role == LocalVoteRole) {
+        if (role == LocalVoteRole)
+        {
             return m_localVotes.value(admin.getCnic(), 0);
         }
 
         return QVariant();
     }
-    void setCurrentAdminId(const QString &id) {
+    void setCurrentAdminId(const QString &id)
+    {
         m_currentAdminId = id;
     }
 };
@@ -320,7 +349,8 @@ protected:
 // ==========================================
 // ELECTION LIST MODEL (UPDATED FOR ACCORDION)
 // ==========================================
-class ManageElectionListModel : public QAbstractListModel {
+class ManageElectionListModel : public QAbstractListModel
+{
     Q_OBJECT
 private:
     QList<Election> m_elections;
@@ -330,45 +360,63 @@ private:
     // MISSING VARIABLE ADDED:
     QMap<QString, int> m_localVotes;
 
-    QString statusToString(ElectionState status) const {
-        switch(status) {
-        case ElectionState::Drafted: return "Draft";
-        case ElectionState::Rejected: return "Rejected";
-        case ElectionState::Published: return "Published";
-        case ElectionState::VotingOpen: return "Voting Open";
-        case ElectionState::VotingClosed: return "Voting Closed";
-        case ElectionState::ResultsAnnounced: return "Results Announced";
-        default: return "Unknown";
+    QString statusToString(ElectionState status) const
+    {
+        switch (status)
+        {
+        case ElectionState::Drafted:
+            return "Draft";
+        case ElectionState::Rejected:
+            return "Rejected";
+        case ElectionState::Published:
+            return "Published";
+        case ElectionState::VotingOpen:
+            return "Voting Open";
+        case ElectionState::VotingClosed:
+            return "Voting Closed";
+        case ElectionState::ResultsAnnounced:
+            return "Results Announced";
+        default:
+            return "Unknown";
         }
     }
 
 public:
     explicit ManageElectionListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
 
-    void setCurrentAdminId(const QString &id) {
+    void setCurrentAdminId(const QString &id)
+    {
         m_currentAdminId = id;
     }
 
-    void setElections(Election* electionsArray, int size) {
+    void setElections(Election *electionsArray, int size)
+    {
         beginResetModel();
         m_elections.clear();
         m_expandedItems.clear();
         m_localVotes.clear(); // Clear old votes when reloading!
-        for(int i = 0; i < size; ++i) m_elections.append(electionsArray[i]);
+        for (int i = 0; i < size; ++i)
+            m_elections.append(electionsArray[i]);
         endResetModel();
     }
 
     Election getElectionAt(int index) const { return m_elections.at(index); }
 
-    void toggleExpanded(QString electionId) {
-        if (m_expandedItems.contains(electionId)) {
+    void toggleExpanded(QString electionId)
+    {
+        if (m_expandedItems.contains(electionId))
+        {
             m_expandedItems.remove(electionId);
-        } else {
+        }
+        else
+        {
             m_expandedItems.insert(electionId);
         }
 
-        for(int i = 0; i < m_elections.count(); ++i) {
-            if(m_elections[i].getId() == electionId) {
+        for (int i = 0; i < m_elections.count(); ++i)
+        {
+            if (m_elections[i].getId() == electionId)
+            {
                 QModelIndex idx = index(i);
                 emit dataChanged(idx, idx, {ElectionExpandedRole});
                 break;
@@ -379,10 +427,13 @@ public:
     // ==========================================
     // MISSING FUNCTION ADDED:
     // ==========================================
-    void setLocalVote(QString electionId, int voteCode) {
+    void setLocalVote(QString electionId, int voteCode)
+    {
         m_localVotes[electionId] = voteCode;
-        for(int i = 0; i < m_elections.count(); ++i) {
-            if(m_elections[i].getId() == electionId) {
+        for (int i = 0; i < m_elections.count(); ++i)
+        {
+            if (m_elections[i].getId() == electionId)
+            {
                 QModelIndex idx = index(i);
                 // Tell the Delegate to redraw the button!
                 emit dataChanged(idx, idx, {LocalVoteRole});
@@ -391,30 +442,41 @@ public:
         }
     }
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
-        if (parent.isValid()) return 0;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        if (parent.isValid())
+            return 0;
         return m_elections.count();
     }
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
-        if (!index.isValid() || index.row() >= m_elections.count()) return QVariant();
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (!index.isValid() || index.row() >= m_elections.count())
+            return QVariant();
 
         const Election &election = m_elections.at(index.row());
 
-        if (role == Qt::DisplayRole) return election.getTitle();
-        if (role == ElectionStatusRole) return static_cast<int>(election.getStatus());
-        if (role == ElectionExpandedRole) return m_expandedItems.contains(election.getId());
-        if (role == ElectionStartTimeRole) return election.getStartTime().toString("MMM dd, yyyy - hh:mm AP");
-        if (role == ElectionEndTimeRole) return election.getEndTime().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == Qt::DisplayRole)
+            return election.getTitle();
+        if (role == ElectionStatusRole)
+            return static_cast<int>(election.getStatus());
+        if (role == ElectionExpandedRole)
+            return m_expandedItems.contains(election.getId());
+        if (role == ElectionStartTimeRole)
+            return election.getStartTime().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == ElectionEndTimeRole)
+            return election.getEndTime().toString("MMM dd, yyyy - hh:mm AP");
 
-        if (role == ElectionVotedRole) {
+        if (role == ElectionVotedRole)
+        {
             return election.hasAdminVoted(m_currentAdminId);
         }
 
         // ==========================================
         // MISSING ROLE CHECK ADDED:
         // ==========================================
-        if (role == LocalVoteRole) {
+        if (role == LocalVoteRole)
+        {
             return m_localVotes.value(election.getId(), 0);
         }
 
@@ -425,7 +487,8 @@ public:
 // ==========================================
 // ELECTION FILTER PROXY MODEL
 // ==========================================
-class ElectionFilterProxyModel : public QSortFilterProxyModel {
+class ElectionFilterProxyModel : public QSortFilterProxyModel
+{
     Q_OBJECT
 private:
     int m_filterStatus = -1; // -1 means "Show All"
@@ -433,14 +496,17 @@ private:
 public:
     explicit ElectionFilterProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
 
-    void setFilterStatus(int status) {
+    void setFilterStatus(int status)
+    {
         m_filterStatus = status;
         invalidateFilter();
     }
 
 protected:
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override {
-        if (m_filterStatus == -1) return true;
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
+    {
+        if (m_filterStatus == -1)
+            return true;
 
         QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
         int status = sourceModel()->data(index, ElectionStatusRole).toInt();
@@ -452,7 +518,8 @@ protected:
 // ==========================================
 // TOKEN LIST MODEL (ACCORDION STYLE)
 // ==========================================
-class TokenListModel : public QAbstractListModel {
+class TokenListModel : public QAbstractListModel
+{
     Q_OBJECT
 private:
     QList<Token> m_tokens;
@@ -461,22 +528,29 @@ private:
 public:
     explicit TokenListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
 
-    void setTokens(Token* tokensArray, int size) {
+    void setTokens(Token *tokensArray, int size)
+    {
         beginResetModel();
         m_tokens.clear();
         m_expandedItems.clear(); // Collapse all on load
-        for(int i = 0; i < size; ++i) m_tokens.append(tokensArray[i]);
+        for (int i = 0; i < size; ++i)
+            m_tokens.append(tokensArray[i]);
         endResetModel();
     }
 
     Token getTokenAt(int index) const { return m_tokens.at(index); }
 
-    void toggleExpanded(QString tokenId) {
-        if (m_expandedItems.contains(tokenId)) m_expandedItems.remove(tokenId);
-        else m_expandedItems.insert(tokenId);
+    void toggleExpanded(QString tokenId)
+    {
+        if (m_expandedItems.contains(tokenId))
+            m_expandedItems.remove(tokenId);
+        else
+            m_expandedItems.insert(tokenId);
 
-        for(int i = 0; i < m_tokens.count(); ++i) {
-            if(m_tokens[i].getId() == tokenId) {
+        for (int i = 0; i < m_tokens.count(); ++i)
+        {
+            if (m_tokens[i].getId() == tokenId)
+            {
                 QModelIndex idx = index(i);
                 emit dataChanged(idx, idx, {TokenExpandedRole});
                 break;
@@ -484,25 +558,36 @@ public:
         }
     }
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override {
-        if (parent.isValid()) return 0;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        if (parent.isValid())
+            return 0;
         return m_tokens.count();
     }
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override {
-        if (!index.isValid() || index.row() >= m_tokens.count()) return QVariant();
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (!index.isValid() || index.row() >= m_tokens.count())
+            return QVariant();
 
         const Token &token = m_tokens.at(index.row());
 
-        if (role == Qt::DisplayRole) return "Election: " + token.getElectionId();
-        if (role == TokenExpandedRole) return m_expandedItems.contains(token.getId());
-        if (role == TokenSignatureRole) return token.getTokenSignature();
-        if (role == TokenIssueDateRole) return token.getIssuedAt().toString("MMM dd, yyyy - hh:mm AP");
-        if (role == TokenStationRole) return token.getAssignedStationId();
+        if (role == Qt::DisplayRole)
+            return "Election: " + token.getElectionId();
+        if (role == TokenExpandedRole)
+            return m_expandedItems.contains(token.getId());
+        if (role == TokenSignatureRole)
+            return token.getTokenSignature();
+        if (role == TokenIssueDateRole)
+            return token.getIssuedAt().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == TokenStationRole)
+            return token.getAssignedStationId();
 
-        if (role == TokenQRCodeRole) {
+        if (role == TokenQRCodeRole)
+        {
             auto qrImageOpt = TokenController::getInstance().getQrCodeForToken(token);
-            if (qrImageOpt.has_value()) {
+            if (qrImageOpt.has_value())
+            {
                 return qrImageOpt.value();
             }
             return QImage();

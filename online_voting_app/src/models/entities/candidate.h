@@ -10,6 +10,7 @@ class Candidate
 {
 private:
     QString m_id;
+    QString m_name;
     QString m_userCnic;
     QString m_electionId;
     QString m_partyName;
@@ -32,6 +33,7 @@ public:
 
     Candidate(const Candidate &other)
         : m_id(other.m_id),
+          m_name(other.m_name),
           m_userCnic(other.m_userCnic),
           m_electionId(other.m_electionId),
           m_partyName(other.m_partyName),
@@ -60,6 +62,7 @@ public:
     }
 
     // Getters
+    QString getName() const { return m_name; }
     QString getId() const { return m_id; }
     QString getUserCnic() const { return m_userCnic; }
     QString getElectionId() const { return m_electionId; }
@@ -85,6 +88,7 @@ public:
     ApprovalStatus getStatus() const { return m_status; }
 
     // Setters
+    void setName(const QString &name) { m_name = name; }
     void setId(const QString &id) { m_id = id; }
     void setUserCnic(const QString &cnic) { m_userCnic = cnic; }
     void setElectionId(const QString &electionId) { m_electionId = electionId; }
@@ -127,6 +131,7 @@ public:
             m_userCnic = other.m_userCnic;
             m_electionId = other.m_electionId;
             m_partyName = other.m_partyName;
+            m_name = other.m_name;
             m_symbol = other.m_symbol;
             m_educationLevel = other.m_educationLevel;
             m_previousHistory = other.m_previousHistory;
@@ -156,9 +161,12 @@ public:
         return *this;
     }
 
-    bool hasAdminVoted(const QString &requestingAdminId) const {
-        for (int i = 0; i < m_statusChangeCount; ++i) {
-            if (m_statusChangeRequests[i].requestById == requestingAdminId) {
+    bool hasAdminVoted(const QString &requestingAdminId) const
+    {
+        for (int i = 0; i < m_statusChangeCount; ++i)
+        {
+            if (m_statusChangeRequests[i].requestById == requestingAdminId)
+            {
                 return true; // Found them!
             }
         }
@@ -175,6 +183,7 @@ public:
     virtual bool addStatusChangeRequest(const QString &targetCandidateCnic,
                                         const QString &requestingAdminId,
                                         const ApprovalStatus &status) = 0;
+    virtual std::optional<Candidate> getCandidateByCnic(const QString &cnic) = 0;
     virtual Candidate *getCandidates(int &candidatesSize, const QString &electionId = QString()) = 0;
     virtual Candidate *getCandidatesByStatus(int &candidatesSize, const QString &electionId, ApprovalStatus status) = 0;
     virtual bool updateCandidateStatus(const QString &candidateCnic, ApprovalStatus newStatus) = 0;

@@ -23,7 +23,7 @@
 #include "votertokenmess.h"
 #include <optional>
 
-#define prod
+#define deve
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -63,7 +63,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(3);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
@@ -220,6 +220,7 @@ void MainWindow::on_btnAdminLogout_clicked()
 
 void MainWindow::on_adminSidebarCandidatesBtn_clicked()
 {
+    m_adminInnerPage_Candidates->clearData();
     // 1. Change the nested stacked widget to show the candidate page
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 
@@ -318,7 +319,7 @@ void MainWindow::on_adminSidebarElectionsBtn_clicked()
 #endif
 
 #ifdef deve
-    QString currentAdminId = "ROOT_001";
+    QString currentAdminCnic = "ROOT_001";
 #endif
 
     int electionCount = 0;
@@ -353,6 +354,7 @@ void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
 void MainWindow::handleBackToCandidateList()
 {
     // Change the screen back to the candidates list
+
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 }
 
@@ -368,7 +370,8 @@ void MainWindow::handleCandidateStatusChangeRequested(QString targetCnic, Approv
     if (success)
     {
         QMessageBox::information(this, "Success", "Status change request logged.");
-        handleBackToCandidateList(); // Kick them back to the list
+        handleBackToCandidateList();            // Kick them back to the list
+        on_adminSidebarCandidatesBtn_clicked(); // Refresh the list to show updated status
     }
     else
     {
@@ -466,7 +469,8 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
     {
         QMessageBox::critical(this, "Error", "Failed to create election.");
     }
-    handleBackToElectionList(); // Go back to list after success
+    handleBackToElectionList();            // Go back to list after success
+    on_adminSidebarElectionsBtn_clicked(); // Refresh the list to show the new election
 }
 
 //---------------user-pages---------------
