@@ -125,6 +125,7 @@ qt_add_executable(online_voting_app
     src/views/loginpage.h src/views/loginpage.cpp src/views/loginpage.ui
     src/views/signuppage.h src/views/signuppage.cpp src/views/signuppage.ui
     src/views/AdminResultPage.h src/views/AdminResultPage.cpp
+    src/views/UserResultsPage.h src/views/UserResultsPage.cpp
 
 )
 

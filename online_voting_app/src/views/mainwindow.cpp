@@ -50,6 +50,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     userInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     userInnerPage_CandidateDetails->setUserMode(true);
     userInnerPage_Candidacy = new UserCandidacyPage(this);
+    userInnerPage_Results = new UserResultsPage(this);
 
     // 2. Add it to the Stacked Widget manually
     ui->MainStack->insertWidget(0, m_loginPage);
@@ -67,6 +68,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_MyTokens);
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
+    ui->userContentStack->addWidget(userInnerPage_Results);
 
     ui->MainStack->setCurrentIndex(0);
 
@@ -888,6 +890,22 @@ void MainWindow::on_adminSidebarResultsBtn_clicked()
     m_adminInnerPage_Results->loadElections(mockElections, electionCount);
 
     // 4. Cleanup memory to prevent leaks!
+    delete[] mockElections;
+}
+
+
+void MainWindow::on_userSidebarResultsBtn_clicked()
+{
+    ui->userContentStack->setCurrentWidget(userInnerPage_Results);
+
+    // Fetch Completed Elections
+    int electionCount = 1;
+    Election* mockElections = new Election[electionCount];
+    mockElections[0].setId("ELEC-28D42");
+    mockElections[0].setTitle("Karachi Mayoral Election");
+    mockElections[0].setStatus(ElectionState::ResultsAnnounced);
+
+    userInnerPage_Results->loadElections(mockElections, electionCount);
     delete[] mockElections;
 }
 

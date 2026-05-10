@@ -188,7 +188,7 @@ QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPa
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="AdminWaitingPage">
        <layout class="QGridLayout" name="gridLayout_5">
@@ -414,7 +414,7 @@ background-color: rgb(16, 88, 255);</string>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="userSidebarResultsBtn">
                <property name="text">
                 <string>Results</string>
                </property>

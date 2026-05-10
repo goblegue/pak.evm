@@ -14,6 +14,7 @@
 #include "views/UserMyTokensPage.h"
 #include "views/UserCandidacyPage.h"
 #include "views/AdminResultPage.h"
+#include "views/UserResultsPage.h"
 
 enum StackedPages { Login_Page, SignupPageEnum, dminWaitingPage, UserDashPage, AdminDashPage };
 
@@ -79,9 +80,7 @@ private slots:
     void on_userSidebarLocateStationBtn_clicked();
     void on_userSidebarCandidacyBtn_clicked();
     void handleCandidacyApplicationSubmit(Candidate newCandidate);
-
-
-
+    void on_userSidebarResultsBtn_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -100,6 +99,7 @@ private:
     UserMyTokensPage *userInnerPage_MyTokens;
     AdminCandidateDetailsPage *userInnerPage_CandidateDetails;
     UserCandidacyPage *userInnerPage_Candidacy;
+    UserResultsPage *userInnerPage_Results;
 
     //logo images
     void loadDashboardImages();
