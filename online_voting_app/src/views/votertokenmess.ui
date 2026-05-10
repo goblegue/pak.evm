@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>VoterTokenMess</class>
+ <widget class="QDialog" name="VoterTokenMess">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* 1. Main Dialog Background */
+QDialog {
+    background-color: #FFFFFF;
+}
+
+/* 3. The QR Code Image Box */
+QLabel#qrImageLabel {
+    background-color: #F8F9FA;
+    border: 2px dashed #BDC3C7; /* Nice dashed border to look like a scan area */
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* 4. The Details Text below the QR Code */
+QLabel#detailsLabel, QLabel#electionidLabel {
+    font-family: &quot;Segoe UI&quot;, Arial, sans-serif;
+    font-size: 14px;
+    color: #7F8C8D; /* Soft readable gray */
+    margin-bottom: 15px;
+}
+
+/* 5. The OK Button (Matching your Green Register Button) */
+QPushButton#okButton {
+    background-color: #314a75; 
+    color: white;
+    font-family: &quot;Segoe UI&quot;, Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px; /* Smooth rounded corners */
+    min-height: 45px;
+    min-width: 190px; /* Makes the button wide and clickable */
+    margin-bottom: 15px;
+}
+
+/* Hover effect for the button */
+QPushButton#okButton:hover {
+    background-color: #219653; /* Slightly darker green */
+}
+
+/* Click effect for the button */
+QPushButton#okButton:pressed {
+    background-color: #1E8449;
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QLabel" name="electionidLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="detailsLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="qrImageLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>OK</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

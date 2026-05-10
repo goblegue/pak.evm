@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1163</width>
+    <height>784</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* =======================================================
+   1. LEFT FRAMES (Gradient Background for both pages)
+======================================================= */
+QFrame#leftLoginFrame, QFrame#leftSignupFrame, QFrame#waitingFrame {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
+                                stop:0 #ffffff, 
+                                stop:1 #e0eaf5);
+    border-radius: 10px;
+}
+
+/* =======================================================
+   2. RIGHT IMAGE FRAMES (Apply to both if duplicated)
+======================================================= */
+QFrame#rightImageFrame, QFrame#rightImageFrame_2 {
+    border-image: url(:/images/votingImage.png) 0 0 0 0 stretch stretch;
+}
+
+/* =======================================================
+   3. PRIMARY ACTION BUTTONS (Login, Register, Back)
+      Smooth Solid Blue Pill shape
+======================================================= */
+QPushButton#loginSubmitBtn, QPushButton#signupSubmitBtn, QPushButton#adminWaitBackBtn {
+    background-color: #3b5998; 
+    color: white;
+    border: none;
+    border-radius: 20px; 
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+QPushButton#loginSubmitBtn:hover, QPushButton#signupSubmitBtn:hover, QPushButton#adminWaitBackBtn:hover {
+    background-color: #4b6ea8; 
+}
+
+QPushButton#loginSubmitBtn:pressed, QPushButton#signupSubmitBtn:pressed, QPushButton#adminWaitBackBtn:pressed {
+    background-color: #2a4170; 
+}
+
+/* =======================================================
+   4. SECONDARY NAVIGATION BUTTONS (Switch Pages)
+      Ghost/Outline Style
+======================================================= */
+QPushButton#goToSignupBtn, QPushButton#goToLoginBtn {
+    background-color: transparent;
+    color: #3b5998; 
+    border: 2px solid transparent;
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+QPushButton#goToSignupBtn:hover, QPushButton#goToLoginBtn:hover {
+    background-color: #eef2f9; 
+    border: 2px solid #3b5998; 
+}
+
+QPushButton#goToSignupBtn:pressed, QPushButton#goToLoginBtn:pressed {
+    background-color: #dbe4f0;
+}
+
+/* =======================================================
+   5. ALL TEXT INPUTS (User, Pass, Email, etc.)
+======================================================= */
+QLineEdit {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 12px; 
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333333;
+}
+
+QLineEdit:focus {
+    border: 2px solid #3b5998; 
+    background-color: #fbfcff;
+}
+
+/* =======================================================
+   6. DASHBOARD SIDEBAR (User &amp; Admin)
+======================================================= */
+/* The dark sidebar container */
+QFrame#userSidebarFrame, QFrame#adminSidebarFrame {
+    background-color: #314a75; /* A much lighter, smoother slate-blue */
+    border-right: 2px solid #3b5998;
+}
+
+/* Sidebar Title Labels (e.g., &quot;VOTER MENU&quot;) */
+QFrame#userSidebarFrame QLabel, QFrame#adminSidebarFrame QLabel {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 15px;
+}
+
+/* Sidebar Navigation Buttons */
+QFrame#userSidebarFrame QPushButton, QFrame#adminSidebarFrame QPushButton {
+    background-color: transparent; 
+    color: #e8eef7; /* Slightly brighter text to keep high contrast */
+    text-align: left; /* Flushes text to the left */
+    padding: 15px 20px; /* Taller padding for easy clicking */
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 0px; /* Removes pill shape for sidebar items */
+}
+
+/* Sidebar Hover, Pressed, AND Active (Checked) Effects */
+QFrame#userSidebarFrame QPushButton:hover, 
+QFrame#adminSidebarFrame QPushButton:hover,
+QFrame#userSidebarFrame QPushButton:pressed, 
+QFrame#adminSidebarFrame QPushButton:pressed,
+QFrame#userSidebarFrame QPushButton:checked, 
+QFrame#adminSidebarFrame QPushButton:checked {
+    background-color: #4b6ea8; /* Boosted hover color */
+    color: white;
+    border-left: 5px solid #ffffff; /* Cool white indicator bar */
+}
+
+/* =======================================================
+   8. PROFILE TOP BAR
+======================================================= */
+/* The Avatar Button */
+QPushButton#userProfilePicBtn, QPushButton#adminProfilePicBtn {
+    background-color: transparent;
+    border: 2px solid #3b5998; /* A nice blue ring around the profile pic */
+    border-radius: 25px; /* Makes it a perfect circle (assuming 50x50 size) */
+}
+QPushButton#userProfilePicBtn, QPushButton#adminProfilePicBtn:hover {
+    border: 2px solid #4b6ea8; /* Lighter blue glow on hover */
+}
+
+/* The Name Label */
+QLabel#userNameLabel, QLabel#adminNameLabel {
+    color: #ffffff; /* Assuming this is on a light background now. If dark, use 'white' */
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+/* =======================================================
+   10. DASHBOARD LAYOUT BACKGROUNDS
+======================================================= */
+
+/* The Top Navigation Bar (Holding Name and Profile Pic) */
+QFrame#userTopNavbarFrame, QFrame#adminTopNavbarFrame {
+    background-color: #314a75; /* Crisp white background */
+    border-bottom: 2px solid #e0eaf5; /* Subtle grey-blue line separating header from content */
+}
+
+/* The Nested Inner Stack (Where the actual dashboard content goes) */
+QStackedWidget#userContentStack, QStackedWidget#adminContentStack {
+    background-color: #f5f7fb; /* Very soft grey/blue so the white cards/widgets pop out */
+}
+
+/* Ensure the Inner Pages themselves are also transparent so the stack color shows */
+QWidget#userInnerPage_Home, QWidget#userInnerPage_Elections, QWidget#userInnerPage_Results {
+    background-color: transparent; 
+}
+
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QStackedWidget" name="MainStack">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="AdminWaitingPage">
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QFrame" name="waitingFrame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: qlineargradient(spread:pad, x1:0.503, y1:0.984279, x2:0.503, y2:0.717348, stop:0 rgba(43, 107, 255, 255), stop:1 rgba(255, 255, 255, 255));</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>396</x>
+             <y>340</y>
+             <width>332</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LayoutDirection::LeftToRight</enum>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; color:#000000;&quot;&gt;Waiting for other Admin's Approval&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="adminWaitBackBtn">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>101</width>
+             <height>42</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">
+background-color: rgb(16, 88, 255);</string>
+           </property>
+           <property name="text">
+            <string>&lt;- back</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="UserDashPage">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QFrame" name="userTopNavbarFrame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="2">
+            <widget class="QPushButton" name="userProfilePicBtn">
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>1042</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="userNameLabel">
+             <property name="text">
+              <string>Hello</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QFrame" name="userSidebarFrame">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;PAK.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserHome">
+               <property name="text">
+                <string>Home</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarActiveElectionsBtn">
+               <property name="text">
+                <string>Active Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarMyTokensBtn">
+               <property name="text">
+                <string>My Tokens</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarLocateStationBtn">
+               <property name="text">
+                <string>Locate Station</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="userSidebarCandidacyBtn">
+               <property name="text">
+                <string>Run for Office</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>413</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUserLogout">
+               <property name="text">
+                <string>Logout</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QStackedWidget" name="userContentStack">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="userInnerPage_Home"/>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="AdminDashPage">
+       <layout class="QVBoxLayout" name="verticalLayout_admin_main">
+        <item>
+         <widget class="QFrame" name="adminTopNavbarFrame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>75</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_admin_nav">
+           <item row="0" column="0">
+            <spacer name="horizontalSpacer_admin">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>1042</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="adminProfilePicBtn">
+             <property name="minimumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>50</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="adminNameLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_admin">
+          <item>
+           <widget class="QFrame" name="adminSidebarFrame">
+            <property name="minimumSize">
+             <size>
+              <width>220</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>220</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Shadow::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_admin_sidebar">
+             <item>
+              <widget class="QLabel" name="label_adminLogo">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:700; color:#ffffff;&quot;&gt;PAK.EVM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminHome">
+               <property name="text">
+                <string>Dashboard</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="adminSidebarElectionsBtn">
+               <property name="text">
+                <string>Manage Elections</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="adminSidebarCandidatesBtn">
+               <property name="text">
+                <string>Candidates</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="adminSidebarAdminsBtn">
+               <property name="text">
+                <string>Admins</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_admin">
+               <property name="orientation">
+                <enum>Qt::Orientation::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>413</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnAdminLogout">
+               <property name="text">
+                <string>Logout</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="autoExclusive">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QStackedWidget" name="adminContentStack">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <widget class="QWidget" name="adminInnerPage_Home"/>
+            <widget class="QWidget" name="adminInnerPage_Elections"/>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1163</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
