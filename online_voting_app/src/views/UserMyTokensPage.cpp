@@ -14,7 +14,7 @@ void UserMyTokensPage::setupUi() {
     QLabel *titleLabel = new QLabel("<b>My Digital Tokens</b>", this);
     titleLabel->setStyleSheet("font-size: 24px; color: #2C3E50;");
 
-    tokenListView = new QListView(this);
+    tokenListView = new EmptyStateListView("You have no digital tokens.", this);
     tokenListView->setMouseTracking(true);
     tokenListView->setModel(tokenModel);
     tokenListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -46,4 +46,9 @@ void UserMyTokensPage::onSendEmailClicked(const QModelIndex &index) {
     // Fetch the token and emit it to MainWindow
     Token selectedToken = tokenModel->getTokenAt(index.row());
     emit emailTokenRequested(selectedToken);
+}
+
+void UserMyTokensPage::clearData()
+{
+    tokenModel->clear();
 }

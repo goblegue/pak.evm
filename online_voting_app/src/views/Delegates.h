@@ -10,6 +10,40 @@
 #include "models/Models.h"
 #include <QApplication>
 #include "views/AdminCandidatePage.h"
+#include <QListView>
+
+// ==========================================
+// SMART EMPTY STATE LIST VIEW
+// ==========================================
+class EmptyStateListView : public QListView {
+    Q_OBJECT
+private:
+    QString m_emptyText;
+public:
+    explicit EmptyStateListView(const QString &emptyText, QWidget *parent = nullptr)
+        : QListView(parent), m_emptyText(emptyText) {}
+
+protected:
+    void paintEvent(QPaintEvent *e) override {
+        QListView::paintEvent(e); // Draw the list view normally first
+
+        // If the model is attached and has ZERO rows, draw our text!
+        if (model() && model()->rowCount() == 0) {
+            QPainter painter(viewport());
+            painter.setRenderHint(QPainter::Antialiasing);
+
+            painter.setPen(QColor("#95A5A6")); // Soft grey color
+
+            QFont f = font();
+            f.setPointSize(15);
+            f.setItalic(true); // Make it italic
+            painter.setFont(f);
+
+            // Draw text exactly in the center
+            painter.drawText(rect(), Qt::AlignCenter | Qt::TextWordWrap, m_emptyText);
+        }
+    }
+};
 
 // ==========================================
 // ELECTION BOX DELEGATE
@@ -291,61 +325,49 @@ public:
         painter->restore();
     }
 };
-
 // ==========================================
 // ELECTION ACCORDION DELEGATE (UPGRADED)
 // ==========================================
-class ElectionAccordionDelegate : public QStyledItemDelegate
-{
+class ElectionAccordionDelegate : public QStyledItemDelegate {
     Q_OBJECT
 signals:
     void electionClicked(const QModelIndex &index) const;
     void actionButtonClicked(const QModelIndex &index, QPoint globalPos) const;
-    void getConfigButtonClicked(const QModelIndex &index) const; // NEW SIGNAL
+    void getConfigButtonClicked(const QModelIndex &index) const;
 
 public:
     explicit ElectionAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         bool isExpanded = index.data(ElectionExpandedRole).toBool();
-        return QSize(option.rect.width(), isExpanded ? 130 : 60);
+        // INCREASED HEIGHT: From 130 to 145 to fit the 3rd line of text comfortably
+        return QSize(option.rect.width(), isExpanded ? 145 : 60);
     }
 
-    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override
-    {
-        if (event->type() == QEvent::MouseButtonRelease)
-        {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index) override {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
             bool isExpanded = index.data(ElectionExpandedRole).toBool();
             int statusInt = index.data(ElectionStatusRole).toInt();
             ElectionState status = static_cast<ElectionState>(statusInt);
 
-            if (isExpanded)
-            {
-                // UI CALCULATION: Shift button if Status Button is present
+            if (isExpanded) {
                 bool hasStatusBtn = (status == ElectionState::Pending);
                 int configBtnOffset = hasStatusBtn ? 290 : 145;
 
-                // 1. Check "Get Configuration" Button Click
                 QRect configBtnRect(option.rect.right() - configBtnOffset, option.rect.bottom() - 40, 140, 28);
-                if (configBtnRect.contains(mouseEvent->pos()))
-                {
+                if (configBtnRect.contains(mouseEvent->pos())) {
                     emit getConfigButtonClicked(index);
                     return true;
                 }
 
-                // 2. Check "Change Status" Button Click (Only if Pending)
-                if (hasStatusBtn)
-                {
+                if (hasStatusBtn) {
                     bool alreadyVoted = index.data(ElectionVotedRole).toBool();
                     int localVote = index.data(LocalVoteRole).toInt();
 
-                    if (!alreadyVoted && localVote == 0)
-                    {
+                    if (!alreadyVoted && localVote == 0) {
                         QRect btnRect(option.rect.right() - 145, option.rect.bottom() - 40, 130, 28);
-                        if (btnRect.contains(mouseEvent->pos()))
-                        {
+                        if (btnRect.contains(mouseEvent->pos())) {
                             emit actionButtonClicked(index, mouseEvent->globalPosition().toPoint());
                             return true;
                         }
@@ -358,8 +380,7 @@ public:
         return QStyledItemDelegate::editorEvent(event, model, option, index);
     }
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
-    {
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
@@ -372,72 +393,49 @@ public:
 
         QColor statusColor;
         QString statusText;
-        switch (status)
-        {
-        case ElectionState::Drafted:
-            statusColor = QColor("#95A5A6");
-            statusText = "Draft";
-            break;
-        case ElectionState::Pending:
-            statusColor = QColor("#F39C12");
-            statusText = "Pending";
-            break;
-        case ElectionState::Rejected:
-            statusColor = QColor("#E74C3C");
-            statusText = "Rejected";
-            break;
-        case ElectionState::Published:
-            statusColor = QColor("#3498DB");
-            statusText = "Published";
-            break;
-        case ElectionState::VotingOpen:
-            statusColor = QColor("#2ECC71");
-            statusText = "Voting Open";
-            break;
-        case ElectionState::VotingClosed:
-            statusColor = QColor("#F39C12");
-            statusText = "Voting Closed";
-            break;
-        case ElectionState::ResultsAnnounced:
-            statusColor = QColor("#9B59B6");
-            statusText = "Results Announced";
-            break;
-        default:
-            statusColor = QColor("#34495E");
-            statusText = "Unknown";
-            break;
+        switch(status) {
+        case ElectionState::Drafted: statusColor = QColor("#95A5A6"); statusText = "Draft"; break;
+        case ElectionState::Pending: statusColor = QColor("#F39C12"); statusText = "Pending"; break;
+        case ElectionState::Rejected: statusColor = QColor("#E74C3C"); statusText = "Rejected"; break;
+        case ElectionState::Published: statusColor = QColor("#3498DB"); statusText = "Published"; break;
+        case ElectionState::VotingOpen: statusColor = QColor("#2ECC71"); statusText = "Voting Open"; break;
+        case ElectionState::VotingClosed: statusColor = QColor("#F39C12"); statusText = "Voting Closed"; break;
+        case ElectionState::ResultsAnnounced: statusColor = QColor("#9B59B6"); statusText = "Results Announced"; break;
+        default: statusColor = QColor("#34495E"); statusText = "Unknown"; break;
         }
 
-        if (option.state & QStyle::State_Selected)
-            painter->setBrush(QColor("#F8F9F9"));
+        if (option.state & QStyle::State_Selected) painter->setBrush(QColor("#F8F9F9"));
 
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
         QString title = index.data(Qt::DisplayRole).toString();
-        QRect titleRect = rect.adjusted(15, 10, -150, isExpanded ? -90 : 0);
-        QFont titleFont = option.font;
-        titleFont.setBold(true);
-        titleFont.setPointSize(11);
-        painter->setFont(titleFont);
-        painter->setPen(QColor("#2C3E50"));
+        // Adjusted title rect so it stays at the top nicely
+        QRect titleRect = rect.adjusted(15, 10, -150, isExpanded ? -105 : 0);
+        QFont titleFont = option.font; titleFont.setBold(true); titleFont.setPointSize(11);
+        painter->setFont(titleFont); painter->setPen(QColor("#2C3E50"));
         painter->drawText(titleRect, Qt::AlignLeft | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), title);
 
-        QRect statusRect = rect.adjusted(0, 10, -15, isExpanded ? -90 : 0);
+        QRect statusRect = rect.adjusted(0, 10, -15, isExpanded ? -105 : 0);
         painter->setPen(statusColor);
         painter->drawText(statusRect, Qt::AlignRight | (isExpanded ? Qt::AlignTop : Qt::AlignVCenter), statusText);
 
-        if (isExpanded)
-        {
+        if (isExpanded) {
+            // =======================================================
+            // NEW TEXT BLOCK: Publish, Start, and End Times
+            // =======================================================
+            QString publishTime = "Publish: " + index.data(ElectionPublishTimeRole).toString();
             QString startTime = "Start: " + index.data(ElectionStartTimeRole).toString();
             QString endTime = "End: " + index.data(ElectionEndTimeRole).toString();
 
             painter->setPen(QColor("#7F8C8D"));
-            QFont detailFont = option.font;
-            detailFont.setPointSize(9);
+            QFont detailFont = option.font; detailFont.setPointSize(9);
             painter->setFont(detailFont);
-            painter->drawText(rect.adjusted(15, 45, -15, 0), Qt::AlignLeft | Qt::AlignTop, startTime);
-            painter->drawText(rect.adjusted(15, 70, -15, 0), Qt::AlignLeft | Qt::AlignTop, endTime);
+
+            // Draw the 3 lines neatly stacked
+            painter->drawText(rect.adjusted(15, 40, -15, 0), Qt::AlignLeft | Qt::AlignTop, publishTime);
+            painter->drawText(rect.adjusted(15, 65, -15, 0), Qt::AlignLeft | Qt::AlignTop, startTime);
+            painter->drawText(rect.adjusted(15, 90, -15, 0), Qt::AlignLeft | Qt::AlignTop, endTime);
 
             bool hasStatusBtn = (status == ElectionState::Pending);
             int configBtnOffset = hasStatusBtn ? 290 : 145;
@@ -446,46 +444,38 @@ public:
             btnFont.setBold(true);
             btnFont.setPointSize(9);
 
-            if (status == ElectionState::Published || status == ElectionState::VotingOpen)
-            {
+            // "GET CONFIGURATION" BUTTON
+            if (status == ElectionState::Published || status == ElectionState::VotingOpen) {
                 QRect configBtnRect(rect.right() - configBtnOffset, rect.bottom() - 40, 140, 28);
                 QColor configBgColor = Qt::white;
-                if (option.state & QStyle::State_MouseOver && configBtnRect.contains(option.widget->mapFromGlobal(QCursor::pos())))
-                {
+                if (option.state & QStyle::State_MouseOver && configBtnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
                     configBgColor = QColor("#ECF0F1");
                 }
                 painter->setBrush(configBgColor);
-                painter->setPen(QPen(QColor("#2C3E50"), 2)); // Dark Slate Border
+                painter->setPen(QPen(QColor("#2C3E50"), 2));
                 painter->drawRoundedRect(configBtnRect, 4, 4);
 
                 painter->setPen(QColor("#2C3E50"));
-
                 painter->setFont(btnFont);
                 painter->drawText(configBtnRect, Qt::AlignCenter, "Get Configuration");
             }
-            // ==========================================
-            // "CHANGE STATUS" BUTTON (Only Visible if Pending)
-            // ==========================================
-            if (hasStatusBtn)
-            {
+
+            // "CHANGE STATUS" BUTTON
+            if (hasStatusBtn) {
                 bool alreadyVoted = index.data(ElectionVotedRole).toBool();
                 int localVoteInt = index.data(LocalVoteRole).toInt();
                 QRect btnRect(rect.right() - 145, rect.bottom() - 40, 130, 28);
 
-                if (alreadyVoted || localVoteInt != 0)
-                {
+                if (alreadyVoted || localVoteInt != 0) {
                     painter->setBrush(QColor("#ECF0F1"));
                     painter->setPen(QPen(QColor("#BDC3C7"), 1));
                     painter->drawRoundedRect(btnRect, 4, 4);
                     painter->setPen(QColor("#7F8C8D"));
                     painter->setFont(btnFont);
                     painter->drawText(btnRect, Qt::AlignCenter, "✔ Voted");
-                }
-                else
-                {
+                } else {
                     QColor btnBgColorStatus = Qt::white;
-                    if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos())))
-                    {
+                    if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
                         btnBgColorStatus = QColor("#ECF0F1");
                     }
                     painter->setBrush(btnBgColorStatus);

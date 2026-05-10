@@ -38,7 +38,8 @@ enum ElectionCustomRoles
     ElectionExpandedRole = Qt::UserRole + 21,
     ElectionStartTimeRole = Qt::UserRole + 22,
     ElectionEndTimeRole = Qt::UserRole + 23,
-    ElectionVotedRole = Qt::UserRole + 24
+    ElectionVotedRole = Qt::UserRole + 24,
+    ElectionPublishTimeRole = Qt::UserRole + 25
 };
 
 // Custom roles for the Token Delegate
@@ -313,6 +314,12 @@ public:
     {
         m_currentAdminId = id;
     }
+    void clear()
+    {
+        beginResetModel();
+        m_admins.clear();
+        endResetModel();
+    }
 };
 
 // ==========================================
@@ -466,6 +473,8 @@ public:
             return election.getStartTime().toString("MMM dd, yyyy - hh:mm AP");
         if (role == ElectionEndTimeRole)
             return election.getEndTime().toString("MMM dd, yyyy - hh:mm AP");
+        if (role == ElectionPublishTimeRole)
+            return election.getPublishTime().toString("MMM dd, yyyy - hh:mm AP");
 
         if (role == ElectionVotedRole)
         {
@@ -481,6 +490,12 @@ public:
         }
 
         return QVariant();
+    }
+    void clear()
+    {
+        beginResetModel();
+        m_elections.clear();
+        endResetModel();
     }
 };
 
@@ -594,6 +609,12 @@ public:
         }
 
         return QVariant();
+    }
+    void clear()
+    {
+        beginResetModel();
+        m_tokens.clear();
+        endResetModel();
     }
 };
 #endif // ADMIN_MODELS_H

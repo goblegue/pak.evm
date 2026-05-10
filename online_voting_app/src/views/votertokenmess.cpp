@@ -4,7 +4,7 @@
 #include <QPixmap>
 #include <QMessageBox>
 
-VoterTokenMess::VoterTokenMess(const QString &base64Image, const QString &electionId, QWidget *parent) :
+VoterTokenMess::VoterTokenMess(const QString &base64Image, const QString &electionId, const QString &tokenId, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::VoterTokenMess)
 {
@@ -17,7 +17,7 @@ VoterTokenMess::VoterTokenMess(const QString &base64Image, const QString &electi
     // 2. Set the text details
     ui->detailsLabel->setText(QString("<b>Election ID:</b> %1<br>Please save this QR Code to scan at the physical voting booth.").arg(electionId));
 
-    ui->electionidLabel->setText(QString("<b>Election ID:</b> %1<br>").arg(electionId));
+    ui->electionidLabel->setText(QString("<b>Token ID:</b> %1<br>").arg(tokenId));
 
     // 3. Load the Base64 Image
     loadBase64Image(base64Image);
@@ -34,7 +34,6 @@ VoterTokenMess::~VoterTokenMess()
 void VoterTokenMess::loadBase64Image(const QString &base64String)
 {
     // Step A: Convert the QString Base64 to a QByteArray
-    // We strip out any "data:image/png;base64," header if your backend sent it
     QString cleanBase64 = base64String;
     if (cleanBase64.contains(",")) {
         cleanBase64 = cleanBase64.split(",").last();
@@ -45,9 +44,13 @@ void VoterTokenMess::loadBase64Image(const QString &base64String)
     // Step B: Load the raw bytes into a QPixmap
     QPixmap pixmap;
     if (pixmap.loadFromData(imageData)) {
-        // Success! Set it to the label
-        // We scale it smoothly to fit the label size we defined in Qt Designer
-        ui->qrImageLabel->setPixmap(pixmap.scaled(ui->qrImageLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QPixmap largeQr = pixmap.scaled(130, 135, Qt::KeepAspectRatio, Qt::FastTransformation);
+
+        ui->qrImageLabel->setPixmap(largeQr);
+
+        ui->qrImageLabel->setAlignment(Qt::AlignCenter);
+
     } else {
         // Fallback if the Base64 string is corrupted or invalid
         ui->qrImageLabel->setText("Error: Could not load token image.");

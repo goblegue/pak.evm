@@ -27,7 +27,8 @@ void AdminCandidatePage::setupUi()
     QVBoxLayout *leftLayout = new QVBoxLayout();
     QLabel *electionLabel = new QLabel("<b>Select Election</b>", this);
     electionLabel->setStyleSheet("font-size: 16px; color: #2C3E50;");
-    electionListView = new QListView(this);
+
+    electionListView = new EmptyStateListView("No elections available.", this);
     electionListView->setMouseTracking(true);
     electionListView->setModel(electionModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -97,7 +98,7 @@ void AdminCandidatePage::setupUi()
     rightHeaderLayout->addStretch();
     rightHeaderLayout->addWidget(filterBtn);
 
-    candidateListView = new QListView(this);
+    candidateListView = new EmptyStateListView("No candidates have registered for this election.", this);
 
     // 2. CRITICAL CHANGE: Tell the ListView to look at the PROXY model, not the base model!
     candidateListView->setModel(proxyModel);
@@ -176,3 +177,5 @@ void AdminCandidatePage::clearData()
     candidateModel->clear();
     filterBtn->setText("Filter Status");
 }
+
+

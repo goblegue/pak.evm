@@ -30,6 +30,8 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
 {
     ui->setupUi(this);
 
+    loadDashboardImages();
+
     this->setFocus();
 
     // 1. Create the custom page purely in C++
@@ -270,6 +272,7 @@ void MainWindow::handleElectionSelectedForCandidates(QString electionId)
 
 void MainWindow::on_adminSidebarAdminsBtn_clicked()
 {
+    m_adminInnerPage_Admins->clearData();
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Admins);
 #ifdef prod
     if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser())
@@ -307,6 +310,7 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
+    m_adminInnerPage_Elections->clearData();
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
 #ifdef prod
     if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser())
@@ -354,8 +358,6 @@ void MainWindow::handleNavigateToCandidateDetails(Candidate selectedCandidate)
 // ---------------------------------------------------------
 void MainWindow::handleBackToCandidateList()
 {
-    // Change the screen back to the candidates list
-
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Candidates);
 }
 
@@ -477,6 +479,7 @@ void MainWindow::handleCreateElectionSubmit(QString title, QDateTime publishTime
 //---------------user-pages---------------
 void MainWindow::on_userSidebarActiveElectionsBtn_clicked()
 {
+    userInnerPage_ActiveElections->clearData();
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
     int electionCount = 0;
     Election *activeElections = ElectionController::getInstance().getElectionsForUser(electionCount);
@@ -573,7 +576,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     }
 
     // 2. Create the Dialog using the Designer class
-    VoterTokenMess tokenPopup(base64Bytes, electionId, this);
+    VoterTokenMess tokenPopup(base64Bytes, electionId,newToken.getId(), this);
 
     // 3. Show it modally (blocks the rest of the app until they click OK)
     tokenPopup.exec();
@@ -581,6 +584,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
 
 void MainWindow::on_userSidebarMyTokensBtn_clicked()
 {
+    userInnerPage_MyTokens->clearData();
     ui->userContentStack->setCurrentWidget(userInnerPage_MyTokens);
 
     int tokenCount = 0;
@@ -632,7 +636,6 @@ void MainWindow::handleUserNavigateToCandidateDetails(Candidate selectedCandidat
 
 void MainWindow::handleUserBackToActiveElections()
 {
-    // Go back to the active elections list
     ui->userContentStack->setCurrentWidget(userInnerPage_ActiveElections);
 }
 
@@ -650,6 +653,7 @@ void MainWindow::on_userSidebarLocateStationBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::on_userSidebarCandidacyBtn_clicked()
 {
+    userInnerPage_Candidacy->clearData();
     ui->userContentStack->setCurrentWidget(userInnerPage_Candidacy);
 
     int electionCount = 0;
@@ -705,7 +709,73 @@ void MainWindow::handleGetConfigurationRequested(QString electionId)
                                                                 m_config.publicKey);
 }
 
+void MainWindow::on_adminUserDashBtn_clicked()
+{
+    ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
+
+    QMessageBox::information(this, "View Changed", "You are now viewing the system as a standard Voter.");
+}
+
 // Helping Functions
+
+// ==========================================
+// IMAGE & LOGO LOADING
+// ==========================================
+void MainWindow::loadDashboardImages() {
+
+    // 1. Define your image paths (Ensure these match your Resource.qrc exactly!)
+    QString systemLogoPath = ":/images/pak.evm-logo.png";
+    // QString defaultAvatarPath = ":/images/default_avatar.png";
+
+    // 2. Load the System Logo into the User Dashboard Top Bar
+    // (Assuming you named the label 'userTopBarLogoLabel' in Qt Designer)
+    if (ui->userTopBarLogoLabel) {
+        setCircularImage(ui->userTopBarLogoLabel, systemLogoPath, 45);
+    }
+
+    // 3. Load the System Logo into the Admin Dashboard Top Bar
+    // (You will need to drag a label into the Admin top bar in Qt Designer and name it 'adminTopBarLogoLabel')
+    if (ui->adminTopBarLogoLabel) {
+        setCircularImage(ui->adminTopBarLogoLabel, systemLogoPath, 45);
+    }
+
+    // Optional: If you ever change the Profile Avatar buttons on the right side to QLabels,
+    // you can use this exact same function to make them circular too!
+    // setCircularImage(ui->userProfilePicLabel, defaultAvatarPath, 40);
+}
+
+// ---------------------------------------------------------
+// REUSABLE HELPER: Turns any image path into a perfectly round UI Label
+// ---------------------------------------------------------
+void MainWindow::setCircularImage(QLabel *label, const QString &imagePath, int size) {
+    if (!label) return; // Safety check
+
+    QPixmap originalImage(imagePath);
+
+    if (!originalImage.isNull()) {
+        QPixmap circularImage(size, size);
+        circularImage.fill(Qt::transparent);
+
+        QPainter painter(&circularImage);
+        painter.setRenderHint(QPainter::Antialiasing); // Smooth edges
+
+        QPainterPath path;
+        path.addEllipse(0, 0, size, size);
+        painter.setClipPath(path);
+
+        // Draw the image into the circle mask
+        painter.drawPixmap(0, 0, size, size, originalImage);
+
+        // Apply to the specific label
+        label->setPixmap(circularImage);
+        label->setAlignment(Qt::AlignCenter);
+
+        // Remove any default borders from your CSS
+        label->setStyleSheet("background: transparent; border: none;");
+    } else {
+        qDebug() << "Image Loading Error: Could not find image at" << imagePath;
+    }
+}
 
 void MainWindow::loadUserProfile(const QString &fullName, const QString &imagePath)
 {
@@ -791,3 +861,6 @@ void MainWindow::loadAdminProfile(const QString &fullName, const QString &imageP
     ui->adminProfilePicBtn->setIcon(QIcon(circularImage));
     ui->adminProfilePicBtn->setIconSize(QSize(50, 50));
 }
+
+
+

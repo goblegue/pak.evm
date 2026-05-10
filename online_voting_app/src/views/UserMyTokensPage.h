@@ -14,6 +14,7 @@ class UserMyTokensPage : public QWidget {
 public:
     explicit UserMyTokensPage(QWidget *parent = nullptr);
     void loadTokens(Token* tokens, int size);
+    void clearData();
 
 signals:
     // Emits the full token object so MainWindow can send the email

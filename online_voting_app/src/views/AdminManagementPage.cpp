@@ -76,7 +76,7 @@ void AdminManagementPage::setupUi()
     // ==========================================
     // FULL WIDTH LIST VIEW
     // ==========================================
-    adminListView = new QListView(this);
+    adminListView = new EmptyStateListView("No administrators found.", this);
     adminListView->setMouseTracking(true);
     adminListView->setModel(proxyModel);
     adminListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -149,4 +149,9 @@ void AdminManagementPage::showActionMenu(const QModelIndex &proxyIndex, QPoint g
         // Send message to controller
         emit adminStatusChangeRequested(currentUserId, selected.getCnic(), newStatus);
     }
+}
+
+void AdminManagementPage::clearData()
+{
+    adminModel->clear();
 }

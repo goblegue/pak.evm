@@ -21,6 +21,7 @@ public:
     explicit UserActiveElectionsPage(QWidget *parent = nullptr);
     void loadElections(Election* elections, int size);
     void loadCandidates(Candidate* candidates, int size);
+    void clearData();
 
 signals:
     void electionSelected(QString electionId);

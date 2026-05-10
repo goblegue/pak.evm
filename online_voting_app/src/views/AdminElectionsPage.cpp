@@ -66,7 +66,7 @@ void AdminElectionsPage::setupUi() {
     // ==========================================
     // ACCORDION LIST VIEW
     // ==========================================
-    electionListView = new QListView(this);
+    electionListView = new EmptyStateListView("No elections have been created yet.", this);
     electionListView->setMouseTracking(true);
     electionListView->setModel(proxyModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -167,4 +167,9 @@ void AdminElectionsPage::onGetConfigButtonClicked(const QModelIndex &proxyIndex)
 
     // Pass it up to MainWindow!
     emit getConfigRequested(electionId);
+}
+
+void AdminElectionsPage::clearData()
+{
+    electionModel->clear();
 }

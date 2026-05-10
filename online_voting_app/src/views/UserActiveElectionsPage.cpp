@@ -26,7 +26,7 @@ void UserActiveElectionsPage::setupUi() {
     QLabel *electionLabel = new QLabel("<b>Active Elections</b>", this);
     electionLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
 
-    electionListView = new QListView(this);
+    electionListView = new EmptyStateListView("There are currently no active elections.", this);
     electionListView->setMouseTracking(true);
     electionListView->setModel(electionModel);
     electionListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -92,7 +92,7 @@ void UserActiveElectionsPage::setupUi() {
     QLabel *candidateLabel = new QLabel("<b>Approved Candidates</b>", this);
     candidateLabel->setStyleSheet("font-size: 18px; color: #2C3E50; margin-top: 10px;");
 
-    candidateListView = new QListView(this);
+    candidateListView = new EmptyStateListView("No approved candidates found for this election.", this);
     candidateListView->setMouseTracking(true);
     candidateListView->setModel(candidateModel);
     candidateListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -163,3 +163,10 @@ void UserActiveElectionsPage::onCandidateClicked(const QModelIndex &index) {
     Candidate selected = candidateModel->getCandidateAt(index.row());
     emit navigateToCandidateDetails(selected);
 }
+
+void UserActiveElectionsPage::clearData()
+{
+    electionModel->clear();
+    candidateModel->clear();
+}
+

@@ -64,6 +64,7 @@ private slots:
     void handleBackToElectionList();
     void on_btnAdminLogout_clicked();
     void handleGetConfigurationRequested(QString electionId);
+    void on_adminUserDashBtn_clicked();
 
     // user
     void on_userSidebarActiveElectionsBtn_clicked();
@@ -76,6 +77,9 @@ private slots:
     void on_userSidebarLocateStationBtn_clicked();
     void on_userSidebarCandidacyBtn_clicked();
     void handleCandidacyApplicationSubmit(Candidate newCandidate);
+
+
+
 
 private:
     Ui::MainWindow *ui;
@@ -93,5 +97,9 @@ private:
     UserMyTokensPage *userInnerPage_MyTokens;
     AdminCandidateDetailsPage *userInnerPage_CandidateDetails;
     UserCandidacyPage *userInnerPage_Candidacy;
+
+    //logo images
+    void loadDashboardImages();
+    void setCircularImage(QLabel *label, const QString &imagePath, int size);
 };
 #endif // MAINWINDOW_H

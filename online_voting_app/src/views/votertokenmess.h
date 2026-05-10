@@ -12,7 +12,7 @@ class VoterTokenMess : public QDialog
     Q_OBJECT
 
 public:
-    explicit VoterTokenMess(const QString &base64Image, const QString &electionId, QWidget *parent = nullptr);
+    explicit VoterTokenMess(const QString &base64Image, const QString &electionId,const QString &tokenId, QWidget *parent = nullptr);
     ~VoterTokenMess();
 
 private:

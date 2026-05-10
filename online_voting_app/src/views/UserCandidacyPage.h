@@ -22,6 +22,7 @@ class UserCandidacyPage : public QWidget {
 public:
     explicit UserCandidacyPage(QWidget *parent = nullptr);
     void loadPublishedElections(Election* elections, int size);
+    void clearData();
 
 signals:
     // Emits the completely filled Candidate object back to MainWindow
@@ -50,6 +51,8 @@ private:
     QPushButton *uploadProfileBtn;
     QLabel *profilePreview;
     QString base64ProfileStr;
+
+    QLineEdit *symbolNameInput;
 
     QPushButton *uploadSymbolBtn;
     QLabel *symbolPreview;
