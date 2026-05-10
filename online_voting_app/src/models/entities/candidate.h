@@ -12,7 +12,6 @@ private:
     QString m_id;
     QString m_name;
     QString m_userCnic;
-    QString m_name;
     QString m_electionId;
     QString m_partyName;
     QString m_symbol;
@@ -65,7 +64,6 @@ public:
     // Getters
     QString getName() const { return m_name; }
     QString getId() const { return m_id; }
-    QString getName() const { return m_name; }
     QString getUserCnic() const { return m_userCnic; }
     QString getElectionId() const { return m_electionId; }
     QString getPartyName() const { return m_partyName; }
@@ -95,7 +93,6 @@ public:
     void setUserCnic(const QString &cnic) { m_userCnic = cnic; }
     void setElectionId(const QString &electionId) { m_electionId = electionId; }
     void setPartyName(const QString &party) { m_partyName = party; }
-    void setName(const QString &name) { m_name = name; }
     void setEducationLevel(const QString &edu) { m_educationLevel = edu; }
     void setPreviousHistory(const QString &history) { m_previousHistory = history; }
     void setManifesto(const QString &manifesto) { m_manifesto = manifesto; }
