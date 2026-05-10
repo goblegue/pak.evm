@@ -46,6 +46,8 @@ public:
                                                 const QByteArray &previousHash);
 
     std::optional<QByteArray> hashWorkerPassword(const QString &password, QByteArray &salt);
+
+    std::optional<QByteArray> encryptMessage(const QByteArray &message, const QByteArray &recipientPublicKey);
 };
 
 #endif

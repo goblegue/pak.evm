@@ -259,3 +259,37 @@ std::optional<QByteArray> CryptoEngine::generateBlockHash(const QString &blockDa
 
     return blockHash;
 }
+
+std::optional<QByteArray> CryptoEngine::encryptMessage(const QByteArray &message, const QByteArray &recipientPublicKey)
+{
+    if (recipientPublicKey.size() != crypto_sign_PUBLICKEYBYTES)
+    {
+        qWarning() << "CryptoEngine Error: Invalid public key size for encryption!";
+        return std::nullopt;
+    }
+
+    // 1. Convert Ed25519 Public Key (Signing) to X25519 Public Key (Encryption)
+    unsigned char curve25519_pk[crypto_box_PUBLICKEYBYTES];
+    if (crypto_sign_ed25519_pk_to_curve25519(curve25519_pk, reinterpret_cast<const unsigned char *>(recipientPublicKey.constData())) != 0)
+    {
+        qWarning() << "CryptoEngine Error: Failed to convert public key for encryption!";
+        return std::nullopt;
+    }
+
+    // 2. Prepare ciphertext buffer (Message Size + Sealed Box Overhead)
+    QByteArray ciphertext;
+    ciphertext.resize(message.size() + crypto_box_SEALBYTES);
+
+    // 3. Encrypt the message (Anonymous Sealed Box)
+    int result = crypto_box_seal(
+        reinterpret_cast<unsigned char *>(ciphertext.data()),
+        reinterpret_cast<const unsigned char *>(message.constData()),
+        message.size(),
+        curve25519_pk);
+
+    if (result == 0)
+    {
+        return ciphertext;
+    }
+    return std::nullopt;
+}

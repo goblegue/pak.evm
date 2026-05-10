@@ -277,7 +277,7 @@ bool ElectionController::castVote(const QString &candidateCnic,
     QString timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
     QByteArray prevHash = m_voteRepo->getLatestVoteHash();
 
-    QString dataToHash = candidateCnic + tokenId + timestamp;
+    QString dataToHash = candidateCnic + timestamp;
     auto newHashOpt = CryptoEngine::getInstance().generateBlockHash(dataToHash, prevHash);
 
     if (!newHashOpt.has_value())

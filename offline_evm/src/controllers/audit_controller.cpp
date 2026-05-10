@@ -29,11 +29,6 @@ void AuditController::injectDependencies(IVoteRepository *vote, IConfigRepositor
 
 bool AuditController::runForensicAudit(QString &out_failureDetails)
 {
-    if (!AuthManager::getInstance().isMasterUnlocked())
-    {
-        out_failureDetails = "Cryptographic authority required to run audit.";
-        return false;
-    }
 
     int votesSize = 0;
     // The DB Repo MUST return records strictly ORDERED BY id ASC
@@ -101,7 +96,6 @@ bool AuditController::exportFinalResults(const QString &outputFilePath)
     metadata["station_id"] = config.getStationId();
     metadata["poll_opened_at"] = config.getPollOpenedAt();
     metadata["poll_closed_at"] = config.getPollClosedAt();
-    metadata["exported_by_admin"] = AuthManager::getInstance().getCurrentWorker()->getUsername();
 
     // --- 2. CRYPTOGRAPHIC PROOF (OPTIMIZED) ---
     int totalVotes = m_voteRepo->getTotalVotesCount();
@@ -110,11 +104,9 @@ bool AuditController::exportFinalResults(const QString &outputFilePath)
     QJsonObject cryptoProof;
     cryptoProof["audit_status"] = "PASSED";
     cryptoProof["final_ledger_hash"] = QString(finalHash.toHex());
-    cryptoProof["total_records_audited"] = totalVotes;
 
     // --- 3. STATISTICS ---
     QJsonObject stats;
-    stats["total_tokens_consumed"] = m_tokenRepo->getTotalTokensUsedCount();
     stats["total_votes_cast"] = totalVotes;
 
     // --- 4. TALLY ---
@@ -139,10 +131,32 @@ bool AuditController::exportFinalResults(const QString &outputFilePath)
     payload["tally"] = tallyArray;
 
     QJsonDocument doc(payload);
-    QFile file(outputFilePath);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+    // ==========================================
+    // 🔒 NEW CRYPTOGRAPHIC ENCRYPTION PIPELINE
+    // ==========================================
+
+    // 1. Convert JSON to raw bytes (Compact is safer and smaller for encryption)
+    QByteArray rawJsonData = doc.toJson(QJsonDocument::Compact);
+
+    QByteArray system1PublicKey = QByteArray::fromBase64(config.getPublicKeyBase64().toUtf8());
+
+    // 2. Encrypt the data using System 1's Public Key (Anonymous Sealed Box)
+    auto encryptedOpt = CryptoEngine::getInstance().encryptMessage(rawJsonData, system1PublicKey);
+
+    if (!encryptedOpt.has_value())
     {
-        file.write(doc.toJson(QJsonDocument::Indented));
+        qCritical() << "AuditController: Failed to encrypt the final results!";
+        return false;
+    }
+
+    // 3. Save the ENCRYPTED binary data to the file
+    QFile file(outputFilePath);
+
+    // Architect's Note: Notice we REMOVED QIODevice::Text.
+    // Encrypted data is raw binary. Treating it as text corrupts it!
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.write(encryptedOpt.value());
         file.close();
         return true;
     }

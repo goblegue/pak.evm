@@ -68,8 +68,8 @@ void MainWindow::setupKioskUi()
 #endif
 
 #ifdef deve
-    currentElectionStartTime = QDateTime::currentDateTime().addSecs(15); // Starts in 5 seconds
-    currentElectionEndTime = currentElectionStartTime.addSecs(600);      // Ends 15 seconds later
+    currentElectionStartTime = QDateTime::currentDateTime().addSecs(5); // Starts in 5 seconds
+    currentElectionEndTime = currentElectionStartTime.addSecs(10);      // Ends 15 seconds later
 #endif
     // 5. Setup Timers & Connections
     kioskHeartbeat = new QTimer(this);
