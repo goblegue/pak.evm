@@ -172,7 +172,7 @@ void AdminCandidateDetailsPage::setupUi() {
 // DATA INJECTION: Populates the UI with the Candidate's data
 // -------------------------------------------------------------------
 void AdminCandidateDetailsPage::setCandidate(const Candidate &candidate) {
-    headerTitleLabel->setText("Candidate: " + candidate.getPartyName());
+    headerTitleLabel->setText("Candidate: " + candidate.getName());
 
     currentCandidateCnic = candidate.getUserCnic();
 

@@ -23,7 +23,7 @@
 #include "votertokenmess.h"
 #include <optional>
 
-#define deve
+#define prod
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -40,6 +40,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_Elections = new AdminElectionsPage(this);
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
+    
     // user
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);
@@ -63,7 +64,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(3);
+    ui->MainStack->setCurrentIndex(0);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
@@ -665,9 +666,11 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
 {
 #ifdef deve
     QString currentUserCnic = "1234567891011";
+    QString currentUserName = "John Doe";
 #endif
 #ifdef prod
     QString currentUserCnic = AuthManager::getInstance().getCurrentUser()->getCnic();
+    QString currentUserName = AuthManager::getInstance().getCurrentUser()->getName();
 #endif
     newCandidate.setUserCnic(currentUserCnic);
 
