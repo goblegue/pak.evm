@@ -18,9 +18,7 @@ void AdminManagementPage::setupUi()
     mainLayout->setContentsMargins(15, 15, 15, 15);
     mainLayout->setSpacing(20);
 
-    // ==========================================
-    // HEADER: TITLE & FILTER BUTTON
-    // ==========================================
+    
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *titleLabel = new QLabel("<b>System Administrators</b>", this);
     titleLabel->setStyleSheet("font-size: 20px; color: #2C3E50;");
@@ -31,7 +29,7 @@ void AdminManagementPage::setupUi()
         "QPushButton { background-color: #2980B9; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; }"
         "QPushButton:hover { background-color: #1A5276; }");
 
-    // Filter Menu Setup
+    
     filterMenu = new QMenu(this);
     filterMenu->setStyleSheet("QMenu { background-color: white; border: 1px solid #BDC3C7; border-radius: 4px; }"
                               "QMenu::item { padding: 8px 25px 8px 20px; color: #2C3E50; font-weight: bold; }"
@@ -73,9 +71,7 @@ void AdminManagementPage::setupUi()
     headerLayout->addStretch();
     headerLayout->addWidget(filterBtn);
 
-    // ==========================================
-    // FULL WIDTH LIST VIEW
-    // ==========================================
+    
     adminListView = new QListView(this);
     adminListView->setMouseTracking(true);
     adminListView->setModel(proxyModel);
@@ -87,7 +83,7 @@ void AdminManagementPage::setupUi()
     mainLayout->addLayout(headerLayout);
     mainLayout->addWidget(adminListView);
 
-    // Connections
+    
     connect(filterBtn, &QPushButton::clicked, this, &AdminManagementPage::showFilterMenu);
     connect(adminListView, &QListView::clicked, this, &AdminManagementPage::onAdminClicked);
     AdminDelegate *adminDelegate = new AdminDelegate(this);
@@ -96,7 +92,7 @@ void AdminManagementPage::setupUi()
 }
 
 void AdminManagementPage::loadAdmins(Admin* admins, int size, const QString &currentAdminId) {
-    adminModel->setCurrentAdminId(currentAdminId); // Pass it to the model!
+    adminModel->setCurrentAdminId(currentAdminId); 
     adminModel->setAdmins(admins, size);
 }
 
@@ -136,9 +132,7 @@ void AdminManagementPage::showActionMenu(const QModelIndex &proxyIndex, QPoint g
     if (selectedAct == approveAct || selectedAct == rejectAct) {
         ApprovalStatus newStatus = (selectedAct == approveAct) ? ApprovalStatus::Approved : ApprovalStatus::Rejected;
 
-        // ==========================================
-        // THIS LINE PREVENTS THE MENU FROM OPENING AGAIN!
-        // ==========================================
+        
         adminModel->setLocalVote(selected.getCnic(), 1);
 
         QString currentUserId = "TEST-ADMIN";
@@ -146,7 +140,7 @@ void AdminManagementPage::showActionMenu(const QModelIndex &proxyIndex, QPoint g
             currentUserId = AuthManager::getInstance().getCurrentUser()->getId();
         }
 
-        // Send message to controller
+        
         emit adminStatusChangeRequested(currentUserId, selected.getCnic(), newStatus);
     }
 }

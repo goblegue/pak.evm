@@ -22,7 +22,7 @@ public:
     void loadAdmins(Admin* admins, int size, const QString &currentAdminId);
 
 signals:
-    // Future-proofing: When you click an admin to approve/reject them
+    
     void adminClicked(Admin selectedAdmin);
     void adminStatusChangeRequested(QString currentUserId, QString targetCnic, ApprovalStatus newStatus);
 
@@ -43,4 +43,4 @@ private:
     void setupUi();
 };
 
-#endif // ADMINMANAGEMENTPAGE_H
+#endif 

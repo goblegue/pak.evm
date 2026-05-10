@@ -27,12 +27,12 @@ int LoginPage::identifyInputType(const QString &input)
 
     if (emailRegex.match(input).hasMatch())
     {
-        return 1; // Email
+        return 1; 
     }
 
     if (cnicRegex.match(input).hasMatch())
     {
-        return 2; // CNIC
+        return 2; 
     }
 
     return 0;
@@ -62,7 +62,7 @@ void LoginPage::on_loginSubmitBtn_clicked()
         return;
     }
 
-    // ... validation code above ...
+    
 
     ui->loginSubmitBtn->setEnabled(false);
     ui->goToSignupBtn->setEnabled(false);
@@ -70,19 +70,19 @@ void LoginPage::on_loginSubmitBtn_clicked()
     ui->usernameInput->clearFocus();
     ui->usernameInput->setSelection(0, 0);
 
-    // 1. Clear previous connections
+    
     disconnect(&m_loginWatcher,
                &QFutureWatcher<AuthManager::LoginResult>::finished,
                nullptr,
                nullptr);
 
-    // 2. THE FIX: ADD THE SEMICOLON HERE (Line 80ish)
+    
     connect(&m_loginWatcher,
             &QFutureWatcher<AuthManager::LoginResult>::finished,
             this,
             &LoginPage::handleLoginFinished);
 
-    // 3. Launch the thread (Use 'auto' to let the compiler handle the template)
+    
     auto future = QtConcurrent::run([=]()
                                     {
         if (inputType == 1) {
@@ -91,7 +91,7 @@ void LoginPage::on_loginSubmitBtn_clicked()
             return AuthManager::getInstance().login(password, username, "");
         } });
 
-    // 4. Connect the future to the
+    
     m_loginWatcher.setFuture(future);
 }
 

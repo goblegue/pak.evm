@@ -11,21 +11,19 @@
 #include <QApplication>
 #include "views/AdminCandidatePage.h"
 
-// ==========================================
-// ELECTION BOX DELEGATE
-// ==========================================
+
 class ElectionDelegate : public QStyledItemDelegate
 {
 public:
     explicit ElectionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    // 1. Give the box a nice height
+    
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
     {
         return QSize(option.rect.width(), 55);
     }
 
-    // 2. Draw the rounded box
+    
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
     {
         painter->save();
@@ -33,35 +31,35 @@ public:
 
         QRect rect = option.rect;
 
-        // Background always white
+        
         painter->setBrush(Qt::white);
 
-        // Border and Text color (Blue for Elections)
+        
         QColor mainColor = QColor("#2980B9");
 
-        // Highlight logic if user clicks the election
+        
         if (option.state & QStyle::State_Selected)
         {
-            painter->setBrush(QColor("#EAF2F8")); // Light blue background when selected
-            mainColor = QColor("#1A5276");        // Darker blue text/border
+            painter->setBrush(QColor("#EAF2F8"));
+            mainColor = QColor("#1A5276");       
         }
         else if (option.state & QStyle::State_MouseOver) {
             painter->setBrush(QColor("#F4F6F7"));
         }
 
-        painter->setPen(QPen(mainColor, 2)); // 2px thick border
+        painter->setPen(QPen(mainColor, 2)); 
 
-        // Draw the rounded rectangle (8px corner radius)
+        
         painter->drawRoundedRect(rect, 8, 8);
 
-        // Draw the text
+        
         painter->setPen(mainColor);
         QString text = index.data(Qt::DisplayRole).toString();
 
-        // Adjust the text rect so it has margins inside the box
+        
         QRect textRect = rect.adjusted(15, 0, -15, 0);
 
-        // Draw text vertically centered, aligned left, bold font
+        
         QFont font = option.font;
         font.setBold(true);
         painter->setFont(font);
@@ -71,9 +69,7 @@ public:
     }
 };
 
-// ==========================================
-// CANDIDATE STATUS BOX DELEGATE (UPDATED)
-// ==========================================
+
 class CandidateDelegate : public QStyledItemDelegate {
 public:
     explicit CandidateDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
@@ -107,27 +103,27 @@ public:
         painter->setPen(QPen(statusColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // 1. Draw Text (Leaving space on the right for the image)
+        
         painter->setPen(statusColor);
         QString text = index.data(Qt::DisplayRole).toString();
-        QRect textRect = rect.adjusted(15, 5, -80, -5); // -80 cuts off the right side so text doesn't overlap the image
+        QRect textRect = rect.adjusted(15, 5, -80, -5); 
 
         QFont font = option.font;
         font.setBold(true);
         painter->setFont(font);
         painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextWordWrap, text);
 
-        // 2. Draw Symbol Image
+        
         QString b64Image = index.data(CandidateSymbolImageRole).toString();
         if (!b64Image.isEmpty()) {
             QByteArray imgData = QByteArray::fromBase64(b64Image.toUtf8());
             QPixmap pixmap;
             if (pixmap.loadFromData(imgData)) {
-                // Draw a 60x60 image on the far right
+                
                 QRect imgRect(rect.right() - 75, rect.top() + 17, 60, 60);
                 QPixmap scaledPix = pixmap.scaled(imgRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-                // Centers the image exactly in the 60x60 box
+                
                 QPoint centerTarget = imgRect.center() - scaledPix.rect().center();
                 painter->drawPixmap(centerTarget, scaledPix);
             }
@@ -137,9 +133,7 @@ public:
     }
 };
 
-// ==========================================
-// ADMIN STATUS BOX DELEGATE
-// ==========================================
+
 class AdminDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -161,7 +155,7 @@ public:
                 bool alreadyVoted = index.data(AdminVotedRole).toBool();
                 int localVote = index.data(LocalVoteRole).toInt();
 
-                // LOGIC FIX: If already voted in DB OR voted just now, block the click!
+                
                 if (!alreadyVoted && localVote == 0) {
                     QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
                     QRect btnRect(option.rect.right() - 135, option.rect.bottom() - 35, 120, 25);
@@ -207,16 +201,14 @@ public:
         QFont font = option.font; font.setBold(true); painter->setFont(font);
         painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextWordWrap, text);
 
-        // ==========================================
-        // DRAW THE ACTION BUTTON (SIMPLIFIED)
-        // ==========================================
+        
         if (static_cast<ApprovalStatus>(statusInt) == ApprovalStatus::Pending) {
             bool alreadyVoted = index.data(AdminVotedRole).toBool();
             int localVoteInt = index.data(LocalVoteRole).toInt();
 
             QRect btnRect(rect.right() - 135, rect.bottom() - 35, 120, 25);
 
-            // If voted in DB OR voted locally just now -> Lock it!
+            
             if (alreadyVoted || localVoteInt != 0) {
                 painter->setBrush(QColor("#ECF0F1"));
                 painter->setPen(QPen(QColor("#BDC3C7"), 1));
@@ -228,7 +220,7 @@ public:
                 painter->drawText(btnRect, Qt::AlignCenter, "✔ Voted");
 
             } else {
-                // Unlocked, clickable state
+                
                 QColor btnBgColor = Qt::white;
                 if (option.state & QStyle::State_MouseOver && btnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
                     btnBgColor = QColor("#ECF0F1");
@@ -248,9 +240,7 @@ public:
     }
 };
 
-// ==========================================
-// ELECTION ACCORDION DELEGATE (UPGRADED)
-// ==========================================
+
 class ElectionAccordionDelegate : public QStyledItemDelegate {
     Q_OBJECT
 signals:
@@ -274,18 +264,18 @@ public:
             ElectionState status = static_cast<ElectionState>(statusInt);
 
             if (isExpanded) {
-                // UI CALCULATION: Shift button if Status Button is present
+                
                 bool hasStatusBtn = (status == ElectionState::Pending);
                 int configBtnOffset = hasStatusBtn ? 290 : 145;
 
-                // 1. Check "Get Configuration" Button Click
+                
                 QRect configBtnRect(option.rect.right() - configBtnOffset, option.rect.bottom() - 40, 140, 28);
                 if (configBtnRect.contains(mouseEvent->pos())) {
                     emit getConfigButtonClicked(index);
                     return true;
                 }
 
-                // 2. Check "Change Status" Button Click (Only if Pending)
+                
                 if (hasStatusBtn) {
                     bool alreadyVoted = index.data(ElectionVotedRole).toBool();
                     int localVote = index.data(LocalVoteRole).toInt();
@@ -357,16 +347,14 @@ public:
             bool hasStatusBtn = (status == ElectionState::Pending);
             int configBtnOffset = hasStatusBtn ? 290 : 145;
 
-            // ==========================================
-            // NEW: "GET CONFIGURATION" BUTTON (Always Visible)
-            // ==========================================
+           
             QRect configBtnRect(rect.right() - configBtnOffset, rect.bottom() - 40, 140, 28);
             QColor configBgColor = Qt::white;
             if (option.state & QStyle::State_MouseOver && configBtnRect.contains(option.widget->mapFromGlobal(QCursor::pos()))) {
                 configBgColor = QColor("#ECF0F1");
             }
             painter->setBrush(configBgColor);
-            painter->setPen(QPen(QColor("#2C3E50"), 2)); // Dark Slate Border
+            painter->setPen(QPen(QColor("#2C3E50"), 2)); 
             painter->drawRoundedRect(configBtnRect, 4, 4);
 
             painter->setPen(QColor("#2C3E50"));
@@ -374,9 +362,7 @@ public:
             painter->setFont(btnFont);
             painter->drawText(configBtnRect, Qt::AlignCenter, "Get Configuration");
 
-            // ==========================================
-            // "CHANGE STATUS" BUTTON (Only Visible if Pending)
-            // ==========================================
+            
             if (hasStatusBtn) {
                 bool alreadyVoted = index.data(ElectionVotedRole).toBool();
                 int localVoteInt = index.data(LocalVoteRole).toInt();
@@ -408,9 +394,7 @@ public:
 };
 
 
-// ==========================================
-// TOKEN ACCORDION DELEGATE (RIGHT-SIDE QR LAYOUT)
-// ==========================================
+
 class TokenAccordionDelegate : public QStyledItemDelegate {
     Q_OBJECT
 signals:
@@ -420,7 +404,7 @@ signals:
 public:
     explicit TokenAccordionDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    // Increased expanded height to 240px to fit QR and Button stacked perfectly
+    
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
         bool isExpanded = index.data(TokenExpandedRole).toBool();
         return QSize(option.rect.width(), isExpanded ? 240 : 65);
@@ -432,7 +416,7 @@ public:
             bool isExpanded = index.data(TokenExpandedRole).toBool();
 
             if (isExpanded) {
-                // NEW BUTTON COORDINATES (Stacked under the QR code on the right)
+                
                 QRect btnRect(option.rect.right() - 150, option.rect.top() + 190, 130, 30);
                 if (btnRect.contains(mouseEvent->pos())) {
                     emit sendEmailClicked(index);
@@ -463,7 +447,7 @@ public:
         painter->setPen(QPen(borderColor, 2));
         painter->drawRoundedRect(rect, 8, 8);
 
-        // --- TITLE ---
+        
         QString title = "🎟️ " + index.data(Qt::DisplayRole).toString();
         QRect titleRect = rect.adjusted(15, 15, -15, isExpanded ? -200 : 0);
         QFont titleFont = option.font;
@@ -473,16 +457,16 @@ public:
         painter->setPen(QColor("#2C3E50"));
         painter->drawText(titleRect, Qt::AlignLeft | Qt::AlignTop, title);
 
-        // --- EXPANDED DETAILS ---
+        
         if (isExpanded) {
             painter->setPen(QPen(QColor("#ECF0F1"), 1, Qt::DashLine));
             painter->drawLine(rect.left() + 15, rect.top() + 45, rect.right() - 15, rect.top() + 45);
 
-            // 1. DRAW TEXT DETAILS (Moved to the LEFT side)
+            
             QString issueDate = "Issued: " + index.data(TokenIssueDateRole).toString();
             QString station = "Station: " + index.data(TokenStationRole).toString();
 
-            // We can show more of the hash now because it has the whole left side!
+            
             QString signature = "Hash: " + index.data(TokenSignatureRole).toString().left(45) + "...";
 
             painter->setPen(QColor("#34495E"));
@@ -497,7 +481,7 @@ public:
             painter->setFont(monoFont);
             painter->drawText(rect.left() + 20, rect.top() + 140, signature);
 
-            // 2. DRAW REAL QR CODE IMAGE (Moved to the RIGHT side)
+            
             QRect qrRect(rect.right() - 150, rect.top() + 60, 130, 120);
 
             QImage qrImage = qvariant_cast<QImage>(index.data(TokenQRCodeRole));
@@ -519,7 +503,7 @@ public:
                 painter->drawText(qrRect, Qt::AlignCenter, "QR CODE\nFAILED");
             }
 
-            // 3. DRAW "SEND TO EMAIL" BUTTON (Stacked right UNDER the QR Code!)
+            
             QRect btnRect(rect.right() - 150, rect.top() + 190, 130, 30);
             painter->setBrush(QColor("#27AE60"));
             painter->setPen(Qt::NoPen);
@@ -534,4 +518,4 @@ public:
         painter->restore();
     }
 };
-#endif // DELEGATES_H
+#endif 
