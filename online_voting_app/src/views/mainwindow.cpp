@@ -23,7 +23,7 @@
 #include "votertokenmess.h"
 #include <optional>
 
-#define prod
+#define deve
 
 MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_config(config)
@@ -64,7 +64,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     ui->userContentStack->addWidget(userInnerPage_CandidateDetails);
     ui->userContentStack->addWidget(userInnerPage_Candidacy);
 
-    ui->MainStack->setCurrentIndex(0);
+    ui->MainStack->setCurrentIndex(4);
 
     connect(m_loginPage,
             &LoginPage::goToSignupRequested,
