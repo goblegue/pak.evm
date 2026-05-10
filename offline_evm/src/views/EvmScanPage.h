@@ -33,7 +33,7 @@ public:
 
 signals:
 
-    void frameReadyForBackend(QString base64ImageString, QString enteredCnic);
+void frameReadyForBackend(QString qrPayload, QString enteredCnic);
     void proceedToVotingClicked();
     void secretAdminDashboardRequested();
 
@@ -56,6 +56,8 @@ private:
     QPushButton *secretBtn;
     int m_secretClickCount;
     QTimer *m_secretClickTimer;
+
+    QString tokenId;
 
     // Camera backend
     QCamera *camera;

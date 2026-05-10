@@ -674,6 +674,7 @@ void MainWindow::handleCandidacyApplicationSubmit(Candidate newCandidate)
     QString currentUserName = AuthManager::getInstance().getCurrentUser()->getName();
 #endif
     newCandidate.setUserCnic(currentUserCnic);
+    newCandidate.setName(currentUserName);
 
     newCandidate.setStatus(ApprovalStatus::Pending);
     newCandidate.setId("CAND-" + QUuid::createUuid().toString(QUuid::WithoutBraces).left(8).toUpper());

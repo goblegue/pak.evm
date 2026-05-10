@@ -6,9 +6,12 @@
 #include "services/crypto/crypto_engine.h"
 #include <sodium.h>
 
-AuthManager::AuthManager() 
-    : m_workerRepo(nullptr), m_usedTokenRepo(nullptr),
-      m_currentWorker(nullptr), m_isMasterUnlocked(false)
+AuthManager::AuthManager()
+    : m_workerRepo(nullptr)
+    , m_usedTokenRepo(nullptr)
+    , m_currentWorker(nullptr)
+    , m_isMasterUnlocked(false)
+    , m_configRepo(nullptr)
 {
 }
 
@@ -22,10 +25,13 @@ AuthManager &AuthManager::getInstance() {
     return instance;
 }
 
-void AuthManager::injectDependencies(IWorkerRepository *workerRepo, ITokenRepository *tokenRepo)
+void AuthManager::injectDependencies(IWorkerRepository *workerRepo,
+                                     ITokenRepository *tokenRepo,
+                                     IConfigRepository *configRepo)
 {
     m_workerRepo = workerRepo;
     m_usedTokenRepo = tokenRepo;
+    m_configRepo = configRepo;
 }
 
 // ==========================================
@@ -118,6 +124,8 @@ void AuthManager::lockMasterAuthority() {
 // ==========================================
 AuthManager::TokenResult AuthManager::verifyVoterToken(QString &cnic, const QString &qrPayload, QString &out_tokenId)
 {
+    QByteArray m_systemPublicKey = QByteArray::fromBase64(
+        m_configRepo->getConfig()->getPublicKeyBase64().toUtf8());
     if (!m_usedTokenRepo || m_systemPublicKey.isEmpty()) return TokenResult::ParseError;
 
     QJsonDocument doc = QJsonDocument::fromJson(qrPayload.toUtf8());
@@ -128,6 +136,7 @@ AuthManager::TokenResult AuthManager::verifyVoterToken(QString &cnic, const QStr
 
     QJsonObject obj = doc.object();
     out_tokenId = obj["tokenId"].toString();
+
     QString electionId = obj["electionId"].toString();
     QString issuedAt = obj["issuedAt"].toString();
     QString signatureBase64 = obj["signature"].toString();
@@ -137,13 +146,15 @@ AuthManager::TokenResult AuthManager::verifyVoterToken(QString &cnic, const QStr
         return TokenResult::AlreadyUsed;
     }
 
-    QString dataToVerify = cnic + electionId + issuedAt;
+    QString dataToVerify = cnic + "|" + electionId + "|" + issuedAt;
 
     bool isValid = CryptoEngine::getInstance().verifyTokenSignature(dataToVerify, signatureBase64, m_systemPublicKey);
 
-    // CRITICAL: SECURE WIPE OF TRANSIENT VARIABLES
-    sodium_memzero(cnic.data(), cnic.capacity() * sizeof(QChar));
-    sodium_memzero(dataToVerify.data(), dataToVerify.capacity() * sizeof(QChar));
+    // m_usedTokenRepo->markTokenAsUsed(out_tokenId); // Mark as used regardless of validity to prevent replay
+
+    //[CRITICAL FIX] Used .size() instead of .capacity() to prevent heap corruption!
+    sodium_memzero(cnic.data(), cnic.size() * sizeof(QChar));
+    sodium_memzero(dataToVerify.data(), dataToVerify.size() * sizeof(QChar));
 
     if (!isValid) return TokenResult::InvalidSignature;
 

@@ -50,3 +50,18 @@ AuditLog *SystemController::getForensicLogs(int &out_size)
     // Returns logs ordered by timestamp for the UI table
     return m_auditRepo->getAllLogs(out_size);
 }
+
+bool SystemController::saveSystemPublicKey(const QString &publicKeyBase64)
+{
+    if (!m_configRepo)
+        return false;
+
+    // Fetch existing or get a fresh one
+    SystemConfig config = getSystemConfig();
+    
+    // Update just the public key
+    config.setPublicKeyBase64(publicKeyBase64);
+    
+    // Pass it to the repository
+    return m_configRepo->saveConfig(config);
+}

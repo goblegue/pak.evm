@@ -12,15 +12,18 @@
 // ==========================================
 // CUSTOM DELEGATE TO DRAW THE ADMIN BOXES
 // ==========================================
-class LocalAdminDelegate : public QStyledItemDelegate {
+class LocalAdminDelegate : public QStyledItemDelegate
+{
 public:
     explicit LocalAdminDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent) {}
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    {
         return QSize(option.rect.width(), 60); // Height of the box
     }
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override {
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+    {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
@@ -36,21 +39,22 @@ public:
         font.setPointSize(14);
         painter->setFont(font);
 
-        QString username = "👤 " + index.data().toString(); // Add a little icon
+        QString username = "🧑‍🦰 " + index.data().toString(); // Add a little icon
         painter->drawText(rect.adjusted(15, 0, 0, 0), Qt::AlignVCenter | Qt::AlignLeft, username);
 
         painter->restore();
     }
 };
 
-OfflineSetupWizard::OfflineSetupWizard(QWidget *parent) : QMainWindow(parent) {
+OfflineSetupWizard::OfflineSetupWizard(QWidget *parent) : QMainWindow(parent)
+{
     setupUi();
 
     this->setFixedSize(1300, 650);
-
 }
 
-void OfflineSetupWizard::setupUi() {
+void OfflineSetupWizard::setupUi()
+{
     this->setStyleSheet("background-color: #FFFFFF;");
 
     // 1. Create a "container" widget
@@ -78,7 +82,8 @@ void OfflineSetupWizard::setupUi() {
     step1Btn->setChecked(true);
 }
 
-void OfflineSetupWizard::buildSidebar(QHBoxLayout *mainLayout) {
+void OfflineSetupWizard::buildSidebar(QHBoxLayout *mainLayout)
+{
     QFrame *sidebar = new QFrame(this);
     sidebar->setFixedWidth(250);
 
@@ -104,8 +109,9 @@ void OfflineSetupWizard::buildSidebar(QHBoxLayout *mainLayout) {
     step3Btn = new QPushButton("3. Create Admins", sidebar);
     step4Btn = new QPushButton("4. Load Election Data", sidebar);
 
-    QList<QPushButton*> steps = {step1Btn, step2Btn, step3Btn, step4Btn};
-    for(QPushButton* btn : steps) {
+    QList<QPushButton *> steps = {step1Btn, step2Btn, step3Btn, step4Btn};
+    for (QPushButton *btn : steps)
+    {
         btn->setStyleSheet(btnStyle);
         btn->setCheckable(true);
         btn->setAutoExclusive(true);
@@ -117,7 +123,8 @@ void OfflineSetupWizard::buildSidebar(QHBoxLayout *mainLayout) {
     sideLayout->addStretch();
     mainLayout->addWidget(sidebar);
 }
-void OfflineSetupWizard::buildWelcomePage() {
+void OfflineSetupWizard::buildWelcomePage()
+{
     welcomePage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(welcomePage);
     layout->setContentsMargins(40, 40, 40, 40);
@@ -128,7 +135,8 @@ void OfflineSetupWizard::buildWelcomePage() {
     QLabel *desc = new QLabel(
         "This wizard will guide you through the initial commissioning of this offline Electronic Voting Machine (EVM).\n\n"
         "During this process, you will generate the cryptographic Master Key required to secure local ballot data. "
-        "Ensure you are in a secure environment before proceeding.", welcomePage);
+        "Ensure you are in a secure environment before proceeding.",
+        welcomePage);
     desc->setStyleSheet("font-size: 16px; color: #34495E; line-height: 1.5;");
     desc->setWordWrap(true);
 
@@ -153,7 +161,8 @@ void OfflineSetupWizard::buildWelcomePage() {
     connect(welcomeNextBtn, &QPushButton::clicked, this, &OfflineSetupWizard::goToMasterSetup);
 }
 
-void OfflineSetupWizard::buildMasterSetupPage() {
+void OfflineSetupWizard::buildMasterSetupPage()
+{
     masterSetupPage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(masterSetupPage);
     layout->setContentsMargins(40, 40, 40, 40);
@@ -167,10 +176,10 @@ void OfflineSetupWizard::buildMasterSetupPage() {
     form->setVerticalSpacing(20); // Slightly tighter spacing so everything fits nicely
 
     QString pwdStyle = "QLineEdit { border: 2px solid #BDC3C7; border-radius: 6px; padding: 10px; font-size: 16px; background-color: white; color: #2C3E50; }"
-                         "QLineEdit:focus { border: 2px solid #7A1A1A; }";
+                       "QLineEdit:focus { border: 2px solid #7A1A1A; }";
 
     QString pubKeyStyle = "QLineEdit { border: 2px solid #BDC3C7; border-radius: 6px; padding: 10px; font-size: 16px; background-color: white; color: #2C3E50; margin-top:50px }"
-                       "QLineEdit:focus { border: 2px solid #7A1A1A; }";
+                          "QLineEdit:focus { border: 2px solid #7A1A1A; }";
     // Inputs
     passInput = new QLineEdit(masterSetupPage);
     passInput->setEchoMode(QLineEdit::Password);
@@ -191,9 +200,12 @@ void OfflineSetupWizard::buildMasterSetupPage() {
     QString pwdLabelStyle = "font-size: 16px; font-weight: bold; color: #2C3E50;";
     QString pubKeyLabelStyle = "font-size: 16px; font-weight: bold; color: #2C3E50; margin-top:50px";
 
-    QLabel *l1 = new QLabel("Master Password:", masterSetupPage); l1->setStyleSheet(pwdLabelStyle);
-    QLabel *l2 = new QLabel("Confirm Password:", masterSetupPage); l2->setStyleSheet(pwdLabelStyle);
-    QLabel *l3 = new QLabel("Commission Public Key:", masterSetupPage); l3->setStyleSheet(pubKeyLabelStyle);
+    QLabel *l1 = new QLabel("Master Password:", masterSetupPage);
+    l1->setStyleSheet(pwdLabelStyle);
+    QLabel *l2 = new QLabel("Confirm Password:", masterSetupPage);
+    l2->setStyleSheet(pwdLabelStyle);
+    QLabel *l3 = new QLabel("Commission Public Key:", masterSetupPage);
+    l3->setStyleSheet(pubKeyLabelStyle);
 
     // Add Password Rows
     form->addRow(l1, passInput);
@@ -201,7 +213,8 @@ void OfflineSetupWizard::buildMasterSetupPage() {
 
     QLabel *desc = new QLabel(
         "Enter the Master Password. This password acts as the Root of Trust for the entire system.\n"
-        "Warning: Do not share this password with any Unauthorized person!", masterSetupPage);
+        "Warning: Do not share this password with any Unauthorized person!",
+        masterSetupPage);
 
     // Styled red, with a top margin to push it away from the Confirm Password box
     desc->setStyleSheet("font-size: 15px; color: #E74C3C; font-weight: bold; margin-top: 25px; margin-bottom: 20px;");
@@ -254,18 +267,21 @@ void OfflineSetupWizard::buildMasterSetupPage() {
     connect(masterNextBtn, &QPushButton::clicked, this, &OfflineSetupWizard::processMasterSetup);
 }
 
-void OfflineSetupWizard::goToMasterSetup() {
+void OfflineSetupWizard::goToMasterSetup()
+{
     wizardStack->setCurrentIndex(1);
     step2Btn->setChecked(true);
     this->setFocus();
 }
 
-void OfflineSetupWizard::goBackToWelcome() {
+void OfflineSetupWizard::goBackToWelcome()
+{
     wizardStack->setCurrentIndex(0);
     step1Btn->setChecked(true);
 }
 
-void OfflineSetupWizard::buildAdminSetupPage() {
+void OfflineSetupWizard::buildAdminSetupPage()
+{
     adminSetupPage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(adminSetupPage);
     layout->setContentsMargins(40, 40, 40, 40);
@@ -291,15 +307,25 @@ void OfflineSetupWizard::buildAdminSetupPage() {
                          "QLineEdit:focus { border: 2px solid #7A1A1A; }";
     QString labelStyle = "font-size: 15px; font-weight: bold; color: #2C3E50;";
 
-    adminUserIn = new QLineEdit(adminSetupPage); adminUserIn->setStyleSheet(inputStyle);
-    adminCnicIn = new QLineEdit(adminSetupPage); adminCnicIn->setStyleSheet(inputStyle);
-    adminPassIn = new QLineEdit(adminSetupPage); adminPassIn->setStyleSheet(inputStyle); adminPassIn->setEchoMode(QLineEdit::Password);
-    adminConfirmIn = new QLineEdit(adminSetupPage); adminConfirmIn->setStyleSheet(inputStyle); adminConfirmIn->setEchoMode(QLineEdit::Password);
+    adminUserIn = new QLineEdit(adminSetupPage);
+    adminUserIn->setStyleSheet(inputStyle);
+    adminCnicIn = new QLineEdit(adminSetupPage);
+    adminCnicIn->setStyleSheet(inputStyle);
+    adminPassIn = new QLineEdit(adminSetupPage);
+    adminPassIn->setStyleSheet(inputStyle);
+    adminPassIn->setEchoMode(QLineEdit::Password);
+    adminConfirmIn = new QLineEdit(adminSetupPage);
+    adminConfirmIn->setStyleSheet(inputStyle);
+    adminConfirmIn->setEchoMode(QLineEdit::Password);
 
-    QLabel *l1 = new QLabel("Username:", adminSetupPage); l1->setStyleSheet(labelStyle);
-    QLabel *l2 = new QLabel("CNIC:", adminSetupPage); l2->setStyleSheet(labelStyle);
-    QLabel *l3 = new QLabel("Password:", adminSetupPage); l3->setStyleSheet(labelStyle);
-    QLabel *l4 = new QLabel("Confirm Password:", adminSetupPage); l4->setStyleSheet(labelStyle);
+    QLabel *l1 = new QLabel("Username:", adminSetupPage);
+    l1->setStyleSheet(labelStyle);
+    QLabel *l2 = new QLabel("CNIC:", adminSetupPage);
+    l2->setStyleSheet(labelStyle);
+    QLabel *l3 = new QLabel("Password:", adminSetupPage);
+    l3->setStyleSheet(labelStyle);
+    QLabel *l4 = new QLabel("Confirm Password:", adminSetupPage);
+    l4->setStyleSheet(labelStyle);
 
     form->addRow(l1, adminUserIn);
     form->addRow(l2, adminCnicIn);
@@ -380,11 +406,13 @@ void OfflineSetupWizard::processMasterSetup()
     QString confirm = confirmPassInput->text();
     QString pubKey = publicKeyInput->text().trimmed();
 
-    if (pass.isEmpty() || confirm.isEmpty() || pubKey.isEmpty()) {
+    if (pass.isEmpty() || confirm.isEmpty() || pubKey.isEmpty())
+    {
         QMessageBox::warning(this, "Validation Error", "Fields cannot be empty.");
         return;
     }
-    if (pass != confirm) {
+    if (pass != confirm)
+    {
         QMessageBox::critical(this, "Security Error", "Passwords do not match!");
         passInput->clear();
         confirmPassInput->clear();
@@ -393,23 +421,26 @@ void OfflineSetupWizard::processMasterSetup()
     }
 
     // [BACKEND INTEGRATION: CRYPTOGRAPHY]
-    if (!CryptoEngine::getInstance().generateAndStoreKeyPair(pass)) {
+    if (!CryptoEngine::getInstance().generateAndStoreKeyPair(pass))
+    {
         QMessageBox::critical(this, "Crypto Error", "Failed to generate local security keys!");
         return;
     }
 
     // [BACKEND INTEGRATION: SAVE PUBLIC KEY]
-    SystemConfig config;
-    config.setPublicKeyBase64(pubKey);
-    ConfigRepository configRepo;
-    configRepo.saveConfig(config);
+    if (!SystemController::getInstance().saveSystemPublicKey(pubKey))
+    {
+        QMessageBox::critical(this, "Database Error", "Failed to save the Commission's Public Key!");
+        return;
+    }
 
     wizardStack->setCurrentIndex(2);
     step3Btn->setChecked(true);
     this->setFocus();
 }
 
-void OfflineSetupWizard::goBackToMasterSetup() {
+void OfflineSetupWizard::goBackToMasterSetup()
+{
     wizardStack->setCurrentIndex(1);
     step2Btn->setChecked(true);
     this->setFocus();
@@ -421,25 +452,29 @@ void OfflineSetupWizard::onAddAdminClicked()
     QString pass = adminPassIn->text();
     QString conf = adminConfirmIn->text();
 
-    if (user.isEmpty() || cnic.isEmpty() || pass.isEmpty() || conf.isEmpty()) {
+    if (user.isEmpty() || cnic.isEmpty() || pass.isEmpty() || conf.isEmpty())
+    {
         QMessageBox::warning(this, "Error", "All fields must be filled out.");
         return;
     }
-    if (pass != conf) {
+    if (pass != conf)
+    {
         QMessageBox::warning(this, "Error", "Passwords do not match.");
         return;
     }
 
     // [BACKEND INTEGRATION: CREATE WORKER]
     bool success = AuthManager::getInstance().createOperationalWorker(user, pass);
-    if (!success) {
+    if (!success)
+    {
         QMessageBox::critical(this, "Database Error", "Failed to save the Poll Worker.");
         return;
     }
 
     // [CRITICAL FIX: LOGIN THE FIRST WORKER AUTOMATICALLY]
     // The ElectionController requires a logged-in worker to load the USB data!
-    if (!AuthManager::getInstance().isWorkerLoggedIn()) {
+    if (!AuthManager::getInstance().isWorkerLoggedIn())
+    {
         AuthManager::getInstance().loginWorker(user, pass);
     }
 
@@ -452,7 +487,8 @@ void OfflineSetupWizard::onAddAdminClicked()
     adminNextBtn->setEnabled(true);
 }
 
-void OfflineSetupWizard::buildLoadElectionPage() {
+void OfflineSetupWizard::buildLoadElectionPage()
+{
     loadElectionPage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(loadElectionPage);
     layout->setContentsMargins(40, 40, 40, 40);
@@ -520,20 +556,21 @@ void OfflineSetupWizard::buildLoadElectionPage() {
     connect(browseFileBtn, &QPushButton::clicked, this, &OfflineSetupWizard::onBrowseFileClicked);
     connect(loadBackBtn, &QPushButton::clicked, this, &OfflineSetupWizard::goBackToAdminSetup);
     connect(loadNextBtn, &QPushButton::clicked, this, &OfflineSetupWizard::processLoadElection);
-
 }
 
 // ==========================================
 // NEW NAVIGATION & FILE LOGIC
 // ==========================================
 
-void OfflineSetupWizard::processAdminSetup() {
+void OfflineSetupWizard::processAdminSetup()
+{
     // Go from Page 3 (Admins) to Page 4 (Load File)
     wizardStack->setCurrentIndex(3);
     step4Btn->setChecked(true);
 }
 
-void OfflineSetupWizard::goBackToAdminSetup() {
+void OfflineSetupWizard::goBackToAdminSetup()
+{
     // Go back to Page 3
     wizardStack->setCurrentIndex(2);
     step3Btn->setChecked(true);
@@ -552,7 +589,8 @@ void OfflineSetupWizard::onBrowseFileClicked()
     loadedFilePath = filePath;
 
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
         QMessageBox::critical(this, "File Error", "Could not read the selected file.");
         return;
     }
@@ -576,10 +614,11 @@ void OfflineSetupWizard::processLoadElection()
     //[BACKEND INTEGRATION: LOAD USB JSON]
     bool success = ElectionController::getInstance().loadElectionDataFromUSB(loadedFilePath);
 
-    if (!success) {
+    if (!success)
+    {
         QMessageBox::critical(this,
-                              "Parsing Error",
-                              "Failed to parse JSON or save Candidates to Database.");
+                              "Data Retrieval Error",
+                              "Failed to load election configuration from the file. Please check the log for details ");
         return;
     }
 

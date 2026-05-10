@@ -1,11 +1,15 @@
-#include "EvmScanPage.h"
-#include <QPixmap>
+#include <ZXing/ReadBarcode.h>
+#include <ZXing/BarcodeFormat.h>
+
+#include <QBuffer>
+#include <QDateTime>
+#include <QDebug>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPainterPath>
-#include <QMessageBox>
-#include <QDateTime>
-#include <QBuffer>
+#include <QPixmap>
 #include <QTimer>
+#include "EvmScanPage.h"
 
 EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent)
 {
@@ -178,7 +182,6 @@ void EvmScanPage::setupUi()
     bodyLayout->addLayout(rightLayout, 1);
     mainLayout->addLayout(bodyLayout);
 
-
     // ==========================================
     // THE SECRET INVISIBLE BUTTON
     // ==========================================
@@ -278,38 +281,35 @@ void EvmScanPage::onVideoFrameChanged(const QVideoFrame &frame)
         return;
 
     QString cnic = cnicInput->text().trimmed();
-
     if (cnic.isEmpty())
-    {
         return;
-    }
 
     // Throttle to 2 frames per second
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    if (currentTime - lastProcessTime < 500)
-    {
+    if (currentTime - lastProcessTime < 100)
         return;
-    }
     lastProcessTime = currentTime;
 
-    QImage image = frame.toImage();
+    QImage image = frame.toImage().convertToFormat(QImage::Format_RGBX8888);
+    if (image.isNull())
+        return;
 
-    if (!image.isNull())
+    // Decode QR code locally — no base64, no network, no backend involved
+    ZXing::ImageView imageView(
+        image.bits(),
+        image.width(),
+        image.height(),
+        ZXing::ImageFormat::RGBX);
+
+    ZXing::ReaderOptions opts;
+    opts.setFormats(ZXing::BarcodeFormat::QRCode);
+
+    auto result = ZXing::ReadBarcode(imageView, opts);
+
+    if (result.isValid())
     {
-        // ==========================================
-        // CONVERT QIMAGE TO BASE64 QSTRING
-        // ==========================================
-        QByteArray byteArray;
-        QBuffer buffer(&byteArray);
-        buffer.open(QIODevice::WriteOnly);
-
-        // Save as JPG to keep the string smaller and processing faster
-        image.save(&buffer, "JPG", 80);
-
-        QString base64Str = QString(byteArray.toBase64());
-
-        // Emit the String to the Backend Developer!
-        emit frameReadyForBackend(base64Str, cnic);
+        QString qrPayload = QString::fromStdString(result.text());
+        emit frameReadyForBackend(qrPayload, cnic);
     }
 }
 
@@ -350,13 +350,15 @@ void EvmScanPage::onProceedClicked()
 // ==========================================
 // SECRET KIOSK OVERRIDE LOGIC
 // ==========================================
-void EvmScanPage::onSecretButtonClicked() {
+void EvmScanPage::onSecretButtonClicked()
+{
     m_secretClickCount++;
 
     // Start or restart the 2-second countdown window
     m_secretClickTimer->start(2000);
 
-    if (m_secretClickCount >= 5) {
+    if (m_secretClickCount >= 5)
+    {
         // Success! Reset everything and emit the signal
         m_secretClickCount = 0;
         m_secretClickTimer->stop();
@@ -365,7 +367,8 @@ void EvmScanPage::onSecretButtonClicked() {
     }
 }
 
-void EvmScanPage::resetSecretClickCount() {
+void EvmScanPage::resetSecretClickCount()
+{
     // If 2 seconds pass without reaching 5 clicks, start over.
     m_secretClickCount = 0;
 }

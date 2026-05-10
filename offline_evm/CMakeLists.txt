@@ -13,6 +13,9 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Widgets Sql Network Multimedia MultimediaWidgets)
 # 2. Libsodium (Keep this for the Crypto Lead and memory wiping) & SQLCipher
 find_package(PkgConfig REQUIRED)
+# CMakeLists.txt
+find_package(ZXing REQUIRED)
+
 pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 
 # 3. Define Source Files
@@ -91,9 +94,11 @@ target_link_libraries(OfflineVotingKiosk PRIVATE
     Qt::Network
     Qt::Multimedia
     Qt::MultimediaWidgets
+    ZXing::ZXing
     PkgConfig::SODIUM      # Links Libsodium (Argon2, Ed25519)
 #[[    PkgConfig::SQLCIPHER ]]  # Links SQLCipher (Encrypted SQLite)
 )
+
 
 # 6. Include Paths (So you can #include "models/Candidate.h" easily)
 target_include_directories(OfflineVotingKiosk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

@@ -33,6 +33,8 @@ public:
     // Returns the current configuration so the UI can draw the timers and headers
     SystemConfig getSystemConfig(); 
 
+    bool saveSystemPublicKey(const QString &publicKeyBase64);
+
     // --- FORENSIC LOGGING (For the Admin Dashboard) ---
     // Returns all system events for the Poll Worker to view on screen
     AuditLog* getForensicLogs(int &out_size);

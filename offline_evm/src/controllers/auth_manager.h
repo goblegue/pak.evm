@@ -8,17 +8,17 @@
 #include <optional>
 
 #include "models/entities/poll_worker.h" // Contains PollWorker
+#include "models/entities/system_config.h"
 #include "models/entities/tokens.h"
-
 class AuthManager
 {
 private:
     IWorkerRepository *m_workerRepo;
     ITokenRepository *m_usedTokenRepo;
+    IConfigRepository *m_configRepo;
 
     std::unique_ptr<PollWorker> m_currentWorker;
     bool m_isMasterUnlocked;
-    QByteArray m_systemPublicKey; // Loaded from SystemConfig 
 
     AuthManager();
     ~AuthManager();
@@ -36,9 +36,10 @@ public:
     void operator=(const AuthManager &) = delete;
 
     static AuthManager &getInstance();
-    
-    void injectDependencies(IWorkerRepository *workerRepo, ITokenRepository *tokenRepo);
-    void setSystemPublicKey(const QByteArray &publicKey) { m_systemPublicKey = publicKey; }
+
+    void injectDependencies(IWorkerRepository *workerRepo,
+                            ITokenRepository *tokenRepo,
+                            IConfigRepository *configRepo);
 
     // --- WORKER MANAGEMENT ---
     bool createOperationalWorker(const QString &username, const QString &password); // [NEW]

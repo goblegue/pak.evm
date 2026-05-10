@@ -10,9 +10,10 @@
 #include "models/repos/workerrepository.h"
 
 // Controllers
-#include "controllers/auth_manager.h"
-#include "controllers/election_controller.h"
 #include "controllers/audit_controller.h"
+#include "controllers/auth_manager.h"
+#include "controllers/candidate_controller.h"
+#include "controllers/election_controller.h"
 #include "controllers/system_controller.h"
 
 SystemBootLoader::SystemBootLoader() {}
@@ -32,9 +33,9 @@ void SystemBootLoader::initializeSystem()
     m_workerRepo = std::make_unique<WorkerRepository>();
 
     // 3. Inject Dependencies into Controllers
-    AuthManager::getInstance().injectDependencies(
-        m_workerRepo.get(),
-        m_tokenRepo.get());
+    AuthManager::getInstance().injectDependencies(m_workerRepo.get(),
+                                                  m_tokenRepo.get(),
+                                                  m_configRepo.get());
 
     ElectionController::getInstance().injectDependencies(
         m_configRepo.get(),
@@ -43,8 +44,9 @@ void SystemBootLoader::initializeSystem()
         m_auditRepo.get(),
         m_tokenRepo.get());
 
-    SystemController::getInstance().injectDependencies(
-        m_configRepo.get(), m_auditRepo.get());
+    CandidateController::getInstance().injectDependencies(m_candidateRepo.get());
+
+    SystemController::getInstance().injectDependencies(m_configRepo.get(), m_auditRepo.get());
     AuditController::getInstance().injectDependencies(
         m_voteRepo.get(), m_configRepo.get(), m_tokenRepo.get());
 }

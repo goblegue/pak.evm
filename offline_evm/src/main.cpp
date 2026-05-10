@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     bootstrapper.initializeSystem();
 
     // 2. Create the main kiosk window (but don't show it yet)
-    MainWindow *w = new MainWindow();
 
 #ifdef prod
     // 3. Check the current state of the Election
@@ -28,15 +27,17 @@ int main(int argc, char *argv[])
         OfflineSetupWizard *wizard = new OfflineSetupWizard();
 
         // When wizard finishes, show main window and safely delete the wizard
-        QObject::connect(wizard, &OfflineSetupWizard::setupComplete, [w, wizard]() {
+        QObject::connect(wizard, &OfflineSetupWizard::setupComplete, [&]() {
+            MainWindow *w = new MainWindow(nullptr);
+            QObject::connect(&a, &QCoreApplication::aboutToQuit, w, &QObject::deleteLater);
             w->show();
             wizard->deleteLater();
         });
 
         wizard->show();
     } else {
-        // System is already configured (ReadyWaiting, Open, or Paused).
-        // Skip the wizard entirely and jump straight into Kiosk Mode!
+        MainWindow *w = new MainWindow(nullptr);
+        QObject::connect(&a, &QCoreApplication::aboutToQuit, w, &QObject::deleteLater);
         w->show();
     }
 #endif
@@ -46,8 +47,5 @@ int main(int argc, char *argv[])
 #endif
 
     int result = a.exec();
-
-    // Clean up
-    delete w;
     return result;
 }
