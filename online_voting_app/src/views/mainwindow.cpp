@@ -307,6 +307,7 @@ void MainWindow::on_adminSidebarAdminsBtn_clicked()
 // ---------------------------------------------------------
 void MainWindow::on_adminSidebarElectionsBtn_clicked()
 {
+    m_adminInnerPage_Elections->clearData();
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Elections);
 #ifdef prod
     if (!AuthManager::getInstance().isLoggedIn() || !AuthManager::getInstance().getCurrentUser())

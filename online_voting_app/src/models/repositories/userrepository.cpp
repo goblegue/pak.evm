@@ -38,7 +38,9 @@ bool userrepository::insertUser(const User &user)
 
         m_collection.insert_one(final_doc.view());
         return true;
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
         qDebug() << "MongoDB Insert Error:" << e.what();
         return false;
     }

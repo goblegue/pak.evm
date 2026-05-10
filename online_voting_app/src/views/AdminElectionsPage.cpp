@@ -168,3 +168,7 @@ void AdminElectionsPage::onGetConfigButtonClicked(const QModelIndex &proxyIndex)
     // Pass it up to MainWindow!
     emit getConfigRequested(electionId);
 }
+
+void AdminElectionsPage::clearData() {
+    electionModel->clearElections();
+}

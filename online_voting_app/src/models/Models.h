@@ -482,6 +482,14 @@ public:
 
         return QVariant();
     }
+    void clearElections()
+    {
+        beginResetModel();
+        m_elections.clear();
+        m_expandedItems.clear();
+        m_localVotes.clear();
+        endResetModel();
+    }
 };
 
 // ==========================================

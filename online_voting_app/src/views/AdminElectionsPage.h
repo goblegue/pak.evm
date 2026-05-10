@@ -18,6 +18,7 @@ class AdminElectionsPage : public QWidget {
 public:
     explicit AdminElectionsPage(QWidget *parent = nullptr);
     void loadElections(Election* elections, int size, const QString &currentAdminId);
+    void clearData();
 
 signals:
     // Tells the MainWindow to swap to the "Create Election" page!

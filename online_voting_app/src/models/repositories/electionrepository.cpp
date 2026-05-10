@@ -100,11 +100,25 @@ Election *electionrepository::getAllElections(int &electionsSize)
     int i = 0;
     for (auto &&doc : cursor)
     {
+        auto view = doc;
         electionArray[i].setId(QString::fromUtf8(doc["election_id"].get_string().value.data()));
         electionArray[i].setTitle(QString::fromUtf8(doc["title"].get_string().value.data()));
         electionArray[i].setPublishTime(QDateTime::fromMSecsSinceEpoch(doc["publishTime"].get_int64().value));
         electionArray[i].setStartTime(QDateTime::fromMSecsSinceEpoch(doc["startTime"].get_int64().value));
         electionArray[i].setEndTime(QDateTime::fromMSecsSinceEpoch(doc["endTime"].get_int64().value));
+        if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
+        {
+            auto requestsArray = view["statusChangeRequests"].get_array().value;
+            for (auto &&doc : requestsArray)
+            {
+                auto reqView = doc.get_document().view();
+                QString requesterId = QString::fromUtf8(
+                    reqView["requestById"].get_string().value.data());
+                ApprovalStatus reqStatus = static_cast<ApprovalStatus>(
+                    reqView["status"].get_int32().value);
+                electionArray[i].addStatusChangeRequest(requesterId, reqStatus);
+            }
+        }
         electionArray[i].setStatus(static_cast<ElectionState>(doc["status"].get_int32().value));
         i++;
     }
