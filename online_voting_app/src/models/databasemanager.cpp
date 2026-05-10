@@ -43,14 +43,13 @@ void DatabaseManager::setupSchema()
         document{} << "stationName" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
 
-    // admin collection
     db["Admins"].create_index(
         document{} << "email" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
     db["Admins"].create_index(
         document{} << "cnic" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
-    // candidates collection
+
     db["Candidates"].create_index(
         document{} << "candidate_id" << 1 << finalize,
         mongocxx::options::index{}.unique(true));

@@ -11,13 +11,7 @@ using namespace qrcodegen;
 
 QString QR::preparePayload(const Token &voter)
 {
-    // Simple payload preparation using a JSON-like format
-    // QString payload = QString("{\"cnic\":\"%1\",\"electionId\":\"%2\",\"issuedAt\":\"%3\",\"signature\":\"%4\"}")
-    //                       .arg(voter.getUserCnic())
-    //                       .arg(voter.getElectionId())
-    //                       .arg(voter.getIssuedAt().toString(Qt::ISODate))
-    //                       .arg(voter.getTokenSignature());
-
+    
     QJsonObject payloadObj;
     payloadObj["cnic"] = voter.getUserCnic();
     payloadObj["electionId"] = voter.getElectionId();

@@ -26,4 +26,4 @@ struct StatusChangeRequest
     QString requestById;
 };
 
-#endif // STATES_H
+#endif 

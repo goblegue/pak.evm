@@ -48,4 +48,4 @@ public:
                         const QByteArray &publicKey);
 };
 
-#endif // CRYPTOENGINE_H
+#endif 

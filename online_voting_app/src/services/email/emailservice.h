@@ -27,9 +27,7 @@ public:
 
     void configure(const QString& host, int port, const QString& email, const QString& password);
 
-    // The Universal Method
-    // isHtml = true allows you to send bold text, colors, and tables.
-    // attachmentPath = "" means no attachment by default.
+   
     bool sendEmail(const QString &recipientEmail,
                    const QString &subject,
                    const QString &bodyContent,
@@ -37,5 +35,5 @@ public:
                    const QString &attachmentPath = "");
 };
 
-#endif // EMAILSERVICE_H
+#endif 
 

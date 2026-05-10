@@ -20,4 +20,4 @@ private:
     mongocxx::database db;
 };
 
-#endif // DATABASEMANAGER_H
+#endif 

@@ -31,10 +31,10 @@ bool EmailService::sendEmail(const QString &recipientEmail,
                              bool isHtml,
                              const QString &attachmentPath)
 {
-    // 1. Setup Connection (SslConnection for Port 465)
+    
     SmtpClient smtp(m_smtpHost, m_smtpPort, SmtpClient::SslConnection);
 
-    // 2. Build the Message Headers
+    
     MimeMessage message;
     EmailAddress sender(m_senderEmail, "Election Commission System");
     message.setSender(sender);
@@ -43,12 +43,12 @@ bool EmailService::sendEmail(const QString &recipientEmail,
     message.addRecipient(to, MimeMessage::To);
     message.setSubject(subject);
 
-    // 3. Add the Body (Text or HTML)
+    
     if (isHtml)
     {
         MimeHtml *html = new MimeHtml();
         html->setHtml(bodyContent);
-        message.addPart(html, true); // true = take ownership (deletes memory automatically)
+        message.addPart(html, true); 
     }
     else
     {
@@ -57,7 +57,7 @@ bool EmailService::sendEmail(const QString &recipientEmail,
         message.addPart(text, true);
     }
 
-    // 4. Handle Attachments (Optional)
+    
     if (!attachmentPath.isEmpty())
     {
         QFile *file = new QFile(attachmentPath);
@@ -73,15 +73,15 @@ bool EmailService::sendEmail(const QString &recipientEmail,
         }
     }
 
-    // Step A: Connect to Google
+    
     smtp.connectToHost();
     if (!smtp.waitForReadyConnected(5000))
-    { // Wait up to 5 seconds
+    { 
         qDebug() << "EmailService Error: Failed to connect to host!";
         return false;
     }
 
-    // Step B: Authenticate with App Password
+    
     smtp.login(m_senderEmail, m_appPassword, SmtpClient::AuthLogin);
     if (!smtp.waitForAuthenticated(5000))
     {
@@ -90,16 +90,15 @@ bool EmailService::sendEmail(const QString &recipientEmail,
         return false;
     }
 
-    // Step C: Send the Email
+    
     smtp.sendMail(message);
     if (!smtp.waitForMailSent(10000))
-    { // Wait up to 10 seconds for large attachments
+    { 
         qDebug() << "EmailService Error: Failed to send the email payload!";
         smtp.quit();
         return false;
     }
 
-    // 6. Close the connection gracefully
     smtp.quit();
     qDebug() << "Success! Email reliably sent to" << recipientEmail;
     return true;

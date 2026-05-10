@@ -12,4 +12,4 @@ public:
 
     static QImage generateQRCode(const QString &payload);
 };
-#endif // QR_H
+#endif 

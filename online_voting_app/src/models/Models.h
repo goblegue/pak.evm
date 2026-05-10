@@ -14,22 +14,22 @@
 #include "models/entities/voters.h"
 #include "models/states.h"
 
-// Define custom roles so the Delegate can fetch specific data
+
 enum CustomRoles {
     CandidateStatusRole = Qt::UserRole + 1,
     CandidateSymbolNameRole = Qt::UserRole + 2,
     CandidateSymbolImageRole = Qt::UserRole + 3
 };
 
-// Add a specific role for Admin Status
+
 enum AdminCustomRoles
 {
     AdminStatusRole = Qt::UserRole + 10,
-    LocalVoteRole = Qt::UserRole + 11, // NEW: Tracks the button's locked state
+    LocalVoteRole = Qt::UserRole + 11, 
     AdminVotedRole = Qt::UserRole + 12
 };
 
-// Add Custom Roles for the Election Delegate to use
+
 enum ElectionCustomRoles {
     ElectionStatusRole = Qt::UserRole + 20,
     ElectionExpandedRole = Qt::UserRole + 21,
@@ -38,7 +38,7 @@ enum ElectionCustomRoles {
     ElectionVotedRole = Qt::UserRole + 24
 };
 
-// Custom roles for the Token Delegate
+
 enum TokenCustomRoles {
     TokenExpandedRole = Qt::UserRole + 30,
     TokenSignatureRole = Qt::UserRole + 31,
@@ -46,9 +46,8 @@ enum TokenCustomRoles {
     TokenStationRole = Qt::UserRole + 33,
     TokenQRCodeRole = Qt::UserRole + 34
 };
-// ==========================================
-// ELECTION LIST MODEL
-// ==========================================
+
+
 class ElectionListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -94,9 +93,7 @@ public:
     }
 };
 
-// ==========================================
-// CANDIDATE LIST MODEL
-// ==========================================
+
 class CandidateListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -148,57 +145,50 @@ public:
         }
         if (role == CandidateStatusRole) return static_cast<int>(candidate.getStatus());
 
-        // Pass the Base64 Image to the Delegate
+        
         if (role == CandidateSymbolImageRole) return candidate.getSymbolBase64();
 
         return QVariant();
     }
 };
 
-// ==========================================
-// CANDIDATE FILTER PROXY MODEL
-// ==========================================
 class CandidateFilterProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 private:
-    int m_filterStatus = -1; // -1 means "Show All"
+    int m_filterStatus = -1; 
 
 public:
     explicit CandidateFilterProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
 
-    // Function to change the filter and force the UI to update
+
     void setFilterStatus(int status)
     {
         m_filterStatus = status;
-        invalidateFilter(); // Tells Qt to re-run the filter logic immediately
+        invalidateFilter(); 
     }
 
 protected:
-    // This is the magic Qt function. If it returns true, the row is shown.
+    
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
     {
         if (m_filterStatus == -1)
-            return true; // Show everything
+            return true; 
 
-        // Ask the original model for the status of this specific row
         QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
         int status = sourceModel()->data(index, CandidateStatusRole).toInt();
 
-        // Only show it if the status matches our filter
         return status == m_filterStatus;
     }
 };
 
-// ==========================================
-// ADMIN LIST MODEL
-// ==========================================
+
 class AdminListModel : public QAbstractListModel
 {
     Q_OBJECT
 private:
     QList<Admin> m_admins;
-    QMap<QString, int> m_localVotes; // Tracks locks: 0=Unlocked, 1=Approved, 2=Rejected
+    QMap<QString, int> m_localVotes; 
     QString m_currentAdminId;
 
     QString statusToString(ApprovalStatus status) const
@@ -223,7 +213,7 @@ public:
     {
         beginResetModel();
         m_admins.clear();
-        m_localVotes.clear(); // Reset locks when reloading
+        m_localVotes.clear(); 
         for (int i = 0; i < size; ++i)
             m_admins.append(adminsArray[i]);
         endResetModel();
@@ -231,11 +221,9 @@ public:
 
     Admin getAdminAt(int index) const { return m_admins.at(index); }
 
-    // THIS FUNCTION LOCKS THE BUTTON
     void setLocalVote(QString cnic, int vote)
     {
         m_localVotes[cnic] = vote;
-        // Tell the UI to repaint this specific row
         for (int i = 0; i < m_admins.count(); i++)
         {
             if (m_admins[i].getCnic() == cnic)
@@ -282,14 +270,12 @@ public:
     }
 };
 
-// ==========================================
-// ADMIN FILTER PROXY MODEL
-// ==========================================
+
 class AdminFilterProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 private:
-    int m_filterStatus = -1; // -1 means "Show All"
+    int m_filterStatus = -1; 
 
 public:
     explicit AdminFilterProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
@@ -313,9 +299,7 @@ protected:
     }
 };
 
-// ==========================================
-// ELECTION LIST MODEL (UPDATED FOR ACCORDION)
-// ==========================================
+
 class ManageElectionListModel : public QAbstractListModel {
     Q_OBJECT
 private:
@@ -323,7 +307,6 @@ private:
     QSet<QString> m_expandedItems;
     QString m_currentAdminId;
 
-    // MISSING VARIABLE ADDED:
     QMap<QString, int> m_localVotes;
 
     QString statusToString(ElectionState status) const {
@@ -349,7 +332,7 @@ public:
         beginResetModel();
         m_elections.clear();
         m_expandedItems.clear();
-        m_localVotes.clear(); // Clear old votes when reloading!
+        m_localVotes.clear(); 
         for(int i = 0; i < size; ++i) m_elections.append(electionsArray[i]);
         endResetModel();
     }
@@ -372,9 +355,7 @@ public:
         }
     }
 
-    // ==========================================
-    // MISSING FUNCTION ADDED:
-    // ==========================================
+
     void setLocalVote(QString electionId, int voteCode) {
         m_localVotes[electionId] = voteCode;
         for(int i = 0; i < m_elections.count(); ++i) {
@@ -407,9 +388,7 @@ public:
             return election.hasAdminVoted(m_currentAdminId);
         }
 
-        // ==========================================
-        // MISSING ROLE CHECK ADDED:
-        // ==========================================
+
         if (role == LocalVoteRole) {
             return m_localVotes.value(election.getId(), 0);
         }
@@ -418,13 +397,11 @@ public:
     }
 };
 
-// ==========================================
-// ELECTION FILTER PROXY MODEL
-// ==========================================
+
 class ElectionFilterProxyModel : public QSortFilterProxyModel {
     Q_OBJECT
 private:
-    int m_filterStatus = -1; // -1 means "Show All"
+    int m_filterStatus = -1; 
 
 public:
     explicit ElectionFilterProxyModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
@@ -445,14 +422,12 @@ protected:
     }
 };
 
-// ==========================================
-// TOKEN LIST MODEL (ACCORDION STYLE)
-// ==========================================
+
 class TokenListModel : public QAbstractListModel {
     Q_OBJECT
 private:
     QList<Token> m_tokens;
-    QSet<QString> m_expandedItems; // Remembers expanded tokens
+    QSet<QString> m_expandedItems; 
 
 public:
     explicit TokenListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
@@ -460,7 +435,7 @@ public:
     void setTokens(Token* tokensArray, int size) {
         beginResetModel();
         m_tokens.clear();
-        m_expandedItems.clear(); // Collapse all on load
+        m_expandedItems.clear(); 
         for(int i = 0; i < size; ++i) m_tokens.append(tokensArray[i]);
         endResetModel();
     }
@@ -507,4 +482,4 @@ public:
         return QVariant();
     }
 };
-#endif // ADMIN_MODELS_H
+#endif 
