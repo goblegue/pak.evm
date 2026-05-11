@@ -13,6 +13,7 @@
 #include "models/repositories/userrepository.h"
 #include "models/repositories/voterrepository.h"
 #include "models/repositories/votingstationrepository.h"
+#include "models/repositories/resultrepository.h"
 
 // Controllers
 #include "controllers/auth_manager.h"
@@ -176,7 +177,7 @@ void SystemBootstrapper::bootstrapFirstAdmins()
 
 void SystemBootstrapper::instantiateRepositories()
 {
-    
+
     // unique_ptr<T>(new T()) is used to safely manage heap memory
     m_userRepo = std::unique_ptr<IUserRepository>(new userrepository());
     m_adminRepo = std::unique_ptr<IAdminRepository>(new adminrepository());
@@ -185,6 +186,7 @@ void SystemBootstrapper::instantiateRepositories()
     m_otpRepo = std::unique_ptr<IOtpRepository>(new otprepository());
     m_voterRepo = std::unique_ptr<ITokenRepository>(new TokenRepository());
     m_stationRepo = std::unique_ptr<IVotingStationRepository>(new votingstationrepository());
+    m_resultRepo = std::unique_ptr<IPollResultRepository>(new ResultRepository());
 }
 
 void SystemBootstrapper::injectControllers()

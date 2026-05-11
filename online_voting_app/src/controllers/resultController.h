@@ -28,13 +28,15 @@ public:
     void injectRepositories(IPollResultRepository* resultRepo, IElectionRepository* electionRepo);
 
     // STEP 1: Load from USB, Decrypt, and Preview (Does NOT save to DB yet)
-    std::optional<PollResult> loadAndPreviewResultFile(const QString& filePath, const QByteArray& publicKey, const QByteArray& privateKey);
+    std::optional<Result> loadAndPreviewResultFile(const QString &filePath,
+                                                   const QByteArray &publicKey,
+                                                   const QByteArray &privateKey);
 
     // STEP 2: Officially save the previewed result to MongoDB and close the election
-    bool commitFinalResults(const PollResult& result);
+    bool commitFinalResults(const Result &result);
 
     // Fetch existing results for viewing past elections
-    std::optional<PollResult> getElectionResults(const QString& electionId);
+    std::optional<Result> getElectionResults(const QString &electionId);
 };
 
 #endif // RESULT_CONTROLLER_H

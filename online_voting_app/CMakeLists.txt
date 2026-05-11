@@ -29,6 +29,9 @@ qt_add_executable(online_voting_app
     src/controllers/voterController.cpp
     src/controllers/adminController.cpp
     src/controllers/voterController.h
+    src/controllers/resultController.h
+    src/controllers/resultController.cpp
+
     src/models/Models.h
     src/models/databasemanager.cpp
     src/models/databasemanager.h
@@ -40,6 +43,7 @@ qt_add_executable(online_voting_app
     src/models/entities/user.h
     src/models/entities/voters.h
     src/models/entities/voting_station.h
+    src/models/entities/result.h
     src/models/repositories/adminrepository.cpp
     src/models/repositories/adminrepository.h
     src/models/repositories/candidaterepository.cpp
@@ -126,6 +130,7 @@ qt_add_executable(online_voting_app
     src/views/signuppage.h src/views/signuppage.cpp src/views/signuppage.ui
     src/views/AdminResultPage.h src/views/AdminResultPage.cpp
     src/views/UserResultsPage.h src/views/UserResultsPage.cpp
+    src/models/repositories/resultrepository.h src/models/repositories/resultrepository.cpp
 
 )
 

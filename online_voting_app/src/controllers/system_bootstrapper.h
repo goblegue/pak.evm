@@ -13,6 +13,7 @@ class ICandidateRepository;
 class IOtpRepository;
 class ITokenRepository;
 class IVotingStationRepository;
+class IPollResultRepository;
 
 // A struct to hold our loaded environment variables
 struct AppConfig
@@ -36,6 +37,7 @@ private:
     std::unique_ptr<IOtpRepository> m_otpRepo;
     std::unique_ptr<ITokenRepository> m_voterRepo;
     std::unique_ptr<IVotingStationRepository> m_stationRepo;
+    std::unique_ptr<IPollResultRepository> m_resultRepo;
 
     AppConfig m_config;
 

@@ -54,4 +54,9 @@ void DatabaseManager::setupSchema()
     db["Candidates"].create_index(
         document{} << "candidate_id" << 1 << finalize,
         mongocxx::options::index{}.unique(true));
+
+        // Add this with your other collection indexes
+    db["Results"].create_index(
+        document{} << "election_id" << 1 << finalize,
+        mongocxx::options::index{}.unique(true));
 }

@@ -1,30 +1,35 @@
 #ifndef ADMINRESULTPAGE_H
 #define ADMINRESULTPAGE_H
 
-#include <QWidget>
-#include <QListView>
-#include <QLabel>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QScrollArea>
-#include <QProgressBar>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QJsonArray>
 #include <QFileDialog>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QListView>
 #include <QMessageBox>
-#include "models/Models.h"
+#include <QProgressBar>
+#include <QPushButton>
+#include <QScrollArea>
+#include <QVBoxLayout>
+#include <QWidget>
 
-class AdminResultPage : public QWidget {
+#include "models/Models.h"
+#include "models/entities/result.h"
+#include "models/states.h"
+
+class AdminResultPage : public QWidget
+{
     Q_OBJECT
 
 public:
     explicit AdminResultPage(QWidget *parent = nullptr);
-    void loadElections(Election* elections, int size);
+    void loadElections(Election *elections, int size);
+
+    // NEW: Inject keys so the Controller can decrypt files
+    void setCryptoKeys(const QByteArray &publicKey, const QByteArray &privateKey);
 
 signals:
     void electionSelected(QString electionId);
+    void resultsSaved(); // Emit when an election is successfully finalized
 
 private slots:
     void onElectionClicked(const QModelIndex &index);
@@ -33,11 +38,11 @@ private slots:
     void onCancelClicked();
 
 private:
-    // Left Side (30%)
+    // Left Side
     QListView *electionListView;
     ElectionListModel *electionModel;
 
-    // Right Side (70%)
+    // Right Side
     QWidget *rightContainer;
     QLabel *rightTitleLabel;
     QPushButton *loadBtn;
@@ -56,16 +61,19 @@ private:
     QPushButton *saveBtn;
     QPushButton *cancelBtn;
 
+    // --- State Management ---
+    QByteArray m_publicKey;
+    QByteArray m_privateKey;
     QString currentSelectedElectionId;
-    QJsonObject currentResultData;
+    ElectionState currentElectionState;
+    Result currentPreviewedResult;
 
     void setupUi();
     void clearResults();
-    void processEncryptedResultFile(const QString &filePath);
-    void displayResults(const QJsonObject &resultJson);
+    void displayResults(const Result &result);
 
-    // Helper to simulate fetching Candidate Name from CNIC
-    QString getCandidateName(const QString &cnic);
+    // Fetch real names from CandidateController
+    QString getCandidateName(const QString &cnic, const QString &electionId);
 };
 
 #endif // ADMINRESULTPAGE_H

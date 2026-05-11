@@ -46,6 +46,10 @@ public:
     int verifySignature(const QByteArray &message,
                         const QByteArray &signature,
                         const QByteArray &publicKey);
+
+    std::optional<QByteArray> decryptMessage(const QByteArray &encryptedMessage,
+                                             const QByteArray &publicKey,
+                                             const QByteArray &privateKey);
 };
 
 #endif // CRYPTOENGINE_H

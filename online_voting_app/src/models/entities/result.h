@@ -14,7 +14,6 @@ struct CandidateTally {
 class Result {
 private:
     QString m_electionId;
-    QString m_exportedByAdmin;
     QDateTime m_pollOpenedAt;
     QDateTime m_pollClosedAt;
     
@@ -33,12 +32,14 @@ public:
     // --- RULE OF THREE FOR DYNAMIC MEMORY ---
     ~Result() { delete[] m_tally; }
 
-    Result(const Result& other) 
-        : m_electionId(other.m_electionId), m_exportedByAdmin(other.m_exportedByAdmin),
-          m_pollOpenedAt(other.m_pollOpenedAt), m_pollClosedAt(other.m_pollClosedAt),
-          m_totalTokensConsumed(other.m_totalTokensConsumed), m_totalVotesCast(other.m_totalVotesCast),
-          m_auditStatus(other.m_auditStatus), m_finalLedgerHash(other.m_finalLedgerHash),
-          m_tallyCount(other.m_tallyCount)
+    Result(const Result &other)
+        : m_electionId(other.m_electionId)
+        , m_pollOpenedAt(other.m_pollOpenedAt)
+        , m_pollClosedAt(other.m_pollClosedAt)
+        , m_totalVotesCast(other.m_totalVotesCast)
+        , m_auditStatus(other.m_auditStatus)
+        , m_finalLedgerHash(other.m_finalLedgerHash)
+        , m_tallyCount(other.m_tallyCount)
     {
         if (m_tallyCount > 0) {
             m_tally = new CandidateTally[m_tallyCount];
@@ -51,10 +52,10 @@ public:
     Result& operator=(const Result& other) {
         if (this != &other) {
             m_electionId = other.m_electionId;
-            m_exportedByAdmin = other.m_exportedByAdmin;
+
             m_pollOpenedAt = other.m_pollOpenedAt;
             m_pollClosedAt = other.m_pollClosedAt;
-            m_totalTokensConsumed = other.m_totalTokensConsumed;
+
             m_totalVotesCast = other.m_totalVotesCast;
             m_auditStatus = other.m_auditStatus;
             m_finalLedgerHash = other.m_finalLedgerHash;
@@ -74,10 +75,10 @@ public:
 
     // --- GETTERS ---
     QString getElectionId() const { return m_electionId; }
-    QString getExportedByAdmin() const { return m_exportedByAdmin; }
+
     QDateTime getPollOpenedAt() const { return m_pollOpenedAt; }
     QDateTime getPollClosedAt() const { return m_pollClosedAt; }
-    int getTotalTokensConsumed() const { return m_totalTokensConsumed; }
+
     int getTotalVotesCast() const { return m_totalVotesCast; }
     QString getAuditStatus() const { return m_auditStatus; }
     QString getFinalLedgerHash() const { return m_finalLedgerHash; }
@@ -86,10 +87,10 @@ public:
 
     // --- SETTERS ---
     void setElectionId(const QString& id) { m_electionId = id; }
-    void setExportedByAdmin(const QString& admin) { m_exportedByAdmin = admin; }
+
     void setPollOpenedAt(const QDateTime& time) { m_pollOpenedAt = time; }
     void setPollClosedAt(const QDateTime& time) { m_pollClosedAt = time; }
-    void setTotalTokensConsumed(int count) { m_totalTokensConsumed = count; }
+
     void setTotalVotesCast(int count) { m_totalVotesCast = count; }
     void setAuditStatus(const QString& status) { m_auditStatus = status; }
     void setFinalLedgerHash(const QString& hash) { m_finalLedgerHash = hash; }

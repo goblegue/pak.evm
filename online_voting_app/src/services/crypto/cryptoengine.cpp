@@ -169,3 +169,50 @@ int CryptoEngine::verifySignature(const QByteArray &message,
     else
         return 0;
 }
+
+std::optional<QByteArray> CryptoEngine::decryptMessage(const QByteArray &encryptedMessage,
+                                                       const QByteArray &publicKey,
+                                                       const QByteArray &privateKey)
+{
+    // 1. Validate inputs
+    if (publicKey.size() != crypto_sign_PUBLICKEYBYTES || privateKey.size() != crypto_sign_SECRETKEYBYTES) {
+        qWarning() << "CryptoEngine Error: Invalid key sizes for decryption!";
+        return std::nullopt;
+    }
+
+    if (encryptedMessage.size() < crypto_box_SEALBYTES) {
+        qWarning() << "CryptoEngine Error: Encrypted message is too short to be a valid sealed box!";
+        return std::nullopt;
+    }
+
+    // 2. Convert Ed25519 Keys to X25519 Keys
+    unsigned char curve25519_pk[crypto_box_PUBLICKEYBYTES];
+    unsigned char curve25519_sk[crypto_box_SECRETKEYBYTES];
+
+    if (crypto_sign_ed25519_pk_to_curve25519(curve25519_pk, reinterpret_cast<const unsigned char*>(publicKey.constData())) != 0) {
+        return std::nullopt;
+    }
+    if (crypto_sign_ed25519_sk_to_curve25519(curve25519_sk, reinterpret_cast<const unsigned char*>(privateKey.constData())) != 0) {
+        return std::nullopt;
+    }
+
+    // 3. Prepare plaintext buffer
+    QByteArray decrypted;
+    decrypted.resize(encryptedMessage.size() - crypto_box_SEALBYTES);
+
+    // 4. Decrypt the Sealed Box
+    int result = crypto_box_seal_open(
+        reinterpret_cast<unsigned char *>(decrypted.data()),
+        reinterpret_cast<const unsigned char *>(encryptedMessage.constData()),
+        encryptedMessage.size(),
+        curve25519_pk,
+        curve25519_sk
+    );
+
+    if (result == 0) {
+        return decrypted;
+    } else {
+        qWarning() << "CryptoEngine Error: Decryption failed! The data was tampered with or keys are incorrect.";
+        return std::nullopt;
+    }
+}
