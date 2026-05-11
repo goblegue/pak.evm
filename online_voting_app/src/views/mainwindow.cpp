@@ -911,13 +911,25 @@ void MainWindow::on_userSidebarResultsBtn_clicked()
 {
     ui->userContentStack->setCurrentWidget(userInnerPage_Results);
 
-    // Fetch Completed Elections
-    int electionCount = 1;
-    Election *mockElections = new Election[electionCount];
-    mockElections[0].setId("ELEC-28D42");
-    mockElections[0].setTitle("Karachi Mayoral Election");
-    mockElections[0].setStatus(ElectionState::ResultsAnnounced);
+    int allSize = 0;
+    Election *allElections = ElectionController::getInstance().getAllElections(allSize);
 
-    userInnerPage_Results->loadElections(mockElections, electionCount);
-    delete[] mockElections;
+    if (!allElections)
+        return;
+
+    // Filter to show ONLY ResultsAnnounced
+    int filteredSize = 0;
+    Election *filteredElections = new Election[allSize];
+
+    for (int i = 0; i < allSize; ++i) {
+        if (allElections[i].getStatus() == ElectionState::ResultsAnnounced) {
+            filteredElections[filteredSize++] = allElections[i];
+        }
+    }
+
+    userInnerPage_Results->loadElections(filteredElections, filteredSize);
+
+    // Clean up dynamic arrays!
+    delete[] allElections;
+    delete[] filteredElections;
 }

@@ -1,7 +1,8 @@
-#include "UserResultsPage.h"
-#include "Delegates.h" 
+#include "views/UserResultsPage.h"
 #include <QFrame>
-#include <QDateTime>
+#include "Delegates.h"
+#include "controllers/candidateController.h"
+#include "controllers/resultController.h"
 
 UserResultsPage::UserResultsPage(QWidget *parent) : QWidget(parent) {
     electionModel = new ElectionListModel(this);
@@ -116,65 +117,88 @@ void UserResultsPage::setupUi() {
     connect(electionListView, &QListView::clicked, this, &UserResultsPage::onElectionClicked);
 }
 
-void UserResultsPage::loadElections(Election* elections, int size) {
+void UserResultsPage::loadElections(Election *elections, int size)
+{
     electionModel->setElections(elections, size);
     rightStackedWidget->setCurrentIndex(0); // Show placeholder initially!
 }
 
-void UserResultsPage::onElectionClicked(const QModelIndex &index) {
+void UserResultsPage::onElectionClicked(const QModelIndex &index)
+{
     Election selected = electionModel->getElectionAt(index.row());
     currentSelectedElectionId = selected.getId();
-    
+
     rightTitleLabel->setText("Official Results: " + selected.getTitle());
     clearResults();
 
-    // Show the results container!
-    rightStackedWidget->setCurrentIndex(1); 
-    
+    // Fetch the Official Results directly from the Database!
+    auto resultOpt = ResultController::getInstance().getElectionResults(currentSelectedElectionId);
+
+    if (resultOpt.has_value()) {
+        displayResults(resultOpt.value());
+        rightStackedWidget->setCurrentIndex(1); // Show the results container!
+    } else {
+        QMessageBox::warning(this,
+                             "Not Found",
+                             "Official results for this election have not been published yet.");
+        rightStackedWidget->setCurrentIndex(0); // Revert to placeholder
+    }
+
     emit electionSelectedForResults(currentSelectedElectionId);
 }
 
-void UserResultsPage::clearResults() {
+// THE CRASH-FREE CLEAR RESULTS LOGIC
+void UserResultsPage::clearResults()
+{
+    if (!chartLayout)
+        return; // Safety check
+
     QLayoutItem *child;
     while ((child = chartLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
+        if (child->widget()) {
+            child->widget()->hide();
+            child->widget()->deleteLater(); // Safe Qt Deletion!
+        }
         delete child;
     }
-    winnerLabel->setText("🏆 Winner: -");
-    totalTokensLabel->setText("🎫 Total Tokens Scanned: -");
-    pollClosedLabel->setText("⏱ Polling Closed At: -");
+
+    if (winnerLabel)
+        winnerLabel->setText("🏆 Winner: -");
+    if (totalTokensLabel)
+        totalTokensLabel->setText("🎫 Total Votes Cast: -");
+    if (pollClosedLabel)
+        pollClosedLabel->setText("⏱ Polling Closed At: -");
 }
 
-void UserResultsPage::displayResults(const QJsonObject &resultJson) {
+void UserResultsPage::displayResults(const Result &res)
+{
     clearResults();
 
-    QJsonObject meta = resultJson["metadata"].toObject();
-    QJsonObject stats = resultJson["statistics"].toObject();
-    QJsonArray tally = resultJson["tally"].toArray(); // <-- USING toArray() HERE!
+    int totalVotes = res.getTotalVotesCast();
+    totalTokensLabel->setText(QString("🎫 Total Votes Cast: %1").arg(totalVotes));
 
-    int totalVotes = stats["total_votes_cast"].toInt();
-
-    totalTokensLabel->setText(QString("🎫 Total Tokens Scanned: %1").arg(stats["total_tokens_consumed"].toInt()));
-
-    QString rawTime = meta["poll_closed_at"].toString();
-    QDateTime closedTime = QDateTime::fromString(rawTime, Qt::ISODate);
-    pollClosedLabel->setText("⏱ Polling Closed At: " + closedTime.toString("MMM dd, yyyy - hh:mm AP"));
+    pollClosedLabel->setText("⏱ Polling Closed At: "
+                             + res.getPollClosedAt().toString("MMM dd, yyyy - hh:mm AP"));
 
     int maxVotes = -1;
     QString winnerName = "Tie / Undecided";
 
-    for (int i = 0; i < tally.size(); ++i) {
-        QJsonObject candObj = tally[i].toObject();
-        int votes = candObj["total_votes"].toInt();
-        QString cnic = candObj["candidate_cnic"].toString();
-        QString candName = getCandidateName(cnic);
+    CandidateTally *tally = res.getTally();
+    int tallyCount = res.getTallyCount();
+
+    for (int i = 0; i < tallyCount; ++i) {
+        int votes = tally[i].totalVotes;
+        QString cnic = tally[i].candidateCnic;
+
+        // Fetch Real Name from Database
+        QString candName = getCandidateName(cnic, res.getElectionId());
 
         if (votes > maxVotes) {
             maxVotes = votes;
             winnerName = candName;
         }
 
-        double percentage = totalVotes > 0 ? ((double)votes / totalVotes) * 100.0 : 0;
+        double percentage = totalVotes > 0 ? ((double) votes / totalVotes) * 100.0 : 0;
 
         // --- Create Thick Graph Row ---
         QWidget *rowWidget = new QWidget();
@@ -183,20 +207,22 @@ void UserResultsPage::displayResults(const QJsonObject &resultJson) {
 
         QLabel *nameLbl = new QLabel(candName, rowWidget);
         nameLbl->setFixedWidth(180);
-        nameLbl->setStyleSheet("font-size: 16px; font-weight: bold; color: #34495E; border: none;"); // Bigger font
+        nameLbl->setStyleSheet("font-size: 16px; font-weight: bold; color: #34495E; border: none;");
 
-        // THICK Progress Bar
         QProgressBar *bar = new QProgressBar(rowWidget);
         bar->setRange(0, totalVotes);
         bar->setValue(votes);
         bar->setTextVisible(false);
-        bar->setFixedHeight(40); // 40px thick!
-        bar->setStyleSheet("QProgressBar { border: 1px solid #BDC3C7; border-radius: 6px; background: #ECF0F1; }"
-                           "QProgressBar::chunk { background-color: #2980B9; border-radius: 5px; }"); // User theme blue
+        bar->setFixedHeight(40);
+        bar->setStyleSheet(
+            "QProgressBar { border: 1px solid #BDC3C7; border-radius: 6px; background: #ECF0F1; }"
+            "QProgressBar::chunk { background-color: #2980B9; border-radius: 5px; }");
 
-        QLabel *pctLbl = new QLabel(QString::number(percentage, 'f', 1) + "% (" + QString::number(votes) + " Votes)", rowWidget);
+        QLabel *pctLbl = new QLabel(QString::number(percentage, 'f', 1) + "% ("
+                                        + QString::number(votes) + " Votes)",
+                                    rowWidget);
         pctLbl->setFixedWidth(150);
-        pctLbl->setStyleSheet("font-size: 16px; font-weight: bold; color: #7F8C8D; border: none;"); // Bigger font
+        pctLbl->setStyleSheet("font-size: 16px; font-weight: bold; color: #7F8C8D; border: none;");
 
         rowLayout->addWidget(nameLbl);
         rowLayout->addWidget(bar);
@@ -208,10 +234,26 @@ void UserResultsPage::displayResults(const QJsonObject &resultJson) {
     winnerLabel->setText("🏆 WINNER: " + winnerName);
 }
 
-// Mock Helper
-QString UserResultsPage::getCandidateName(const QString &cnic) {
-    if (cnic == "1234567891011") return "John Doe";
-    if (cnic == "42101-222-2") return "Jane Smith";
-    if (cnic == "42101-333-3") return "Ahmed Khan";
-    return cnic;
+// Fetches the Real Name from the Backend Controller
+QString UserResultsPage::getCandidateName(const QString &cnic, const QString &electionId)
+{
+    int size = 0;
+    Candidate *candidates = CandidateController::getInstance()
+                                .getCandidatesByElectionAndStatus(electionId,
+                                                                  ApprovalStatus::Approved,
+                                                                  size);
+
+    QString name = cnic; // Fallback
+    if (candidates) {
+        for (int i = 0; i < size; ++i) {
+            if (candidates[i].getUserCnic() == cnic) {
+                name = candidates[i].getName();
+                if (name.isEmpty())
+                    name = candidates[i].getPartyName(); // Secondary fallback
+                break;
+            }
+        }
+        delete[] candidates; // Memory safety!
+    }
+    return name;
 }

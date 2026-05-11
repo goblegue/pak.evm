@@ -6,7 +6,12 @@
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
 
-DatabaseManager::DatabaseManager() : client{mongocxx::uri{}}, db{client["online_voting_system"]} {}
+DatabaseManager::DatabaseManager()
+    : client{mongocxx::uri{
+          "mongodb+srv://bajwaab576_db_user:Voting2026@cluster0.avcy1xv.mongodb.net/"
+          "?appName=Cluster0"}}
+    , db{client["online_voting_system"]}
+{}
 
 DatabaseManager &DatabaseManager::getInstance()
 {
