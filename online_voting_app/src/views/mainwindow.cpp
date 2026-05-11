@@ -43,7 +43,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_CandidateDetails = new AdminCandidateDetailsPage(this);
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
     m_adminInnerPage_Results = new AdminResultPage(this);
-    
+
     // user
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);
@@ -580,7 +580,7 @@ void MainWindow::handleGenerateTokenRequested(QString electionId)
     }
 
     // 2. Create the Dialog using the Designer class
-    VoterTokenMess tokenPopup(base64Bytes, electionId,newToken.getId(), this);
+    VoterTokenMess tokenPopup(base64Bytes, electionId, newToken.getId(), this);
 
     // 3. Show it modally (blocks the rest of the app until they click OK)
     tokenPopup.exec();
@@ -725,7 +725,8 @@ void MainWindow::on_adminUserDashBtn_clicked()
 // ==========================================
 // IMAGE & LOGO LOADING
 // ==========================================
-void MainWindow::loadDashboardImages() {
+void MainWindow::loadDashboardImages()
+{
 
     // 1. Define your image paths (Ensure these match your Resource.qrc exactly!)
     QString systemLogoPath = ":/images/pak.evm-logo.png";
@@ -733,13 +734,15 @@ void MainWindow::loadDashboardImages() {
 
     // 2. Load the System Logo into the User Dashboard Top Bar
     // (Assuming you named the label 'userTopBarLogoLabel' in Qt Designer)
-    if (ui->userTopBarLogoLabel) {
+    if (ui->userTopBarLogoLabel)
+    {
         setCircularImage(ui->userTopBarLogoLabel, systemLogoPath, 45);
     }
 
     // 3. Load the System Logo into the Admin Dashboard Top Bar
     // (You will need to drag a label into the Admin top bar in Qt Designer and name it 'adminTopBarLogoLabel')
-    if (ui->adminTopBarLogoLabel) {
+    if (ui->adminTopBarLogoLabel)
+    {
         setCircularImage(ui->adminTopBarLogoLabel, systemLogoPath, 45);
     }
 
@@ -751,12 +754,15 @@ void MainWindow::loadDashboardImages() {
 // ---------------------------------------------------------
 // REUSABLE HELPER: Turns any image path into a perfectly round UI Label
 // ---------------------------------------------------------
-void MainWindow::setCircularImage(QLabel *label, const QString &imagePath, int size) {
-    if (!label) return; // Safety check
+void MainWindow::setCircularImage(QLabel *label, const QString &imagePath, int size)
+{
+    if (!label)
+        return; // Safety check
 
     QPixmap originalImage(imagePath);
 
-    if (!originalImage.isNull()) {
+    if (!originalImage.isNull())
+    {
         QPixmap circularImage(size, size);
         circularImage.fill(Qt::transparent);
 
@@ -776,7 +782,9 @@ void MainWindow::setCircularImage(QLabel *label, const QString &imagePath, int s
 
         // Remove any default borders from your CSS
         label->setStyleSheet("background: transparent; border: none;");
-    } else {
+    }
+    else
+    {
         qDebug() << "Image Loading Error: Could not find image at" << imagePath;
     }
 }
@@ -871,28 +879,32 @@ void MainWindow::loadAdminProfile(const QString &fullName, const QString &imageP
 // ---------------------------------------------------------
 void MainWindow::on_adminSidebarResultsBtn_clicked()
 {
-    // 1. Change the nested stacked widget to show the results page
     ui->adminContentStack->setCurrentWidget(m_adminInnerPage_Results);
 
-    // 2. Fetch all Elections that have FINISHED (ResultsAnnounced or Closed)
-    int electionCount = 2;
-    Election* mockElections = new Election[electionCount];
+    int allSize = 0;
+    Election *allElections = ElectionController::getInstance().getAllElections(allSize);
 
-    mockElections[0].setId("ELEC-28D42");
-    mockElections[0].setTitle("Karachi Mayoral Election");
-    mockElections[0].setStatus(ElectionState::ResultsAnnounced);
+    if (!allElections)
+        return;
 
-    mockElections[1].setId("ELEC-99X11");
-    mockElections[1].setTitle("Punjab Provincial Assembly");
-    mockElections[1].setStatus(ElectionState::ResultsAnnounced);
+    // Filter to show ONLY VotingClosed OR ResultsAnnounced
+    int filteredSize = 0;
+    Election *filteredElections = new Election[allSize];
 
-    // 3. Load them into the UI
-    m_adminInnerPage_Results->loadElections(mockElections, electionCount);
+    for (int i = 0; i < allSize; ++i)
+    {
+        if (allElections[i].getStatus() == ElectionState::VotingClosed ||
+            allElections[i].getStatus() == ElectionState::ResultsAnnounced)
+        {
+            filteredElections[filteredSize++] = allElections[i];
+        }
+    }
 
-    // 4. Cleanup memory to prevent leaks!
-    delete[] mockElections;
+    m_adminInnerPage_Results->loadElections(filteredElections, filteredSize);
+
+    delete[] allElections;
+    delete[] filteredElections;
 }
-
 
 void MainWindow::on_userSidebarResultsBtn_clicked()
 {
@@ -900,7 +912,7 @@ void MainWindow::on_userSidebarResultsBtn_clicked()
 
     // Fetch Completed Elections
     int electionCount = 1;
-    Election* mockElections = new Election[electionCount];
+    Election *mockElections = new Election[electionCount];
     mockElections[0].setId("ELEC-28D42");
     mockElections[0].setTitle("Karachi Mayoral Election");
     mockElections[0].setStatus(ElectionState::ResultsAnnounced);
@@ -908,4 +920,3 @@ void MainWindow::on_userSidebarResultsBtn_clicked()
     userInnerPage_Results->loadElections(mockElections, electionCount);
     delete[] mockElections;
 }
-

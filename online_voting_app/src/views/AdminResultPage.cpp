@@ -26,7 +26,7 @@ void AdminResultPage::setupUi()
 void AdminResultPage::loadElections(Election *elections, int size)
 {
     electionModel->setElections(elections, size);
-    clearResults();
+     clearResults();
 }
 
 void AdminResultPage::onElectionClicked(const QModelIndex &index)
@@ -66,18 +66,33 @@ void AdminResultPage::onElectionClicked(const QModelIndex &index)
 
 void AdminResultPage::clearResults()
 {
+    // 1. Safety check just in case setupUi() hasn't finished yet
+    if (!chartLayout)
+        return;
+
+    // 2. Safely clear the layout
     QLayoutItem *child;
     while ((child = chartLayout->takeAt(0)) != nullptr) {
-        delete child->widget();
-        delete child;
+        if (child->widget()) {
+            child->widget()->hide();        // Remove it from view immediately
+            child->widget()->deleteLater(); // Queue it for safe memory deletion
+        }
+        delete child; // The layout item itself is safe to delete instantly
     }
 
-    winnerLabel->setText("🏆 Winner: -");
-    totalTokensLabel->setText("🎫 Total Votes Cast: -");
-    pollClosedLabel->setText("⏱ Polling Closed At: -");
+    // 3. Reset Labels (with safety checks)
+    if (winnerLabel)
+        winnerLabel->setText("🏆 Winner: -");
+    if (totalTokensLabel)
+        totalTokensLabel->setText("🎫 Total Votes Cast: -");
+    if (pollClosedLabel)
+        pollClosedLabel->setText("⏱ Polling Closed At: -");
 
-    saveBtn->hide();
-    cancelBtn->hide();
+    // 4. Hide Buttons
+    if (saveBtn)
+        saveBtn->hide();
+    if (cancelBtn)
+        cancelBtn->hide();
 }
 
 void AdminResultPage::onLoadResultsClicked()
