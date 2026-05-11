@@ -11,15 +11,21 @@
 #include <QTimer>
 #include "EvmScanPage.h"
 
-EvmScanPage::EvmScanPage(QWidget *parent) : QWidget(parent)
+EvmScanPage::EvmScanPage(QWidget *parent)
+    : QWidget(parent)
 {
+    // 1. INITIALIZE POINTERS TO NULL
+    camera = nullptr;
+    captureSession = nullptr;
+
     lastProcessTime = 0;
     scanAlreadySuccessful = false;
+
     m_secretClickCount = 0;
     m_secretClickTimer = new QTimer(this);
-    m_secretClickTimer->setSingleShot(true); // Only runs once per trigger
-    connect(m_secretClickTimer, &QTimer::timeout,
-            this, &EvmScanPage::resetSecretClickCount);
+    m_secretClickTimer->setSingleShot(true);
+    connect(m_secretClickTimer, &QTimer::timeout, this, &EvmScanPage::resetSecretClickCount);
+
     setupUi();
     startCamera();
 }
@@ -202,45 +208,33 @@ void EvmScanPage::setupUi()
 // ==========================================
 void EvmScanPage::startCamera()
 {
-    // Check if a camera is attached to the computer
-    const QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
-    if (cameras.isEmpty())
-    {
-        scanStatusLabel->setText("Error: No camera detected.");
-        scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;");
+    // ==========================================
+    // CRASH FIX: IF CAMERA EXISTS, DO NOT CREATE IT AGAIN!
+    // ==========================================
+    if (camera != nullptr) {
+        if (!camera->isActive()) {
+            camera->start();
+        }
         return;
     }
 
-    // Connect the default camera to the video widget
+    const QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
+    if (cameras.isEmpty()) {
+        scanStatusLabel->setText("Error: No camera detected.");
+        scanStatusLabel->setStyleSheet(
+            "font-size: 18px; font-weight: bold; color: #E74C3C; margin-top: 15px;");
+        return;
+    }
+
     camera = new QCamera(cameras.first(), this);
     captureSession = new QMediaCaptureSession(this);
     captureSession->setCamera(camera);
     captureSession->setVideoOutput(videoWidget);
 
     QVideoSink *sink = videoWidget->videoSink();
-    connect(sink, &QVideoSink::videoFrameChanged, this,
-            &EvmScanPage::onVideoFrameChanged);
+    connect(sink, &QVideoSink::videoFrameChanged, this, &EvmScanPage::onVideoFrameChanged);
 
-    // Monitor camera errors
-    connect(camera, &QCamera::errorOccurred, this, [this](QCamera::Error error, const QString &errorString)
-            {
-        Q_UNUSED(error);
-        scanStatusLabel->setText("Camera Error: " + errorString);
-        scanStatusLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;"); });
-
-    // Start streaming!
     camera->start();
-
-    // Verify camera started (small delay to allow initialization)
-    QTimer::singleShot(500, this, [this]()
-                       {
-        if (camera->isActive()) {
-            scanStatusLabel->setText("Camera ready. Waiting for QR Code...");
-            scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #27AE60; margin-top: 15px; background: transparent;");
-        } else {
-            scanStatusLabel->setText("Error: Camera failed to start. Check permissions or drivers.");
-            scanStatusLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #E74C3C; margin-top: 15px; background: transparent;");
-        } });
 }
 
 void EvmScanPage::stopCamera()
@@ -253,25 +247,28 @@ void EvmScanPage::stopCamera()
 
 void EvmScanPage::resetScanner()
 {
-    // 1. Reset the logic flags
+    // 1. Reset logic
     scanAlreadySuccessful = false;
 
-    // 2. Clear the inputs
+    // 2. Clear inputs
     if (cnicInput)
         cnicInput->clear();
 
-    // 3. Reset the labels and borders back to Blue/Waiting
+    // 3. Reset UI back to blue/waiting state
     scanStatusLabel->setText("Waiting for QR Code...");
-    scanStatusLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #7F8C8D; margin-top: 15px;");
-    videoWidget->parentWidget()->setStyleSheet("QFrame { background-color: black; border: 4px dashed #3498DB; border-radius: 12px; }");
+    scanStatusLabel->setStyleSheet(
+        "font-size: 18px; font-weight: bold; color: #7F8C8D; margin-top: 15px;");
+    videoWidget->parentWidget()->setStyleSheet(
+        "QFrame { background-color: black; border: 4px dashed #3498DB; border-radius: 12px; }");
 
-    // 4. Lock the Proceed button again
+    // 4. Lock the proceed button
     proceedBtn->setEnabled(false);
     proceedBtn->setStyleSheet(
-        "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: 20px; font-weight: bold; }"
+        "QPushButton { background-color: #BDC3C7; color: white; border-radius: 8px; font-size: "
+        "20px; font-weight: bold; }"
         "QPushButton:disabled { background-color: #BDC3C7; color: #ECF0F1; }");
 
-    // 5. Turn the camera back on!
+    // 5. SAFELY ensure camera is running (Uses the check we added above!)
     startCamera();
 }
 
