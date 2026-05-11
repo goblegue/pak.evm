@@ -44,6 +44,7 @@ MainWindow::MainWindow(const AppConfig &config, QWidget *parent)
     m_adminInnerPage_CreateElection = new AdminCreateElectionPage(this);
     m_adminInnerPage_Results = new AdminResultPage(this);
 
+    m_adminInnerPage_Results->setCryptoKeys(m_config.publicKey, m_config.privateKey);
     // user
     userInnerPage_ActiveElections = new UserActiveElectionsPage(this);
     userInnerPage_MyTokens = new UserMyTokensPage(this);

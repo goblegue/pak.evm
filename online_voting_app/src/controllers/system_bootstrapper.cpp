@@ -16,10 +16,11 @@
 #include "models/repositories/resultrepository.h"
 
 // Controllers
+#include "controllers/adminController.h"
 #include "controllers/auth_manager.h"
 #include "controllers/candidateController.h"
 #include "controllers/electionController.h"
-#include "controllers/adminController.h"
+#include "controllers/resultController.h"
 #include "controllers/voterController.h"
 
 // Services
@@ -205,4 +206,6 @@ void SystemBootstrapper::injectControllers()
     TokenController::getInstance().injectRepositories(m_voterRepo.get(), m_electionRepo.get());
 
     AdminController::getInstance().injectRepositories(m_adminRepo.get());
+
+    ResultController::getInstance().injectRepositories(m_resultRepo.get(), m_electionRepo.get());
 }

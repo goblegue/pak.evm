@@ -29,6 +29,10 @@ std::optional<Result> ResultController::loadAndPreviewResultFile(const QString& 
     QByteArray encryptedData = file.readAll();
     file.close();
 
+    qDebug() << "--- CRYPTO DEBUG ---";
+    qDebug() << "Expected PK Size: 32 | Actual PK Size:" << publicKey.size();
+    qDebug() << "Expected SK Size: 64 | Actual SK Size:" << privateKey.size();
+
     // 1. Decrypt using the System Keys
     auto decryptedOpt = CryptoEngine::getInstance().decryptMessage(encryptedData, publicKey, privateKey);
     if (!decryptedOpt.has_value()) return std::nullopt;
