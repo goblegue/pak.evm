@@ -19,6 +19,7 @@ QString QR::preparePayload(const Token &voter)
     //                       .arg(voter.getTokenSignature());
 
     QJsonObject payloadObj;
+    payloadObj["tokenId"]=voter.getId();
     payloadObj["cnic"] = voter.getUserCnic();
     payloadObj["electionId"] = voter.getElectionId();
     payloadObj["issuedAt"] = voter.getIssuedAt().toString(Qt::ISODate);

@@ -146,7 +146,7 @@ void MainWindow::handleGoToLoginRequested()
 void MainWindow::handleLoginSuccessUser()
 {
     QString username = AuthManager::getInstance().getCurrentUser()->getName();
-    loadAdminProfile(username, "");
+    loadUserProfile(username, "");
     ui->MainStack->setCurrentIndex(StackedPages::UserDashPage);
 }
 

@@ -24,7 +24,8 @@ bool electionrepository::insertElection(const Election &election)
                 << "publishTime" << static_cast<int64_t>(election.getPublishTime().toMSecsSinceEpoch())
                 << "startTime" << static_cast<int64_t>(election.getStartTime().toMSecsSinceEpoch())
                 << "endTime" << static_cast<int64_t>(election.getEndTime().toMSecsSinceEpoch())
-                << "status" << static_cast<int>(election.getStatus());
+                // FIXED: Force MongoDB to save this strictly as a 32-bit int
+                << "status" << bsoncxx::types::b_int32{static_cast<int32_t>(election.getStatus())};
 
         m_collection.insert_one(builder << finalize);
         return true;
@@ -38,7 +39,10 @@ bool electionrepository::insertElection(const Election &election)
 bool electionrepository::updateElectionState(const QString &electionId, ElectionState newState)
 {
     auto filter = document{} << "election_id" << electionId.toStdString() << finalize;
-    auto update = document{} << "$set" << open_document << "status" << static_cast<int>(newState) << close_document << finalize;
+    // FIXED: Force MongoDB to save this strictly as a 32-bit int
+    auto update = document{} << "$set" << open_document
+                             << "status" << bsoncxx::types::b_int32{static_cast<int32_t>(newState)}
+                             << close_document << finalize;
 
     auto result = m_collection.update_one(filter.view(), update.view());
     return result && result->modified_count() > 0;
@@ -50,7 +54,8 @@ bool electionrepository::addStatusChangeRequest(const QString &targetElectionId,
     auto update = document{} << "$push" << open_document
                              << "statusChangeRequests" << open_document
                              << "requestById" << requestingAdminId.toStdString()
-                             << "status" << static_cast<int>(status)
+                             // FIXED: Force MongoDB to save this strictly as a 32-bit int
+                             << "status" << bsoncxx::types::b_int32{static_cast<int32_t>(status)}
                              << close_document << close_document << finalize;
 
     auto result = m_collection.update_one(filter.view(), update.view());
@@ -71,24 +76,45 @@ std::optional<Election> electionrepository::getElectionById(const QString &id)
     election.setStartTime(QDateTime::fromMSecsSinceEpoch(view["startTime"].get_int64().value));
     election.setEndTime(QDateTime::fromMSecsSinceEpoch(view["endTime"].get_int64().value));
     election.setPublishTime(QDateTime::fromMSecsSinceEpoch(view["publishTime"].get_int64().value));
-    election.setStatus(static_cast<ElectionState>(view["status"].get_int32().value));
+
+    // --- SAFE READER FIX FOR ELECTION STATUS ---
+    int32_t statusVal = 0;
+    if (view["status"].type() == bsoncxx::type::k_int32) {
+        statusVal = view["status"].get_int32().value;
+    } else if (view["status"].type() == bsoncxx::type::k_int64) {
+        statusVal = static_cast<int32_t>(view["status"].get_int64().value);
+    } else if (view["status"].type() == bsoncxx::type::k_double) {
+        statusVal = static_cast<int32_t>(view["status"].get_double().value);
+    }
+    election.setStatus(static_cast<ElectionState>(statusVal));
+    // -------------------------------------------
 
     if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
     {
-        for (auto &&doc : view["statusChangeRequests"].get_array().value)
+        for (auto &&reqDoc : view["statusChangeRequests"].get_array().value)
         {
-            auto req = doc.get_document().view();
+            auto req = reqDoc.get_document().view();
+
+            // --- SAFE READER FIX FOR APPROVAL STATUS ---
+            int32_t reqStatusVal = 0;
+            if (req["status"].type() == bsoncxx::type::k_int32) {
+                reqStatusVal = req["status"].get_int32().value;
+            } else if (req["status"].type() == bsoncxx::type::k_int64) {
+                reqStatusVal = static_cast<int32_t>(req["status"].get_int64().value);
+            } else if (req["status"].type() == bsoncxx::type::k_double) {
+                reqStatusVal = static_cast<int32_t>(req["status"].get_double().value);
+            }
+
             election.addStatusChangeRequest(QString::fromUtf8(
                                                 req["requestById"].get_string().value.data()),
-                                            static_cast<ApprovalStatus>(
-                                                req["status"].get_int32().value));
+                                            static_cast<ApprovalStatus>(reqStatusVal));
         }
     }
     return election;
 }
+
 Election *electionrepository::getAllElections(int &electionsSize)
 {
-
     int count = static_cast<int>(m_collection.count_documents({}));
     electionsSize = count;
     if (count == 0)
@@ -106,20 +132,43 @@ Election *electionrepository::getAllElections(int &electionsSize)
         electionArray[i].setPublishTime(QDateTime::fromMSecsSinceEpoch(doc["publishTime"].get_int64().value));
         electionArray[i].setStartTime(QDateTime::fromMSecsSinceEpoch(doc["startTime"].get_int64().value));
         electionArray[i].setEndTime(QDateTime::fromMSecsSinceEpoch(doc["endTime"].get_int64().value));
+
         if (view["statusChangeRequests"] && view["statusChangeRequests"].type() == bsoncxx::type::k_array)
         {
             auto requestsArray = view["statusChangeRequests"].get_array().value;
-            for (auto &&doc : requestsArray)
+            for (auto &&reqDoc : requestsArray)
             {
-                auto reqView = doc.get_document().view();
+                auto reqView = reqDoc.get_document().view();
                 QString requesterId = QString::fromUtf8(
                     reqView["requestById"].get_string().value.data());
-                ApprovalStatus reqStatus = static_cast<ApprovalStatus>(
-                    reqView["status"].get_int32().value);
+
+                // --- SAFE READER FIX FOR APPROVAL STATUS ---
+                int32_t reqStatusVal = 0;
+                if (reqView["status"].type() == bsoncxx::type::k_int32) {
+                    reqStatusVal = reqView["status"].get_int32().value;
+                } else if (reqView["status"].type() == bsoncxx::type::k_int64) {
+                    reqStatusVal = static_cast<int32_t>(reqView["status"].get_int64().value);
+                } else if (reqView["status"].type() == bsoncxx::type::k_double) {
+                    reqStatusVal = static_cast<int32_t>(reqView["status"].get_double().value);
+                }
+
+                ApprovalStatus reqStatus = static_cast<ApprovalStatus>(reqStatusVal);
                 electionArray[i].addStatusChangeRequest(requesterId, reqStatus);
             }
         }
-        electionArray[i].setStatus(static_cast<ElectionState>(doc["status"].get_int32().value));
+
+        // --- SAFE READER FIX FOR ELECTION STATUS ---
+        int32_t statusVal = 0;
+        if (doc["status"].type() == bsoncxx::type::k_int32) {
+            statusVal = doc["status"].get_int32().value;
+        } else if (doc["status"].type() == bsoncxx::type::k_int64) {
+            statusVal = static_cast<int32_t>(doc["status"].get_int64().value);
+        } else if (doc["status"].type() == bsoncxx::type::k_double) {
+            statusVal = static_cast<int32_t>(doc["status"].get_double().value);
+        }
+        electionArray[i].setStatus(static_cast<ElectionState>(statusVal));
+        // -------------------------------------------
+
         i++;
     }
 

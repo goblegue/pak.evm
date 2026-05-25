@@ -307,7 +307,7 @@ background-color: rgb(16, 88, 255);</string>
            <item row="0" column="2">
             <widget class="QLabel" name="userNameLabel">
              <property name="text">
-              <string>Hello</string>
+              <string/>
              </property>
             </widget>
            </item>
