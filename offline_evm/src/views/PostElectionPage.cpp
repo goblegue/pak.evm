@@ -10,6 +10,7 @@
 #include "controllers/audit_controller.h"
 #include "controllers/election_controller.h"
 #include "models/repos/DatabaseManager.h"
+#include "controllers/auth_manager.h"
 
 PostElectionPage::PostElectionPage(QWidget *parent) : QWidget(parent)
 {
@@ -216,6 +217,8 @@ void PostElectionPage::onDeleteElectionClicked()
              */
 
             // TEMPORARY MOCK FOR UI TESTING:
+
+            bool success = AuthManager::getInstance().unlockMasterAuthority(masterKey);
             if (masterKey == "admin123")
             {
                 QMessageBox::information(this, "System Wiped", "Simulation: System wiped successfully! Exiting app...");

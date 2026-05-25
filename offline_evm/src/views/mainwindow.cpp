@@ -118,12 +118,6 @@ void MainWindow::setupKioskUi()
 
 void MainWindow::processCameraString(QString qrPayload, QString cnic)
 {
-    // TEMPORARY MOCK: Since BackendCrypto isn't built yet, we will just pretend
-    // the camera successfully found a JSON string so you can test the UI!
-
-    // If you want to actually test the camera frame dropping, you can leave this:
-    // if (qrPayload.isEmpty()) return;
-
     verifyScannedToken(cnic, qrPayload);
 }
 

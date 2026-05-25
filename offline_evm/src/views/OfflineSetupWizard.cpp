@@ -1,7 +1,7 @@
 #include "OfflineSetupWizard.h"
 #include <QFormLayout>
-#include <QStyledItemDelegate>
 #include <QPainter>
+#include <QStyledItemDelegate>
 
 #include "controllers/auth_manager.h"
 #include "controllers/election_controller.h"

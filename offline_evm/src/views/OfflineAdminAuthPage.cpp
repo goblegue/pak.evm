@@ -1,4 +1,5 @@
 #include "OfflineAdminAuthPage.h"
+#include "controllers/auth_manager.h" // For real authentication (currently mocked)
 #include <QPixmap>
 #include <QPainter>
 #include <QPainterPath>
@@ -134,6 +135,8 @@ void OfflineAdminAuthPage::onLoginClicked() {
     QString cnic = cnicInput->text().trimmed();
     QString pass = passwordInput->text();
 
+
+
     if (cnic.isEmpty() || pass.isEmpty()) {
         QMessageBox::warning(this, "Error", "Please enter both CNIC and Password.");
         return;
@@ -143,7 +146,9 @@ void OfflineAdminAuthPage::onLoginClicked() {
     // MOCK AUTHENTICATION
     // ==========================================
     // Your backend developer will replace this with: AuthManager::getInstance().login(...)
-    if (cnic == "admin" && pass == "123") {
+
+    bool success = AuthManager::getInstance().loginWorker(cnic, pass);
+    if (success) {
         emit authSuccessful(cnic); // SUCCESS!
     } else {
         QMessageBox::critical(this, "Access Denied", "Invalid Admin credentials.");

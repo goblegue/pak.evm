@@ -1,4 +1,5 @@
 #include "OfflineAdminDashboard.h"
+#include "controllers/auth_manager.h"
 #include <QMessageBox>
 #include <QInputDialog>
 
@@ -233,13 +234,13 @@ void OfflineAdminDashboard::onForceCloseClicked() {
                 QMessageBox::warning(this, "Error", "Master Password cannot be empty. Shutdown aborted.");
                 return;
             }
-
+            bool success = AuthManager::getInstance().unlockMasterAuthority(masterKey);
             // ==========================================
             // MOCK VERIFICATION (For UI Testing)
             // ==========================================
             // Right now, we will hardcode "admin123" to test the UI.
             // Your backend developer will later replace this with the real hash check!
-            if (masterKey == "admin123") {
+            if (success) {
 
                 // If correct, emit the signal to shut down the machine!
                 QMessageBox::information(this, "Verified", "Master Key accepted. Forcing system shutdown...");
